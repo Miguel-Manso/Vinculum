@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 350" fill="none">
+  <!-- Vinculum Interlocking Rings Logo -->
+  <defs>
+    <!-- Mask to create the clean gap where rings cross -->
+    <mask id="ring-mask-top">
+      <rect width="500" height="350" fill="white" />
+      <!-- Erase left ring behind upper right ring -->
+      <path d="M 230 40 A 115 115 0 0 1 330 180" stroke="black" stroke-width="72" stroke-linecap="round" fill="none"/>
+    </mask>
+    <mask id="ring-mask-bottom">
+      <rect width="500" height="350" fill="white" />
+      <!-- Erase right ring behind lower left ring -->
+      <path d="M 270 310 A 115 115 0 0 1 170 180" stroke="black" stroke-width="72" stroke-linecap="round" fill="none"/>
+    </mask>
+  </defs>
+
+  <!-- Left Ring with mask at the top intersection -->
+  <circle cx="175" cy="175" r="112" stroke="#50c5bd" stroke-width="54" mask="url(#ring-mask-top)"/>
+
+  <!-- Right Ring with mask at the bottom intersection -->
+  <circle cx="325" cy="175" r="112" stroke="#50c5bd" stroke-width="54" mask="url(#ring-mask-bottom)"/>
+</svg>

@@ -1,0 +1,106 @@
+.logoWrap {
+  display: inline-flex;
+  align-items: center;
+  user-select: none;
+  text-decoration: none;
+}
+
+.horizontal {
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+}
+
+.vertical {
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 14px;
+}
+
+.iconOnly {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.image {
+  object-fit: contain;
+  display: block;
+  filter: drop-shadow(0 2px 8px rgba(80, 197, 189, 0.25));
+  transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.image:hover {
+  transform: scale(1.03);
+  filter: drop-shadow(0 3px 12px rgba(80, 197, 189, 0.4));
+}
+
+.brandText {
+  display: flex;
+  flex-direction: column;
+}
+
+.vertical .brandText {
+  align-items: center;
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.glowingDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--primary, #2fd9f4);
+  box-shadow: 0 0 8px #2fd9f4, 0 0 14px rgba(47, 217, 244, 0.6);
+  display: inline-block;
+  animation: pulseDot 2.4s ease-in-out infinite;
+}
+
+@keyframes pulseDot {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  50% {
+    transform: scale(1.25);
+    opacity: 1;
+    box-shadow: 0 0 12px #2fd9f4, 0 0 20px rgba(47, 217, 244, 0.9);
+  }
+}
+
+.title {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: var(--text-main, #ffffff);
+  line-height: 1.1;
+}
+
+.titleSm {
+  font-size: 16px;
+  letter-spacing: 0.4px;
+}
+
+.titleMd {
+  font-size: 20px;
+  letter-spacing: 0.6px;
+}
+
+.titleLg {
+  font-size: 26px;
+  letter-spacing: 0.8px;
+}
+
+.subtitle {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted, #94a3b8);
+  margin-top: 2px;
+}

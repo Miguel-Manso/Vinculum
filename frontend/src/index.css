@@ -1,0 +1,128 @@
+:root {
+  /* ==========================================================
+     STITCH DESIGN SYSTEM - Obsidian & Electric Cyan/Teal Palette
+     Baseado no Projeto Stitch: 16529458011722319407
+     ========================================================== */
+
+  /* Camadas de Superfície Obsidian (Deep non-glare zinc/slate) */
+  --surface-canvas:      #121316; /* Fundo base da página */
+  --surface-lowest:      #0d0e11; /* Contraste profundo */
+  --surface-low:         #18191d; /* Sidebar e cabeçalhos */
+  --surface-container:   #1f1f23; /* Cartões e blocos centrais */
+  --surface-high:        #292a2d; /* Inputs e elementos elevados */
+  --surface-highest:     #343538; /* Itens ativos e hover */
+  --surface-bright:      #38393c; /* Destaques claros */
+
+  /* Bordas Ultra-Limpas */
+  --border-subtle:       rgba(255, 255, 255, 0.08); /* Linhas refinadas sem ruído */
+  --border-prominent:    rgba(255, 255, 255, 0.14); /* Destaque e hover */
+  --border-focus:        #2fd9f4;
+
+  /* Primária e Acentos (Electric Cyan / Mint / Deep Teal) */
+  --primary:             #2fd9f4; /* Cyan elétrico para foco e interações */
+  --primary-mint:        #57f1db; /* Mint luminoso */
+  --primary-container:   #14b8a6; /* Teal institucional */
+  --primary-light:       #8aebff; /* Realce suave de texto */
+  --primary-dim:         #2dd4bf;
+  --on-primary:          #00363e; /* Texto escuro de alto contraste sobre primária */
+
+  /* Tipografia & Hierarquia de Texto */
+  --text-main:           #f8fafc; /* Branco suave para títulos */
+  --text-body:           #e3e2e6; /* Texto de leitura confortável */
+  --text-muted:          #94a3b8; /* Metadados e rótulos secundários */
+  --text-subtle:         #64748b; /* Placeholders e divisores */
+
+  /* Indicadores Semânticos de Status */
+  --status-success:      #10b981; /* Verde esmeralda (Concluído/No prazo) */
+  --status-warning:      #f59e0b; /* Âmbar vibrante (Em atenção) */
+  --status-danger:       #ef4444; /* Vermelho carmim (Atraso/Crítico) */
+  --status-info:         #38bdf8; /* Azul céu (Em andamento) */
+
+  /* ==========================================================
+     Mapeamento de Compatibilidade Retroativa (evita quebra de CSS)
+     ========================================================== */
+  --gray-deep:           var(--surface-canvas);
+  --gray-sidebar:        var(--surface-low);
+  --gray-3c:             var(--surface-container);
+  --gray-surface:        var(--surface-container);
+  --gray-elevated:       var(--surface-high);
+  --gray-hover:          var(--surface-highest);
+  --gray-border:         var(--border-subtle);
+  --gray-border-subtle:  var(--border-subtle);
+
+  --gray-text-main:      var(--text-main);
+  --gray-text-body:      var(--text-body);
+  --gray-text-muted:     var(--text-muted);
+  --gray-text-subtle:    var(--text-subtle);
+
+  --turquesa-50:         #d5ffff;
+  --turquesa-100:        #bbf3ef;
+  --turquesa-200:        var(--primary-mint);
+  --turquesa-400:        var(--primary);
+  --turquesa-600:        var(--primary-container);
+  --turquesa-800:        var(--on-primary);
+
+  --color-primary:       var(--primary);
+  --color-primary-hover: var(--primary-mint);
+  --color-primary-text:  var(--on-primary);
+  --color-accent:        var(--primary);
+  --color-accent-hover:  var(--primary-mint);
+
+  --color-text-main:     var(--text-main);
+  --color-text-body:     var(--text-body);
+  --color-text-muted:    var(--text-muted);
+  --color-text-subtle:   var(--text-subtle);
+
+  --color-bg-page:       var(--surface-canvas);
+  --color-bg-surface:    var(--surface-container);
+  --color-bg-elevated:   var(--surface-high);
+  --color-bg-subtle:     var(--surface-low);
+  --color-bg-hover:      rgba(47, 217, 244, 0.12);
+
+  --color-border:        var(--border-subtle);
+  --color-border-light:  var(--border-subtle);
+  --color-border-focus:  var(--border-focus);
+
+  /* Sombras & Efeitos de Luz */
+  --shadow-sm:           0 1px 3px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.5);
+  --shadow-md:           0 4px 16px rgba(0, 0, 0, 0.5), 0 2px 6px rgba(0, 0, 0, 0.3);
+  --shadow-lg:           0 12px 36px rgba(0, 0, 0, 0.65), 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-glow:         0 0 24px rgba(47, 217, 244, 0.25);
+  --focus-ring:          0 0 0 2px rgba(47, 217, 244, 0.4);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: var(--color-bg-page);
+  color: var(--color-text-main);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color-scheme: dark;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, sans-serif;
+  letter-spacing: -0.02em;
+}
+
+/* Scrollbar refinada padrão Stitch */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--surface-canvas);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--surface-highest);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-container);
+}
