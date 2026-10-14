@@ -176,7 +176,6 @@ async function excluir(req, res) {
     }
 
     const { id } = req.params;
-    const pool = await getPool();
 
     // Verifica se é o único setor restante no sistema
     const totalSetores = await pool.request().query('SELECT COUNT(*) AS total FROM Setores');
