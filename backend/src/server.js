@@ -18,6 +18,13 @@ app.use('/api/campos',    require('./routes/campo.routes'));
 app.use('/api/export',    require('./routes/export.routes'));
 app.use('/api/chatbot',   require('./routes/chatbot.routes'));
 
+app.get('/', (req, res) => res.json({
+  app: 'Vinculum API',
+  status: 'online',
+  mensagem: 'A API do Vinculum está ativa e pronta para receber conexões!',
+  docs: '/api/health'
+}));
+
 app.get('/api/health', (req, res) => res.json({ status: 'ok', app: 'Vinculum API' }));
 
 const PORT = process.env.PORT || 3000;
