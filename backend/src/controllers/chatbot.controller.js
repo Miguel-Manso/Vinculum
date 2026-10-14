@@ -103,37 +103,56 @@ Você pode criar campos específicos para cada processo:
    Use o filtro de tarefas *Atrasadas* na tela Tabela para agir preventivamente antes que o cliente precise cobrar.`
 };
 
-// Busca dados reais do banco SQL Server
-async function obterContextoProcessos() {
+// Busca dados reais do banco filtrando pelos setores do usuário logado
+async function obterContextoProcessos(usuario) {
   try {
     const pool = await getPool();
-    const resProcessos = await pool.request().query(`
-      SELECT p.id, p.nome, p.descricao,
+    const isAdmin = usuario?.perfil === 'admin' || usuario?.email === 'admin@vinculum.com';
+    const usuarioId = usuario?.id;
+
+    let procQuery = `
+      SELECT p.id, p.nome, p.descricao, s.nome AS setor_nome,
              (SELECT COUNT(*) FROM Etapas e WHERE e.processo_id = p.id) AS total_etapas,
              (SELECT COUNT(*) FROM Tarefas t JOIN Etapas e ON t.etapa_id = e.id WHERE e.processo_id = p.id) AS total_tarefas
       FROM Processos p
-      ORDER BY p.nome
-    `);
+      LEFT JOIN Setores s ON p.setor_id = s.id
+    `;
 
-    const resEtapas = await pool.request().query(`
+    const reqProc = pool.request();
+    if (usuario && !isAdmin) {
+      procQuery += ` WHERE p.setor_id IN (SELECT us.setor_id FROM UsuarioSetores us WHERE us.usuario_id = @usuario_id)`;
+      reqProc.input('usuario_id', sql.Int, usuarioId);
+    }
+    procQuery += ` ORDER BY s.nome, p.nome`;
+
+    const resProcessos = await reqProc.query(procQuery);
+
+    let etapaQuery = `
       SELECT e.id, e.nome, e.ordem, e.processo_id, p.nome AS processo_nome,
              (SELECT COUNT(*) FROM Tarefas t WHERE t.etapa_id = e.id) AS total_tarefas
       FROM Etapas e
       JOIN Processos p ON e.processo_id = p.id
-      ORDER BY p.nome, e.ordem
-    `);
+    `;
+    const reqEtapas = pool.request();
+    if (usuario && !isAdmin) {
+      etapaQuery += ` WHERE p.setor_id IN (SELECT us.setor_id FROM UsuarioSetores us WHERE us.usuario_id = @usuario_id)`;
+      reqEtapas.input('usuario_id', sql.Int, usuarioId);
+    }
+    etapaQuery += ` ORDER BY p.nome, e.ordem`;
+
+    const resEtapas = await reqEtapas.query(etapaQuery);
 
     const processos = resProcessos.recordset || [];
     const etapas = resEtapas.recordset || [];
 
     if (processos.length === 0) {
-      return 'Nenhum processo cadastrado ainda no banco de dados. O usuário pode criar o primeiro processo acessando a tela de Processos no menu lateral e clicando em "Novo Processo".';
+      return 'Nenhum processo cadastrado ou acessível nos seus setores no momento. O usuário pode criar um processo acessando a tela de Processos no menu lateral e clicando em "Novo Processo".';
     }
 
-    let resumo = 'PROCESSOS CADASTRADOS NO SISTEMA:\n';
+    let resumo = 'PROCESSOS CADASTRADOS NOS SEUS SETORES:\n';
     processos.forEach(p => {
       const etapasDoProc = etapas.filter(e => e.processo_id === p.id);
-      resumo += `\n• Processo: "${p.nome}" (ID ${p.id})\n`;
+      resumo += `\n• Processo: "${p.nome}" (ID ${p.id}${p.setor_nome ? ` | Setor: ${p.setor_nome}` : ''})\n`;
       if (p.descricao) resumo += `  Descrição: ${p.descricao}\n`;
       resumo += `  Total de tarefas: ${p.total_tarefas}\n`;
       if (etapasDoProc.length > 0) {
@@ -1772,7 +1791,7 @@ async function conversar(req, res) {
     }
 
     const usuarioNome = req.usuario?.nome || 'Usuário';
-    const contextoProcessos = await obterContextoProcessos();
+    const contextoProcessos = await obterContextoProcessos(req.usuario);
     const intencao = detectarIntencao(mensagem);
 
     // 1. Motor cognitivo tem prioridade máxima — responde com 100% de precisão

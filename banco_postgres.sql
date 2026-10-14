@@ -13,11 +13,29 @@ CREATE TABLE IF NOT EXISTS Usuarios (
   criado_em  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- SETORES (Departamentos / Workspaces)
+CREATE TABLE IF NOT EXISTS Setores (
+  id        SERIAL PRIMARY KEY,
+  nome      VARCHAR(100) NOT NULL,
+  descricao TEXT,
+  cor       VARCHAR(20) DEFAULT '#2fd9f4',
+  icone     VARCHAR(40) DEFAULT 'folder',
+  criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- RELAÇÃO USUÁRIOS E SETORES (N:N)
+CREATE TABLE IF NOT EXISTS UsuarioSetores (
+  usuario_id INT NOT NULL REFERENCES Usuarios(id) ON DELETE CASCADE,
+  setor_id   INT NOT NULL REFERENCES Setores(id) ON DELETE CASCADE,
+  PRIMARY KEY (usuario_id, setor_id)
+);
+
 -- PROCESSOS
 CREATE TABLE IF NOT EXISTS Processos (
   id         SERIAL PRIMARY KEY,
   nome       VARCHAR(150) NOT NULL,
   descricao  TEXT,
+  setor_id   INT REFERENCES Setores(id) ON DELETE SET NULL,
   criado_por INT REFERENCES Usuarios(id),
   criado_em  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -67,12 +85,18 @@ CREATE TABLE IF NOT EXISTS Historico (
 );
 
 -- ÍNDICES
+CREATE INDEX IF NOT EXISTS IX_Processos_setor_id   ON Processos (setor_id);
 CREATE INDEX IF NOT EXISTS IX_Processos_criado_por ON Processos (criado_por);
 CREATE INDEX IF NOT EXISTS IX_Etapas_processo_id   ON Etapas    (processo_id);
 CREATE INDEX IF NOT EXISTS IX_Etapas_ordem         ON Etapas    (processo_id, ordem);
 CREATE INDEX IF NOT EXISTS IX_Tarefas_etapa_id     ON Tarefas   (etapa_id);
 CREATE INDEX IF NOT EXISTS IX_Tarefas_responsavel  ON Tarefas   (responsavel_id);
 CREATE INDEX IF NOT EXISTS IX_Historico_tarefa_id  ON Historico (tarefa_id);
+
+-- SETOR PADRÃO INICIAL
+INSERT INTO Setores (nome, descricao, cor, icone)
+SELECT 'Geral / Administrativo', 'Setor corporativo padrão do Vinculum', '#2fd9f4', 'folder'
+WHERE NOT EXISTS (SELECT 1 FROM Setores);
 
 -- USUÁRIO ADMINISTRADOR PADRÃO (admin@vinculum.com / senha: 123)
 INSERT INTO Usuarios (nome, email, senha_hash, perfil)

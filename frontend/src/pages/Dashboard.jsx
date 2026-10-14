@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useSetor } from '../context/SetorContext';
 import Sidebar from '../components/Sidebar';
 import api from '../services/api';
 import styles from './Dashboard.module.css';
 
 export default function Dashboard() {
   const { usuario } = useAuth();
+  const { setorAtivo } = useSetor();
   const navigate = useNavigate();
   const [processos, setProcessos] = useState([]);
   const [tarefas, setTarefas] = useState([]);
@@ -14,10 +16,12 @@ export default function Dashboard() {
 
   useEffect(() => {
     async function carregarDados() {
+      setLoading(true);
       try {
+        const queryParams = setorAtivo ? `?setor_id=${setorAtivo.id}` : '';
         const [resProc, resTar] = await Promise.all([
-          api.get('/processos'),
-          api.get('/tarefas'),
+          api.get(`/processos${queryParams}`),
+          api.get(`/tarefas${queryParams}`),
         ]);
         setProcessos(resProc.data || []);
         setTarefas(resTar.data || []);
@@ -28,7 +32,7 @@ export default function Dashboard() {
       }
     }
     carregarDados();
-  }, []);
+  }, [setorAtivo]);
 
   function isConcluida(t) {
     if (t.concluida === 1 || t.concluida === true) return true;
@@ -152,9 +156,31 @@ export default function Dashboard() {
                 Olá, {usuario?.nome ? usuario.nome.split(' ')[0] : 'Administrador'}
               </h1>
               <span className={styles.waveEmoji} role="img" aria-label="Aceno">👋</span>
+              <span
+                className={styles.sectorChipHeader}
+                style={{
+                  backgroundColor: `${setorAtivo?.cor || '#2fd9f4'}18`,
+                  color: setorAtivo?.cor || '#2fd9f4',
+                  border: `1px solid ${setorAtivo?.cor || '#2fd9f4'}44`,
+                }}
+              >
+                <span
+                  style={{
+                    width: 7,
+                    height: 7,
+                    borderRadius: '50%',
+                    backgroundColor: setorAtivo?.cor || '#2fd9f4',
+                    display: 'inline-block',
+                    marginRight: 6
+                  }}
+                />
+                {setorAtivo ? `Setor: ${setorAtivo.nome}` : 'Todos os Setores'}
+              </span>
             </div>
             <p className={styles.pageSubtitle}>
-              Visão consolidada do fluxo operacional e monitoramento da rotina técnica.
+              {setorAtivo
+                ? `Visualizando indicadores, tarefas e processos exclusivos do setor "${setorAtivo.nome}".`
+                : 'Visão consolidada do fluxo operacional e monitoramento de todos os seus setores.'}
             </p>
           </div>
 

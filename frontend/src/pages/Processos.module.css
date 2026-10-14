@@ -654,9 +654,89 @@
   box-shadow: 0 0 16px rgba(47, 217, 244, 0.4);
 }
 
-.btnSave:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+.formSelect {
+  width: 100%;
+  background: var(--surface-container, #1f1f23);
+  border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.08));
+  border-radius: 8px;
+  color: var(--text-main, #f8fafc);
+  padding: 10px 12px;
+  font-size: 13.5px;
+  outline: none;
+  transition: all 0.15s;
+  cursor: pointer;
+}
+
+.formSelect:focus {
+  border-color: var(--primary, #2fd9f4);
+  box-shadow: 0 0 0 3px rgba(47, 217, 244, 0.12);
+}
+
+.formSelect option {
+  background: #0f1623;
+  color: #f1f5f9;
+}
+
+.sectorTabsContainer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 2px 0 8px;
+  scrollbar-width: thin;
+}
+
+.sectorTab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  color: #94a3b8;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.sectorTab:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #f1f5f9;
+}
+
+.sectorTabActive {
+  background: rgba(47, 217, 244, 0.12) !important;
+  border-color: #2fd9f4 !important;
+  color: #2fd9f4 !important;
+  font-weight: 600;
+  box-shadow: 0 0 16px rgba(47, 217, 244, 0.15);
+}
+
+.sectorTabDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.sectorTabBadge {
+  background: rgba(255, 255, 255, 0.08);
+  color: inherit;
+  font-size: 11px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-weight: 600;
+}
+
+.deptDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 5px;
 }
 
 /* Responsividade */

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import api from '../services/api';
@@ -75,6 +75,15 @@ export default function Fluxo() {
 
   const [usuarios, setUsuarios] = useState([]);
   const [responsavelIdTarefa, setResponsavelIdTarefa] = useState('');
+
+  // Filtra colaboradores que pertencem ao mesmo setor do processo (ou administradores)
+  const usuariosPermitidos = useMemo(() => {
+    if (!processo?.setor_id) return usuarios;
+    return usuarios.filter(u => {
+      if (u.perfil === 'admin' || u.email === 'admin@vinculum.com') return true;
+      return Array.isArray(u.setores) && u.setores.some(s => s.id === processo.setor_id);
+    });
+  }, [usuarios, processo]);
 
   // Integração com as APIs reais do Vinculum
   async function carregarDados() {
@@ -926,7 +935,7 @@ export default function Fluxo() {
                       onChange={e => setResponsavelIdTarefa(e.target.value)}
                     >
                       <option value="">Não atribuído</option>
-                      {usuarios.map(u => (
+                      {usuariosPermitidos.map(u => (
                         <option key={u.id} value={String(u.id)}>{u.nome} ({u.email})</option>
                       ))}
                     </select>

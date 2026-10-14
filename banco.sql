@@ -23,6 +23,27 @@ CREATE TABLE Usuarios (
 );
 
 -- ============================================================
+-- SETORES (Departamentos / Workspaces)
+-- ============================================================
+CREATE TABLE Setores (
+  id        INT IDENTITY(1,1) PRIMARY KEY,
+  nome      NVARCHAR(100) NOT NULL,
+  descricao NVARCHAR(MAX),
+  cor       NVARCHAR(20) DEFAULT '#2fd9f4',
+  icone     NVARCHAR(40) DEFAULT 'folder',
+  criado_em DATETIME DEFAULT GETDATE()
+);
+
+-- ============================================================
+-- RELAÇÃO USUÁRIOS E SETORES (N:N)
+-- ============================================================
+CREATE TABLE UsuarioSetores (
+  usuario_id INT NOT NULL REFERENCES Usuarios(id) ON DELETE CASCADE,
+  setor_id   INT NOT NULL REFERENCES Setores(id) ON DELETE CASCADE,
+  PRIMARY KEY (usuario_id, setor_id)
+);
+
+-- ============================================================
 -- PROCESSOS
 -- Tela: Processos (listagem e cadastro) + Tabela
 -- Um processo é o fluxo principal (ex: "Onboarding")
@@ -31,6 +52,7 @@ CREATE TABLE Processos (
   id         INT IDENTITY(1,1) PRIMARY KEY,
   nome       NVARCHAR(150) NOT NULL,
   descricao  NVARCHAR(MAX),
+  setor_id   INT REFERENCES Setores(id) ON DELETE SET NULL,
   criado_por INT REFERENCES Usuarios(id),
   criado_em  DATETIME DEFAULT GETDATE()
 );
@@ -98,6 +120,7 @@ CREATE TABLE Historico (
 -- ============================================================
 -- ÍNDICES
 -- ============================================================
+CREATE INDEX IX_Processos_setor_id   ON Processos (setor_id);
 CREATE INDEX IX_Processos_criado_por ON Processos (criado_por);
 CREATE INDEX IX_Etapas_processo_id   ON Etapas    (processo_id);
 CREATE INDEX IX_Etapas_ordem         ON Etapas    (processo_id, ordem);

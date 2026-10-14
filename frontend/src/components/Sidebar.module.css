@@ -34,6 +34,282 @@
   background: var(--surface-low, #18191d);
 }
 
+/* ============================================================ */
+/* SELETOR DE SETOR (WORKSPACE SWITCHER)                        */
+/* ============================================================ */
+.workspaceSection {
+  position: relative;
+  padding: 14px 14px 4px;
+}
+
+.workspaceHeaderRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  padding: 0 4px;
+}
+
+.workspaceLabel {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted, #94a3b8);
+}
+
+.btnGerenciarSetoresMini {
+  background: transparent;
+  border: none;
+  color: #2fd9f4;
+  font-size: 11px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+}
+
+.btnGerenciarSetoresMini:hover {
+  background: rgba(47, 217, 244, 0.1);
+  color: #38bdf8;
+}
+
+.workspaceSelector {
+  width: 100%;
+  background: rgba(14, 18, 25, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 8px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.workspaceSelector:hover, .workspaceSelectorOpen {
+  border-color: rgba(47, 217, 244, 0.4);
+  background: rgba(18, 26, 38, 0.9);
+  box-shadow: 0 0 16px rgba(47, 217, 244, 0.08);
+}
+
+.workspaceSelectorLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.workspaceDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow: 0 0 8px currentColor;
+}
+
+.workspaceNameCol {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.workspaceName {
+  font-size: 13px;
+  font-weight: 600;
+  color: #f1f5f9;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.workspaceScope {
+  font-size: 11px;
+  color: #64748b;
+  line-height: 1.2;
+}
+
+.chevronIcon {
+  color: #94a3b8;
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.chevronIconRotate {
+  transform: rotate(180deg);
+  color: #2fd9f4;
+}
+
+.workspaceDropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 14px;
+  right: 14px;
+  background: #0f1623;
+  border: 1px solid rgba(47, 217, 244, 0.25);
+  border-radius: 12px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.75), 0 0 20px rgba(47, 217, 244, 0.1);
+  z-index: 100;
+  padding: 6px;
+  animation: dropdownIn 0.15s ease;
+}
+
+@keyframes dropdownIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.dropdownHeader {
+  padding: 6px 8px 4px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #64748b;
+  text-transform: uppercase;
+}
+
+.dropdownListScroll {
+  max-height: 190px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.dropdownItem {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  padding: 7px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: left;
+}
+
+.dropdownItem:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.dropdownItemActive {
+  background: rgba(47, 217, 244, 0.12) !important;
+  border: 1px solid rgba(47, 217, 244, 0.25);
+}
+
+.dropdownItemLeft {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.dropdownItemIconGeneral {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background: rgba(47, 217, 244, 0.15);
+  color: #2fd9f4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.dropdownItemDot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.dropdownItemText {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.dropdownItemTitle {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #f1f5f9;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dropdownItemSub {
+  font-size: 10.5px;
+  color: #64748b;
+}
+
+.checkIcon {
+  color: #2fd9f4;
+  flex-shrink: 0;
+}
+
+.dropdownDivider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.07);
+  margin: 4px 0;
+}
+
+.dropdownBtnGerenciar {
+  width: 100%;
+  background: transparent;
+  border: 1px dashed rgba(47, 217, 244, 0.3);
+  color: #2fd9f4;
+  border-radius: 8px;
+  padding: 7px;
+  font-size: 12px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.dropdownBtnGerenciar:hover {
+  background: rgba(47, 217, 244, 0.12);
+  border-color: #2fd9f4;
+}
+
+.navLinkButton {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13.5px;
+  color: var(--text-muted, #94a3b8);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-weight: 500;
+  text-align: left;
+  font-family: inherit;
+}
+
+.navLinkButton:hover {
+  background: var(--surface-container, #1f1f23);
+  color: var(--text-main, #f8fafc);
+}
+
+.navLinkButton:hover svg {
+  color: var(--primary, #2fd9f4);
+}
+
 .navSectionHeader {
   padding: 18px 16px 6px;
 }

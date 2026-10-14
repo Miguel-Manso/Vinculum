@@ -1,22 +1,32 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
+import { useSetor } from '../context/SetorContext';
 import api from '../services/api';
 import styles from './Tabela.module.css';
 
 export default function Tabela() {
   const navigate = useNavigate();
+  const { setorAtivo, setoresDisponiveis } = useSetor();
 
   const [tarefas,           setTarefas]           = useState([]);
   const [campos,            setCampos]            = useState([]);
   const [loading,           setLoading]           = useState(true);
   const [busca,             setBusca]             = useState('');
+  const [filtroSetor,       setFiltroSetor]       = useState(() => setorAtivo ? setorAtivo.nome : '');
   const [filtroProcesso,    setFiltroProcesso]    = useState('');
   const [filtroEtapa,       setFiltroEtapa]       = useState('');
   const [filtroStatus,      setFiltroStatus]      = useState('');
   const [filtroPrazo,       setFiltroPrazo]       = useState('');
   const [filtroComCampos,   setFiltroComCampos]   = useState('');
   const [ordenacao,         setOrdenacao]         = useState({ campo: 'processo_nome', dir: 'asc' });
+
+  // Sincroniza quando o setor ativo mudar no contexto global
+  useEffect(() => {
+    if (setorAtivo) {
+      setFiltroSetor(setorAtivo.nome);
+    }
+  }, [setorAtivo]);
 
   useEffect(() => {
     Promise.all([
@@ -52,6 +62,7 @@ export default function Tabela() {
   }
 
   // Listas únicas para os filtros
+  const setores      = useMemo(() => [...new Set(tarefas.map(t => t.setor_nome))].filter(Boolean).sort(), [tarefas]);
   const processos    = useMemo(() => [...new Set(tarefas.map(t => t.processo_nome))].filter(Boolean).sort(), [tarefas]);
   const etapas       = useMemo(() => [...new Set(tarefas.map(t => t.etapa_nome))].filter(Boolean).sort(), [tarefas]);
 
@@ -82,10 +93,12 @@ export default function Tabela() {
       const matchBusca =
         !busca ||
         t.titulo.toLowerCase().includes(busca.toLowerCase()) ||
+        (t.setor_nome && t.setor_nome.toLowerCase().includes(busca.toLowerCase())) ||
         t.processo_nome.toLowerCase().includes(busca.toLowerCase()) ||
         (t.etapa_nome && t.etapa_nome.toLowerCase().includes(busca.toLowerCase())) ||
         matchBuscaCampos;
 
+      const matchSetor    = !filtroSetor    || t.setor_nome    === filtroSetor;
       const matchProcesso = !filtroProcesso || t.processo_nome === filtroProcesso;
       const matchEtapa    = !filtroEtapa    || t.etapa_nome    === filtroEtapa;
 
@@ -131,7 +144,7 @@ export default function Tabela() {
         matchCamposAvancado = !temValor;
       }
 
-      return matchBusca && matchProcesso && matchEtapa && matchStatus && matchPrazo && matchCamposAvancado;
+      return matchBusca && matchSetor && matchProcesso && matchEtapa && matchStatus && matchPrazo && matchCamposAvancado;
     });
 
     resultado.sort((a, b) => {
@@ -160,7 +173,7 @@ export default function Tabela() {
     });
 
     return resultado;
-  }, [tarefas, busca, filtroProcesso, filtroEtapa, filtroStatus, filtroPrazo, filtroComCampos, ordenacao]);
+  }, [tarefas, busca, filtroSetor, filtroProcesso, filtroEtapa, filtroStatus, filtroPrazo, filtroComCampos, ordenacao]);
 
   function toggleOrdenacao(campo) {
     setOrdenacao(prev =>
@@ -177,6 +190,7 @@ export default function Tabela() {
 
   function limparTodosFiltros() {
     setBusca('');
+    setFiltroSetor('');
     setFiltroProcesso('');
     setFiltroEtapa('');
     setFiltroStatus('');
@@ -185,14 +199,17 @@ export default function Tabela() {
   }
 
   const temFiltroAtivo = Boolean(
-    busca || filtroProcesso || filtroEtapa || filtroStatus || filtroPrazo || filtroComCampos
+    busca || filtroSetor || filtroProcesso || filtroEtapa || filtroStatus || filtroPrazo || filtroComCampos
   );
 
   function exportarCSV() {
-    api.get('/export/csv', { responseType: 'blob' }).then(res => {
-      const url  = window.URL.createObjectURL(new Blob([res.data]));
+    const sId = setorAtivo?.id || setoresDisponiveis.find(s => s.nome === filtroSetor)?.id;
+    const url = sId ? `/export/csv?setor_id=${sId}` : '/export/csv';
+
+    api.get(url, { responseType: 'blob' }).then(res => {
+      const blobUrl = window.URL.createObjectURL(new Blob([res.data]));
       const link = document.createElement('a');
-      link.href  = url;
+      link.href  = blobUrl;
       link.setAttribute('download', 'vinculum.csv');
       document.body.appendChild(link);
       link.click();
@@ -302,6 +319,14 @@ export default function Tabela() {
 
           <div className={styles.filtrosBottomRow}>
             <div className={styles.filtroGroup}>
+              <label className={styles.filtroLabel}>Setor:</label>
+              <select className={styles.filtroSelect} value={filtroSetor} onChange={e => setFiltroSetor(e.target.value)}>
+                <option value="">Todos os setores</option>
+                {setores.map(s => <option key={s} value={s}>{s}</option>)}
+              </select>
+            </div>
+
+            <div className={styles.filtroGroup}>
               <label className={styles.filtroLabel}>Processo:</label>
               <select className={styles.filtroSelect} value={filtroProcesso} onChange={e => setFiltroProcesso(e.target.value)}>
                 <option value="">Todos os processos</option>
@@ -350,6 +375,9 @@ export default function Tabela() {
                 <tr>
                   <th className={styles.th} onClick={() => toggleOrdenacao('titulo')}>
                     Tarefa{setaOrdenacao('titulo')}
+                  </th>
+                  <th className={styles.th} onClick={() => toggleOrdenacao('setor_nome')}>
+                    Setor{setaOrdenacao('setor_nome')}
                   </th>
                   <th className={styles.th} onClick={() => toggleOrdenacao('processo_nome')}>
                     Processo{setaOrdenacao('processo_nome')}
@@ -413,6 +441,33 @@ export default function Tabela() {
                             </span>
                           )}
                         </div>
+                      </td>
+                      <td className={styles.td}>
+                        <span
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '5px',
+                            padding: '2px 8px',
+                            borderRadius: '999px',
+                            fontSize: '11.5px',
+                            fontWeight: 600,
+                            backgroundColor: `${t.setor_cor || '#2fd9f4'}18`,
+                            color: t.setor_cor || '#2fd9f4',
+                            border: `1px solid ${t.setor_cor || '#2fd9f4'}44`,
+                            whiteSpace: 'nowrap'
+                          }}
+                        >
+                          <span
+                            style={{
+                              width: '6px',
+                              height: '6px',
+                              borderRadius: '50%',
+                              backgroundColor: t.setor_cor || '#2fd9f4'
+                            }}
+                          />
+                          {t.setor_nome || 'Geral'}
+                        </span>
                       </td>
                       <td className={styles.td}>
                         <span className={styles.tagProcesso}>{t.processo_nome}</span>

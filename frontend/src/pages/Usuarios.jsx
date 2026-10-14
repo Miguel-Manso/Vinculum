@@ -2,11 +2,13 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import { useAuth } from '../context/AuthContext';
+import { useSetor } from '../context/SetorContext';
 import api from '../services/api';
 import styles from './Usuarios.module.css';
 
 export default function Usuarios() {
   const { usuario } = useAuth();
+  const { setoresDisponiveis, recarregarSetores } = useSetor();
   const navigate = useNavigate();
 
   const [usuarios, setUsuarios] = useState([]);
@@ -19,6 +21,7 @@ export default function Usuarios() {
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [perfil, setPerfil] = useState('usuario');
+  const [setoresSelecionados, setSetoresSelecionados] = useState([]);
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState('');
   const [sucesso, setSucesso] = useState('');
@@ -51,6 +54,8 @@ export default function Usuarios() {
     setEmail('');
     setSenha('');
     setPerfil('usuario');
+    // Por padrão na criação, seleciona todos os setores disponíveis ou o primeiro
+    setSetoresSelecionados(setoresDisponiveis.map(s => s.id));
     setErro('');
     setSucesso('');
     setModalAberto(true);
@@ -62,6 +67,7 @@ export default function Usuarios() {
     setEmail(u.email || '');
     setSenha('');
     setPerfil(u.perfil || 'usuario');
+    setSetoresSelecionados((u.setores || []).map(s => s.id));
     setErro('');
     setSucesso('');
     setModalAberto(true);
@@ -70,6 +76,7 @@ export default function Usuarios() {
   function fecharModal() {
     setModalAberto(false);
     setUsuarioEditando(null);
+    setSetoresSelecionados([]);
     setErro('');
     setSucesso('');
   }
@@ -83,45 +90,57 @@ export default function Usuarios() {
     try {
       if (usuarioEditando) {
         await api.put(`/usuarios/${usuarioEditando.id}`, {
-          nome,
-          email,
+          nome: nome.trim(),
+          email: email.trim(),
           senha: senha.trim() ? senha : undefined,
-          perfil
+          perfil,
+          setores_ids: setoresSelecionados,
         });
         setSucesso('Usuário atualizado com sucesso!');
       } else {
-        await api.post('/usuarios', { nome, email, senha, perfil });
+        await api.post('/usuarios', {
+          nome: nome.trim(),
+          email: email.trim(),
+          senha,
+          perfil,
+          setores_ids: setoresSelecionados,
+        });
         setSucesso('Usuário criado com sucesso!');
       }
-      await carregarUsuarios();
+      await Promise.all([carregarUsuarios(), recarregarSetores()]);
       setTimeout(() => {
         fecharModal();
-      }, 900);
+      }, 700);
     } catch (err) {
-      setErro(err.response?.data?.error || 'Erro ao salvar usuário');
+      setErro(err.response?.data?.error || 'Erro ao salvar usuário.');
     } finally {
       setSalvando(false);
     }
   }
 
   async function handleExcluirUsuario(u) {
-    if (u.id === usuario?.id) {
-      alert('Você não pode excluir sua própria conta conectada.');
+    const isCurrent = u.id === usuario?.id;
+    const isRootAdmin = u.email === 'admin@vinculum.com';
+
+    if (isCurrent) {
+      alert('Você não pode excluir sua própria conta de usuário logada.');
       return;
     }
-    if (u.email === 'admin@vinculum.com') {
+
+    if (isRootAdmin) {
       alert('O administrador principal do sistema não pode ser excluído.');
       return;
     }
-    if (!window.confirm(`Tem certeza que deseja excluir o usuário "${u.nome}" (${u.email})?\n\nTarefas e histórico associados a ele continuarão existindo sem responsável.`)) {
+
+    if (!window.confirm(`Tem certeza que deseja excluir o usuário "${u.nome}" (${u.email})?\nAs tarefas atribuídas a ele ficarão sem responsável.`)) {
       return;
     }
 
     try {
       await api.delete(`/usuarios/${u.id}`);
-      await carregarUsuarios();
+      await Promise.all([carregarUsuarios(), recarregarSetores()]);
     } catch (err) {
-      alert(err.response?.data?.error || 'Erro ao excluir usuário');
+      alert(err.response?.data?.error || 'Erro ao excluir usuário.');
     }
   }
 
@@ -139,8 +158,10 @@ export default function Usuarios() {
       <main className={styles.main}>
         <div className={styles.pageHeader}>
           <div className={styles.pageHeaderText}>
-            <h1 className={styles.pageTitle}>Gerenciar Usuários</h1>
-            <p className={styles.pageSubtitle}>Área administrativa para cadastro, edição e exclusão de acessos da equipe</p>
+            <h1 className={styles.pageTitle}>Gerenciar Usuários e Acessos</h1>
+            <p className={styles.pageSubtitle}>
+              Controle colaboradores, cargos e defina exatamente quais setores cada membro pode acessar.
+            </p>
           </div>
 
           <button className={styles.btnPrimary} onClick={abrirModalCriar}>
@@ -164,6 +185,7 @@ export default function Usuarios() {
                   <th className={styles.th}>Nome</th>
                   <th className={styles.th}>Email</th>
                   <th className={styles.th}>Perfil</th>
+                  <th className={styles.th}>Setores de Acesso</th>
                   <th className={styles.th}>Data de Cadastro</th>
                   <th className={styles.th} style={{ textAlign: 'right' }}>Ações</th>
                 </tr>
@@ -183,6 +205,58 @@ export default function Usuarios() {
                         <span className={u.perfil === 'admin' ? styles.badgeAdmin : styles.badgeUsuario}>
                           {u.perfil === 'admin' ? 'Administrador' : 'Usuário'}
                         </span>
+                      </td>
+                      <td className={styles.td}>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
+                          {u.perfil === 'admin' ? (
+                            <span
+                              style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                padding: '2px 8px',
+                                borderRadius: '999px',
+                                fontSize: '11px',
+                                fontWeight: 600,
+                                backgroundColor: 'rgba(47, 217, 244, 0.15)',
+                                color: '#2fd9f4',
+                                border: '1px solid rgba(47, 217, 244, 0.35)',
+                              }}
+                            >
+                              ⚡ Todos os Setores (Admin)
+                            </span>
+                          ) : (u.setores || []).length > 0 ? (
+                            u.setores.map(s => (
+                              <span
+                                key={s.id}
+                                style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '5px',
+                                  padding: '2px 8px',
+                                  borderRadius: '999px',
+                                  fontSize: '11px',
+                                  fontWeight: 600,
+                                  backgroundColor: `${s.cor || '#2fd9f4'}18`,
+                                  color: s.cor || '#2fd9f4',
+                                  border: `1px solid ${s.cor || '#2fd9f4'}44`,
+                                }}
+                              >
+                                <span
+                                  style={{
+                                    width: '6px',
+                                    height: '6px',
+                                    borderRadius: '50%',
+                                    backgroundColor: s.cor || '#2fd9f4',
+                                  }}
+                                />
+                                {s.nome}
+                              </span>
+                            ))
+                          ) : (
+                            <span style={{ fontSize: '11.5px', color: '#64748b' }}>Sem setores atribuídos</span>
+                          )}
+                        </div>
                       </td>
                       <td className={styles.td}>{formatarData(u.criado_em)}</td>
                       <td className={styles.td} style={{ textAlign: 'right' }}>
@@ -288,9 +362,73 @@ export default function Usuarios() {
                       onChange={e => setPerfil(e.target.value)}
                       disabled={usuarioEditando?.email === 'admin@vinculum.com'}
                     >
-                      <option value="usuario">Usuário (Operacional)</option>
-                      <option value="admin">Administrador (Controle Total)</option>
+                      <option value="usuario">Usuário (Operacional nos Setores Vinculados)</option>
+                      <option value="admin">Administrador (Controle Total de Todos os Setores)</option>
                     </select>
+                  </div>
+
+                  {/* Multi-seleção de Setores de Acesso */}
+                  <div className={styles.formField}>
+                    <label className={styles.formLabel}>
+                      Setores de Acesso {perfil === 'admin' ? '(Administradores têm acesso a todos os setores)' : '*'}
+                    </label>
+                    <div style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
+                      gap: '8px',
+                      marginTop: '4px',
+                      padding: '10px',
+                      background: '#070b13',
+                      borderRadius: '8px',
+                      border: '1px solid rgba(255, 255, 255, 0.08)'
+                    }}>
+                      {setoresDisponiveis.map(s => {
+                        const checked = setoresSelecionados.includes(s.id);
+                        return (
+                          <label
+                            key={s.id}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '8px',
+                              fontSize: '12.5px',
+                              color: '#f1f5f9',
+                              cursor: 'pointer',
+                              padding: '6px 8px',
+                              borderRadius: '6px',
+                              background: checked ? `${s.cor || '#2fd9f4'}15` : 'transparent',
+                              border: `1px solid ${checked ? (s.cor || '#2fd9f4') : 'rgba(255, 255, 255, 0.06)'}`,
+                              transition: 'all 0.15s ease'
+                            }}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={checked}
+                              onChange={() => {
+                                setSetoresSelecionados(prev =>
+                                  prev.includes(s.id)
+                                    ? prev.filter(id => id !== s.id)
+                                    : [...prev, s.id]
+                                );
+                              }}
+                              style={{ accentColor: s.cor || '#2fd9f4', cursor: 'pointer' }}
+                            />
+                            <span
+                              style={{
+                                width: '7px',
+                                height: '7px',
+                                borderRadius: '50%',
+                                backgroundColor: s.cor || '#2fd9f4',
+                                flexShrink: 0
+                              }}
+                            />
+                            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              {s.nome}
+                            </span>
+                          </label>
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
 

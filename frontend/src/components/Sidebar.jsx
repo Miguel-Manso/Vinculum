@@ -1,13 +1,38 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useSetor } from '../context/SetorContext';
 import Logo from './Logo';
+import ModalGerenciarSetores from './ModalGerenciarSetores';
 import styles from './Sidebar.module.css';
 
 export default function Sidebar() {
   const { usuario, encerrarSessao } = useAuth();
+  const {
+    setoresDisponiveis,
+    setorAtivo,
+    selecionarSetor,
+    modalGerenciarAberto,
+    setModalGerenciarAberto,
+  } = useSetor();
+
   const navigate = useNavigate();
   const [menuAberto, setMenuAberto] = useState(false);
+  const [dropdownSetorAberto, setDropdownSetorAberto] = useState(false);
+  const dropdownRef = useRef(null);
+
+  const isAdmin = usuario?.perfil === 'admin' || usuario?.email === 'admin@vinculum.com';
+
+  // Fecha o dropdown de setor se clicar fora
+  useEffect(() => {
+    function handleClickFora(e) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setDropdownSetorAberto(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickFora);
+    return () => document.removeEventListener('mousedown', handleClickFora);
+  }, []);
 
   function handleLogout() {
     encerrarSessao();
@@ -17,6 +42,11 @@ export default function Sidebar() {
 
   function handleNavClick() {
     setMenuAberto(false);
+  }
+
+  function handleEscolherSetor(setor) {
+    selecionarSetor(setor);
+    setDropdownSetorAberto(false);
   }
 
   const inicial = usuario?.nome ? usuario.nome.charAt(0).toUpperCase() : 'U';
@@ -77,6 +107,152 @@ export default function Sidebar() {
             </button>
           </div>
 
+          {/* ======================================================== */}
+          {/* SELETOR DE SETOR (WORKSPACE SWITCHER)                    */}
+          {/* ======================================================== */}
+          <div className={styles.workspaceSection} ref={dropdownRef}>
+            <div className={styles.workspaceHeaderRow}>
+              <span className={styles.workspaceLabel}>SETOR ATIVO</span>
+              {isAdmin && (
+                <button
+                  type="button"
+                  className={styles.btnGerenciarSetoresMini}
+                  onClick={() => setModalGerenciarAberto(true)}
+                  title="Configurar Setores"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <circle cx="12" cy="12" r="3" />
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                  </svg>
+                  <span>Gerenciar</span>
+                </button>
+              )}
+            </div>
+
+            <button
+              type="button"
+              className={`${styles.workspaceSelector} ${dropdownSetorAberto ? styles.workspaceSelectorOpen : ''}`}
+              onClick={() => setDropdownSetorAberto(prev => !prev)}
+              aria-expanded={dropdownSetorAberto}
+            >
+              <div className={styles.workspaceSelectorLeft}>
+                <span
+                  className={styles.workspaceDot}
+                  style={{ backgroundColor: setorAtivo ? (setorAtivo.cor || '#2fd9f4') : '#2fd9f4' }}
+                />
+                <div className={styles.workspaceNameCol}>
+                  <span className={styles.workspaceName}>
+                    {setorAtivo ? setorAtivo.nome : 'Todos os Setores'}
+                  </span>
+                  <span className={styles.workspaceScope}>
+                    {setorAtivo
+                      ? `${setorAtivo.total_processos || 0} processos`
+                      : `${setoresDisponiveis.length} setores visíveis`}
+                  </span>
+                </div>
+              </div>
+              <svg
+                className={`${styles.chevronIcon} ${dropdownSetorAberto ? styles.chevronIconRotate : ''}`}
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </button>
+
+            {/* Menu Dropdown de Setores */}
+            {dropdownSetorAberto && (
+              <div className={styles.workspaceDropdown}>
+                <div className={styles.dropdownHeader}>
+                  <span>ALTERAR CONTEXTO</span>
+                </div>
+
+                {/* Opção Todos os Setores */}
+                <button
+                  type="button"
+                  className={`${styles.dropdownItem} ${!setorAtivo ? styles.dropdownItemActive : ''}`}
+                  onClick={() => handleEscolherSetor(null)}
+                >
+                  <div className={styles.dropdownItemLeft}>
+                    <div className={styles.dropdownItemIconGeneral}>
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <rect x="3" y="3" width="7" height="7" rx="1.5" />
+                        <rect x="14" y="3" width="7" height="7" rx="1.5" />
+                        <rect x="3" y="14" width="7" height="7" rx="1.5" />
+                        <rect x="14" y="14" width="7" height="7" rx="1.5" />
+                      </svg>
+                    </div>
+                    <div className={styles.dropdownItemText}>
+                      <span className={styles.dropdownItemTitle}>Todos os Setores</span>
+                      <span className={styles.dropdownItemSub}>Visão consolidada</span>
+                    </div>
+                  </div>
+                  {!setorAtivo && (
+                    <svg className={styles.checkIcon} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  )}
+                </button>
+
+                <div className={styles.dropdownDivider} />
+
+                {/* Lista de Setores */}
+                <div className={styles.dropdownListScroll}>
+                  {setoresDisponiveis.map(setor => (
+                    <button
+                      key={setor.id}
+                      type="button"
+                      className={`${styles.dropdownItem} ${setorAtivo?.id === setor.id ? styles.dropdownItemActive : ''}`}
+                      onClick={() => handleEscolherSetor(setor)}
+                    >
+                      <div className={styles.dropdownItemLeft}>
+                        <span
+                          className={styles.dropdownItemDot}
+                          style={{ backgroundColor: setor.cor || '#2fd9f4' }}
+                        />
+                        <div className={styles.dropdownItemText}>
+                          <span className={styles.dropdownItemTitle}>{setor.nome}</span>
+                          <span className={styles.dropdownItemSub}>
+                            {setor.total_processos || 0} processos
+                          </span>
+                        </div>
+                      </div>
+                      {setorAtivo?.id === setor.id && (
+                        <svg className={styles.checkIcon} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                      )}
+                    </button>
+                  ))}
+                </div>
+
+                {isAdmin && (
+                  <>
+                    <div className={styles.dropdownDivider} />
+                    <button
+                      type="button"
+                      className={styles.dropdownBtnGerenciar}
+                      onClick={() => {
+                        setDropdownSetorAberto(false);
+                        setModalGerenciarAberto(true);
+                      }}
+                    >
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <line x1="12" y1="5" x2="12" y2="19" />
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                      </svg>
+                      <span>Gerenciar Setores</span>
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+
           <div className={styles.navSectionHeader}>
             <span className={styles.navSectionLabel}>MÓDULOS OPERACIONAIS</span>
           </div>
@@ -128,7 +304,7 @@ export default function Sidebar() {
               <span>Tabela Geral</span>
             </NavLink>
 
-            {(usuario?.perfil === 'admin' || usuario?.email === 'admin@vinculum.com') && (
+            {isAdmin && (
               <NavLink
                 to="/usuarios"
                 onClick={handleNavClick}
@@ -145,6 +321,22 @@ export default function Sidebar() {
                 <span>Equipe / Usuários</span>
               </NavLink>
             )}
+
+            {isAdmin && (
+              <button
+                type="button"
+                className={styles.navLinkButton}
+                onClick={() => {
+                  setMenuAberto(false);
+                  setModalGerenciarAberto(true);
+                }}
+              >
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+                </svg>
+                <span>Gerenciar Setores</span>
+              </button>
+            )}
           </nav>
         </div>
 
@@ -157,7 +349,7 @@ export default function Sidebar() {
               <div className={styles.userNameRow}>
                 <span className={styles.userName}>{usuario?.nome || 'Usuário'}</span>
                 <span className={styles.userBadge}>
-                  {usuario?.perfil === 'admin' || usuario?.email === 'admin@vinculum.com' ? 'Admin' : 'Membro'}
+                  {isAdmin ? 'Admin' : 'Membro'}
                 </span>
               </div>
               <span className={styles.userEmail}>{usuario?.email || ''}</span>
@@ -178,6 +370,12 @@ export default function Sidebar() {
           </button>
         </div>
       </aside>
+
+      {/* Modal de Gestão de Setores (para Administrador) */}
+      <ModalGerenciarSetores
+        isOpen={modalGerenciarAberto}
+        onClose={() => setModalGerenciarAberto(false)}
+      />
     </>
   );
 }

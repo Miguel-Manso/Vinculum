@@ -1,29 +1,36 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
+import { useSetor } from '../context/SetorContext';
 import api from '../services/api';
 import styles from './Processos.module.css';
 
 export default function Processos() {
+  const { setoresDisponiveis, setorAtivo, selecionarSetor, recarregarSetores } = useSetor();
+
   const [processos, setProcessos] = useState([]);
   const [busca, setBusca] = useState('');
   const [loading, setLoading] = useState(true);
+
+  // Aba de setor selecionada no topo (sincronizada com setorAtivo se houver)
+  const [setorFiltroId, setSetorFiltroId] = useState(() => setorAtivo ? String(setorAtivo.id) : 'todos');
+
+  // Mantém a aba sincronizada quando o usuário altera o setor na Sidebar
+  useEffect(() => {
+    if (setorAtivo) {
+      setSetorFiltroId(String(setorAtivo.id));
+    } else {
+      setSetorFiltroId('todos');
+    }
+  }, [setorAtivo]);
 
   // Estados de Modal (Criação / Edição)
   const [modalAberto, setModalAberto] = useState(false);
   const [editandoProcesso, setEditandoProcesso] = useState(null);
   const [nome, setNome] = useState('');
   const [descricao, setDescricao] = useState('');
+  const [setorIdForm, setSetorIdForm] = useState('');
   const [salvando, setSalvando] = useState(false);
-
-  const processosFiltrados = processos.filter(p => {
-    const termo = busca.toLowerCase().trim();
-    if (!termo) return true;
-    return (
-      p.nome?.toLowerCase().includes(termo) ||
-      (p.descricao && p.descricao.toLowerCase().includes(termo))
-    );
-  });
 
   async function carregarProcessos() {
     try {
@@ -40,10 +47,33 @@ export default function Processos() {
     carregarProcessos();
   }, []);
 
+  // Filtra processos por busca e por setor selecionado
+  const processosFiltrados = useMemo(() => {
+    return processos.filter(p => {
+      // Filtro por setor
+      if (setorFiltroId !== 'todos') {
+        if (String(p.setor_id) !== String(setorFiltroId)) return false;
+      }
+
+      // Filtro por termo de busca
+      const termo = busca.toLowerCase().trim();
+      if (!termo) return true;
+
+      return (
+        p.nome?.toLowerCase().includes(termo) ||
+        (p.descricao && p.descricao.toLowerCase().includes(termo)) ||
+        (p.setor_nome && p.setor_nome.toLowerCase().includes(termo))
+      );
+    });
+  }, [processos, setorFiltroId, busca]);
+
   function abrirModalCriar() {
     setEditandoProcesso(null);
     setNome('');
     setDescricao('');
+    // Pré-seleciona o setor ativo ou o primeiro disponível
+    const defaultSetor = setorAtivo?.id || (setoresDisponiveis.length > 0 ? setoresDisponiveis[0].id : '');
+    setSetorIdForm(defaultSetor ? String(defaultSetor) : '');
     setModalAberto(true);
   }
 
@@ -51,6 +81,7 @@ export default function Processos() {
     setEditandoProcesso(p);
     setNome(p.nome);
     setDescricao(p.descricao || '');
+    setSetorIdForm(p.setor_id ? String(p.setor_id) : (setoresDisponiveis[0]?.id ? String(setoresDisponiveis[0].id) : ''));
     setModalAberto(true);
   }
 
@@ -59,21 +90,35 @@ export default function Processos() {
     setEditandoProcesso(null);
     setNome('');
     setDescricao('');
+    setSetorIdForm('');
   }
 
   async function handleSubmitProcesso(e) {
     e.preventDefault();
     if (!nome.trim()) return;
+    if (!setorIdForm) {
+      alert('Por favor, selecione um setor para vincular o processo.');
+      return;
+    }
 
     setSalvando(true);
     try {
       if (editandoProcesso) {
-        await api.put(`/processos/${editandoProcesso.id}`, { nome, descricao });
+        await api.put(`/processos/${editandoProcesso.id}`, {
+          nome: nome.trim(),
+          descricao: descricao.trim() || null,
+          setor_id: parseInt(setorIdForm, 10),
+        });
       } else {
-        await api.post('/processos', { nome, descricao, criarEtapasPadrao: true });
+        await api.post('/processos', {
+          nome: nome.trim(),
+          descricao: descricao.trim() || null,
+          setor_id: parseInt(setorIdForm, 10),
+          criarEtapasPadrao: true,
+        });
       }
       fecharModal();
-      await carregarProcessos();
+      await Promise.all([carregarProcessos(), recarregarSetores()]);
     } catch (err) {
       alert(err.response?.data?.error || 'Erro ao salvar processo');
     } finally {
@@ -88,9 +133,21 @@ export default function Processos() {
 
     try {
       await api.delete(`/processos/${p.id}`);
-      await carregarProcessos();
+      await Promise.all([carregarProcessos(), recarregarSetores()]);
     } catch (err) {
       alert(err.response?.data?.error || 'Erro ao excluir processo');
+    }
+  }
+
+  function handleSelecionarAba(abaId) {
+    setSetorFiltroId(abaId);
+    if (abaId === 'todos') {
+      selecionarSetor(null);
+    } else {
+      const setorEncontrado = setoresDisponiveis.find(s => String(s.id) === String(abaId));
+      if (setorEncontrado) {
+        selecionarSetor(setorEncontrado);
+      }
     }
   }
 
@@ -107,11 +164,13 @@ export default function Processos() {
                 <span className={styles.chipPulseDot}></span>
                 ARQUITETURA DE WORKFLOWS
               </span>
-              <span className={styles.chipMeta}>{processos.length} Fluxos Ativos</span>
+              <span className={styles.chipMeta}>
+                {setorAtivo ? `Setor: ${setorAtivo.nome}` : `${setoresDisponiveis.length} Setores Mapeados`}
+              </span>
             </div>
             <h1 className={styles.pageTitle}>Catálogo de Processos</h1>
             <p className={styles.pageSubtitle}>
-              Gerencie os fluxos departamentais, etapas do kanban e tarefas da sua empresa com visibilidade em tempo real.
+              Organize os fluxos departamentais, etapas do kanban e tarefas da sua empresa com isolamento de acesso por setor.
             </p>
           </div>
 
@@ -126,13 +185,48 @@ export default function Processos() {
           </div>
         </section>
 
+        {/* Abas Superiores de Filtro por Setor */}
+        <div className={styles.sectorTabsContainer}>
+          <button
+            type="button"
+            className={`${styles.sectorTab} ${setorFiltroId === 'todos' ? styles.sectorTabActive : ''}`}
+            onClick={() => handleSelecionarAba('todos')}
+          >
+            <span>Todos os Setores</span>
+            <span className={styles.sectorTabBadge}>{processos.length}</span>
+          </button>
+
+          {setoresDisponiveis.map(setor => {
+            const countSetor = processos.filter(p => String(p.setor_id) === String(setor.id)).length;
+            return (
+              <button
+                key={setor.id}
+                type="button"
+                className={`${styles.sectorTab} ${setorFiltroId === String(setor.id) ? styles.sectorTabActive : ''}`}
+                onClick={() => handleSelecionarAba(String(setor.id))}
+              >
+                <span
+                  className={styles.sectorTabDot}
+                  style={{ backgroundColor: setor.cor || '#2fd9f4' }}
+                />
+                <span>{setor.nome}</span>
+                <span className={styles.sectorTabBadge}>{countSetor}</span>
+              </button>
+            );
+          })}
+        </div>
+
         {/* Banner Strip de Estatísticas Rápidas do Stitch */}
         <section className={styles.quickStatStrip}>
           <div className={styles.statCol}>
-            <span className={styles.statColLabel}>Processos Ativos</span>
+            <span className={styles.statColLabel}>Processos no Setor</span>
             <div className={styles.statColValueRow}>
-              <span className={styles.statColValue}>{loading ? '—' : String(processos.length).padStart(2, '0')}</span>
-              <span className={styles.statColBadgeGreen}>100% Mapeado</span>
+              <span className={styles.statColValue}>
+                {loading ? '—' : String(processosFiltrados.length).padStart(2, '0')}
+              </span>
+              <span className={styles.statColBadgeGreen}>
+                {setorFiltroId === 'todos' ? 'Visão Geral' : 'Setor Ativo'}
+              </span>
             </div>
           </div>
 
@@ -140,7 +234,7 @@ export default function Processos() {
             <span className={styles.statColLabel}>Tarefas em Execução</span>
             <div className={styles.statColValueRow}>
               <span className={styles.statColValue}>
-                {loading ? '—' : processos.reduce((acc, p) => acc + (parseInt(p.tarefas) || 0), 0)}
+                {loading ? '—' : processosFiltrados.reduce((acc, p) => acc + (parseInt(p.tarefas, 10) || 0), 0)}
               </span>
               <span className={styles.statColBadgeMuted}>tarefas ativas</span>
             </div>
@@ -150,7 +244,7 @@ export default function Processos() {
             <span className={styles.statColLabel}>Etapas Totais</span>
             <div className={styles.statColValueRow}>
               <span className={styles.statColValue}>
-                {loading ? '—' : processos.reduce((acc, p) => acc + (parseInt(p.etapas) || 0), 0)}
+                {loading ? '—' : processosFiltrados.reduce((acc, p) => acc + (parseInt(p.etapas, 10) || 0), 0)}
               </span>
               <span className={styles.statColBadgeMuted}>colunas kanban</span>
             </div>
@@ -167,7 +261,7 @@ export default function Processos() {
             <input
               className={styles.searchBarInput}
               type="text"
-              placeholder="Buscar processo por nome ou palavras-chave..."
+              placeholder="Buscar processo por nome, setor ou descrição..."
               value={busca}
               onChange={e => setBusca(e.target.value)}
             />
@@ -196,7 +290,7 @@ export default function Processos() {
           <div className={styles.loadingBox}>Carregando catálogo de processos...</div>
         ) : processos.length === 0 ? (
           <div className={styles.emptyStateBox}>
-            <p className={styles.emptyStateTitle}>Nenhum processo cadastrado até o momento.</p>
+            <p className={styles.emptyStateTitle}>Nenhum processo cadastrado ou acessível nos seus setores.</p>
             <p className={styles.emptyStateDesc}>Crie fluxos de trabalho visuais para padronizar as operações da sua equipe.</p>
             <button className={styles.btnPrimary} onClick={abrirModalCriar}>
               Criar meu primeiro processo
@@ -205,14 +299,17 @@ export default function Processos() {
         ) : processosFiltrados.length === 0 ? (
           <div className={styles.emptyStateBox}>
             <p className={styles.emptyStateTitle}>
-              Nenhum processo corresponde à busca <strong>"{busca}"</strong>.
+              Nenhum processo corresponde aos filtros selecionados.
             </p>
             <button
               type="button"
               className={styles.btnLimparBusca}
-              onClick={() => setBusca('')}
+              onClick={() => {
+                setBusca('');
+                handleSelecionarAba('todos');
+              }}
             >
-              Limpar pesquisa
+              Limpar filtros
             </button>
           </div>
         ) : (
@@ -244,7 +341,20 @@ export default function Processos() {
                         </svg>
                       </div>
                       <div className={styles.cardTitleWrap}>
-                        <span className={styles.cardDeptBadge}>Fluxo Operacional</span>
+                        <span
+                          className={styles.cardDeptBadge}
+                          style={{
+                            backgroundColor: `${p.setor_cor || '#2fd9f4'}18`,
+                            color: p.setor_cor || '#2fd9f4',
+                            border: `1px solid ${p.setor_cor || '#2fd9f4'}44`,
+                          }}
+                        >
+                          <span
+                            className={styles.deptDot}
+                            style={{ backgroundColor: p.setor_cor || '#2fd9f4' }}
+                          />
+                          {p.setor_nome || 'Geral'}
+                        </span>
                         <h2 className={styles.cardNome}>{p.nome}</h2>
                       </div>
                     </div>
@@ -300,7 +410,13 @@ export default function Processos() {
 
                 <div className={styles.cardFooter}>
                   <div className={styles.avatarMiniGroup}>
-                    <div className={styles.miniAvatar} title="Equipe operacional">OP</div>
+                    <div
+                      className={styles.miniAvatar}
+                      style={{ borderColor: p.setor_cor || '#2fd9f4', color: p.setor_cor || '#2fd9f4' }}
+                      title={`Setor: ${p.setor_nome || 'Geral'}`}
+                    >
+                      {(p.setor_nome || 'G').charAt(0).toUpperCase()}
+                    </div>
                   </div>
 
                   <Link to={`/processos/${p.id}/fluxo`} className={styles.btnAbrirFluxo}>
@@ -333,11 +449,28 @@ export default function Processos() {
                     <input
                       className={styles.formInput}
                       type="text"
-                      placeholder="Ex: Recebimento de Mercadorias"
+                      placeholder="Ex: Recebimento de Mercadorias, CRM Comercial..."
                       value={nome}
                       onChange={e => setNome(e.target.value)}
                       required
                     />
+                  </div>
+
+                  <div className={styles.formField}>
+                    <label className={styles.formLabel}>Setor / Departamento *</label>
+                    <select
+                      className={styles.formSelect}
+                      value={setorIdForm}
+                      onChange={e => setSetorIdForm(e.target.value)}
+                      required
+                    >
+                      <option value="">Selecione um setor...</option>
+                      {setoresDisponiveis.map(s => (
+                        <option key={s.id} value={s.id}>
+                          {s.nome}
+                        </option>
+                      ))}
+                    </select>
                   </div>
 
                   <div className={styles.formField}>

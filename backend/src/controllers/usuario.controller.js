@@ -4,7 +4,6 @@ const { getPool, sql } = require('../config/db');
 async function listar(req, res) {
   try {
     const pool = await getPool();
-    // Tenta selecionar perfil; se der erro por coluna inexistente, usa fallback
     let result;
     try {
       result = await pool.request().query('SELECT id, nome, email, perfil, criado_em FROM Usuarios ORDER BY nome ASC');
@@ -15,7 +14,41 @@ async function listar(req, res) {
         perfil: u.email === 'admin@vinculum.com' ? 'admin' : 'usuario'
       }));
     }
-    res.json(result.recordset);
+
+    const usuarios = result.recordset || [];
+
+    // Busca os setores vinculados a cada usuário
+    try {
+      const setoresRes = await pool.request().query(`
+        SELECT us.usuario_id, s.id, s.nome, s.cor, s.icone
+        FROM UsuarioSetores us
+        JOIN Setores s ON us.setor_id = s.id
+        ORDER BY s.nome ASC
+      `);
+
+      const setoresPorUsuario = {};
+      (setoresRes.recordset || []).forEach(row => {
+        if (!setoresPorUsuario[row.usuario_id]) {
+          setoresPorUsuario[row.usuario_id] = [];
+        }
+        setoresPorUsuario[row.usuario_id].push({
+          id: row.id,
+          nome: row.nome,
+          cor: row.cor,
+          icone: row.icone
+        });
+      });
+
+      const usuariosComSetores = usuarios.map(u => ({
+        ...u,
+        setores: setoresPorUsuario[u.id] || []
+      }));
+
+      return res.json(usuariosComSetores);
+    } catch (relErr) {
+      console.error('Aviso ao carregar setores dos usuários:', relErr.message);
+      return res.json(usuarios.map(u => ({ ...u, setores: [] })));
+    }
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -23,13 +56,12 @@ async function listar(req, res) {
 
 async function criar(req, res) {
   try {
-    // Apenas admin pode criar usuário
     const perfilLogado = req.usuario?.perfil || (req.usuario?.email === 'admin@vinculum.com' ? 'admin' : 'usuario');
     if (perfilLogado !== 'admin') {
       return res.status(403).json({ error: 'Acesso negado: apenas administradores podem criar novos usuários' });
     }
 
-    const { nome, email, senha, perfil = 'usuario' } = req.body;
+    const { nome, email, senha, perfil = 'usuario', setores_ids } = req.body;
     if (!nome || !email || !senha) {
       return res.status(400).json({ error: 'Nome, email e senha são obrigatórios' });
     }
@@ -45,24 +77,56 @@ async function criar(req, res) {
 
     const senha_hash = await bcrypt.hash(senha, 10);
     const perfilValido = perfil === 'admin' ? 'admin' : 'usuario';
+    let novoUsuarioId = null;
 
     try {
-      await pool.request()
+      const insRes = await pool.request()
         .input('nome', sql.NVarChar, nome)
         .input('email', sql.NVarChar, email)
         .input('senha_hash', sql.NVarChar, senha_hash)
         .input('perfil', sql.NVarChar, perfilValido)
-        .query('INSERT INTO Usuarios (nome, email, senha_hash, perfil) VALUES (@nome, @email, @senha_hash, @perfil)');
+        .query('INSERT INTO Usuarios (nome, email, senha_hash, perfil) OUTPUT INSERTED.id VALUES (@nome, @email, @senha_hash, @perfil)');
+
+      novoUsuarioId = insRes.recordset[0]?.id;
     } catch (insertErr) {
-      // Fallback se a coluna perfil ainda não existir
-      await pool.request()
+      const insRes = await pool.request()
         .input('nome', sql.NVarChar, nome)
         .input('email', sql.NVarChar, email)
         .input('senha_hash', sql.NVarChar, senha_hash)
-        .query('INSERT INTO Usuarios (nome, email, senha_hash) VALUES (@nome, @email, @senha_hash)');
+        .query('INSERT INTO Usuarios (nome, email, senha_hash) OUTPUT INSERTED.id VALUES (@nome, @email, @senha_hash)');
+      novoUsuarioId = insRes.recordset[0]?.id;
     }
 
-    res.status(201).json({ mensagem: 'Usuário cadastrado com sucesso' });
+    if (!novoUsuarioId) {
+      const buscaId = await pool.request()
+        .input('email', sql.NVarChar, email)
+        .query('SELECT id FROM Usuarios WHERE email = @email');
+      novoUsuarioId = buscaId.recordset[0]?.id;
+    }
+
+    // Sincroniza setores do novo usuário
+    if (novoUsuarioId) {
+      let idsParaVincular = Array.isArray(setores_ids) ? setores_ids : [];
+
+      // Se nenhum setor for enviado, vincula ao primeiro setor padrão disponível
+      if (idsParaVincular.length === 0) {
+        const setorPadrao = await pool.request().query('SELECT id FROM Setores ORDER BY id ASC');
+        if (setorPadrao.recordset.length > 0) {
+          idsParaVincular = [setorPadrao.recordset[0].id];
+        }
+      }
+
+      for (const sId of idsParaVincular) {
+        try {
+          await pool.request()
+            .input('usuario_id', sql.Int, novoUsuarioId)
+            .input('setor_id', sql.Int, sId)
+            .query('INSERT INTO UsuarioSetores (usuario_id, setor_id) VALUES (@usuario_id, @setor_id)');
+        } catch {}
+      }
+    }
+
+    res.status(201).json({ mensagem: 'Usuário cadastrado com sucesso', id: novoUsuarioId });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -76,7 +140,7 @@ async function editar(req, res) {
     }
 
     const { id } = req.params;
-    const { nome, email, senha, perfil } = req.body;
+    const { nome, email, senha, perfil, setores_ids } = req.body;
 
     if (!nome || !email) {
       return res.status(400).json({ error: 'Nome e email são obrigatórios' });
@@ -112,7 +176,7 @@ async function editar(req, res) {
 
     const perfilValido = perfil === 'admin' ? 'admin' : 'usuario';
 
-    // Se informou senha nova, faz o hash e atualiza; senão, mantém a senha atual
+    // Atualiza dados cadastrais
     if (senha && senha.trim().length > 0) {
       const senha_hash = await bcrypt.hash(senha, 10);
       try {
@@ -145,6 +209,22 @@ async function editar(req, res) {
           .input('nome', sql.NVarChar, nome)
           .input('email', sql.NVarChar, email)
           .query('UPDATE Usuarios SET nome = @nome, email = @email WHERE id = @id');
+      }
+    }
+
+    // Sincroniza setores se fornecido
+    if (Array.isArray(setores_ids)) {
+      await pool.request()
+        .input('usuario_id', sql.Int, id)
+        .query('DELETE FROM UsuarioSetores WHERE usuario_id = @usuario_id');
+
+      for (const sId of setores_ids) {
+        try {
+          await pool.request()
+            .input('usuario_id', sql.Int, id)
+            .input('setor_id', sql.Int, sId)
+            .query('INSERT INTO UsuarioSetores (usuario_id, setor_id) VALUES (@usuario_id, @setor_id)');
+        } catch {}
       }
     }
 
@@ -182,11 +262,12 @@ async function excluir(req, res) {
       return res.status(400).json({ error: 'O administrador principal (admin@vinculum.com) não pode ser excluído' });
     }
 
-    // Desvincula dependências em tarefas, histórico e processos para evitar conflito de chave estrangeira
+    // Desvincula dependências em tarefas, histórico, setores e processos
     await pool.request().input('id', sql.Int, idNum).query(`
       UPDATE Tarefas SET responsavel_id = NULL WHERE responsavel_id = @id;
       UPDATE Historico SET usuario_id = NULL WHERE usuario_id = @id;
       UPDATE Processos SET criado_por = NULL WHERE criado_por = @id;
+      DELETE FROM UsuarioSetores WHERE usuario_id = @id;
       DELETE FROM Usuarios WHERE id = @id;
     `);
 

@@ -24,12 +24,45 @@ async function login(req, res) {
     const ok = await bcrypt.compare(senha, usuario.senha_hash);
     if (!ok) return res.status(401).json({ error: 'Email ou senha incorretos' });
     const perfil = usuario.perfil || (usuario.email === 'admin@vinculum.com' ? 'admin' : 'usuario');
+    
+    // Busca os setores vinculados a este usuário
+    let setores = [];
+    try {
+      const setoresRes = await pool.request()
+        .input('usuario_id', sql.Int, usuario.id)
+        .query(`
+          SELECT s.id, s.nome, s.cor, s.icone 
+          FROM Setores s 
+          JOIN UsuarioSetores us ON s.id = us.setor_id 
+          WHERE us.usuario_id = @usuario_id 
+          ORDER BY s.nome ASC
+        `);
+      setores = setoresRes.recordset || [];
+
+      // Se for admin e ainda não tiver setores associados, busca todos os setores ativos
+      if (setores.length === 0 && perfil === 'admin') {
+        const todosSetores = await pool.request().query('SELECT id, nome, cor, icone FROM Setores ORDER BY nome ASC');
+        setores = todosSetores.recordset || [];
+      }
+    } catch (setorErr) {
+      console.error('Aviso: falha ao buscar setores no login:', setorErr.message);
+    }
+
     const token = jwt.sign(
       { id: usuario.id, nome: usuario.nome, email: usuario.email, perfil },
       process.env.JWT_SECRET || 'vinculum_default_secret_key',
       { expiresIn: process.env.JWT_EXPIRES_IN || '8h' }
     );
-    res.json({ token, usuario: { id: usuario.id, nome: usuario.nome, email: usuario.email, perfil } });
+    res.json({
+      token,
+      usuario: {
+        id: usuario.id,
+        nome: usuario.nome,
+        email: usuario.email,
+        perfil,
+        setores
+      }
+    });
   } catch (err) { res.status(500).json({ error: err.message }); }
 }
 module.exports = { cadastrar, login };
