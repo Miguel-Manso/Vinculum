@@ -1,12 +1,30 @@
 const { getPool, sql } = require('../config/db');
 
+async function verificarAdmin(usuario, pool) {
+  if (!usuario) return false;
+  if (usuario.perfil === 'admin' || usuario.email === 'admin@vinculum.com') return true;
+  if (usuario.id) {
+    try {
+      const r = await pool.request()
+        .input('id', sql.Int, usuario.id)
+        .query('SELECT perfil, email FROM Usuarios WHERE id = @id');
+      const u = r.recordset?.[0];
+      if (u && (u.perfil === 'admin' || u.email === 'admin@vinculum.com')) {
+        usuario.perfil = 'admin';
+        return true;
+      }
+    } catch {}
+  }
+  return false;
+}
+
 // GET /api/setores
 // Admin visualiza todos os setores com contagem de processos e membros.
 // Usuário comum visualiza apenas os setores aos quais tem vínculo em UsuarioSetores.
 async function listar(req, res) {
   try {
     const pool = await getPool();
-    const isAdmin = req.usuario?.perfil === 'admin' || req.usuario?.email === 'admin@vinculum.com';
+    const isAdmin = await verificarAdmin(req.usuario, pool);
     const usuarioId = req.usuario?.id;
 
     let query = `
@@ -36,11 +54,12 @@ async function listar(req, res) {
   }
 }
 
+
 // GET /api/setores/:id
 async function buscarPorId(req, res) {
   try {
     const pool = await getPool();
-    const isAdmin = req.usuario?.perfil === 'admin' || req.usuario?.email === 'admin@vinculum.com';
+    const isAdmin = await verificarAdmin(req.usuario, pool);
     const usuarioId = req.usuario?.id;
     const { id } = req.params;
 
@@ -77,7 +96,8 @@ async function buscarPorId(req, res) {
 // POST /api/setores (Restrito a Admin)
 async function criar(req, res) {
   try {
-    const isAdmin = req.usuario?.perfil === 'admin' || req.usuario?.email === 'admin@vinculum.com';
+    const pool = await getPool();
+    const isAdmin = await verificarAdmin(req.usuario, pool);
     if (!isAdmin) {
       return res.status(403).json({ error: 'Apenas administradores podem criar setores' });
     }
@@ -87,7 +107,6 @@ async function criar(req, res) {
       return res.status(400).json({ error: 'O nome do setor é obrigatório' });
     }
 
-    const pool = await getPool();
     const insertRes = await pool.request()
       .input('nome', sql.NVarChar, nome.trim())
       .input('descricao', sql.NVarChar, descricao?.trim() || null)
@@ -116,7 +135,8 @@ async function criar(req, res) {
 // PUT /api/setores/:id (Restrito a Admin)
 async function editar(req, res) {
   try {
-    const isAdmin = req.usuario?.perfil === 'admin' || req.usuario?.email === 'admin@vinculum.com';
+    const pool = await getPool();
+    const isAdmin = await verificarAdmin(req.usuario, pool);
     if (!isAdmin) {
       return res.status(403).json({ error: 'Apenas administradores podem editar setores' });
     }
@@ -128,7 +148,6 @@ async function editar(req, res) {
       return res.status(400).json({ error: 'O nome do setor é obrigatório' });
     }
 
-    const pool = await getPool();
     const r = await pool.request()
       .input('id', sql.Int, id)
       .input('nome', sql.NVarChar, nome.trim())
@@ -150,7 +169,8 @@ async function editar(req, res) {
 // DELETE /api/setores/:id (Restrito a Admin)
 async function excluir(req, res) {
   try {
-    const isAdmin = req.usuario?.perfil === 'admin' || req.usuario?.email === 'admin@vinculum.com';
+    const pool = await getPool();
+    const isAdmin = await verificarAdmin(req.usuario, pool);
     if (!isAdmin) {
       return res.status(403).json({ error: 'Apenas administradores podem excluir setores' });
     }

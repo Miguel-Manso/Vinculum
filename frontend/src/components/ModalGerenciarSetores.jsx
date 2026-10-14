@@ -91,7 +91,8 @@ export default function ModalGerenciarSetores({ isOpen, onClose }) {
         cancelarFormulario();
       }, 700);
     } catch (err) {
-      setErro(err.response?.data?.error || 'Erro ao salvar setor.');
+      const msg = err.response?.data?.error || (err.response?.status === 404 ? 'Serviço da API ainda atualizando no servidor. Aguarde alguns instantes.' : err.message) || 'Erro ao salvar setor.';
+      setErro(msg);
     } finally {
       setSalvando(false);
     }
