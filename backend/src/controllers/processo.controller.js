@@ -71,11 +71,9 @@ async function excluir(req, res) {
   try {
     const pool = await getPool();
     const id = req.params.id;
-    // Exclui tarefas vinculadas às etapas do processo antes (para evitar erro de FK no SQL Server)
+    // Exclui tarefas vinculadas às etapas do processo antes
     await pool.request().input('id', sql.Int, id).query(`
-      DELETE t FROM Tarefas t
-      JOIN Etapas e ON t.etapa_id = e.id
-      WHERE e.processo_id = @id
+      DELETE FROM Tarefas WHERE etapa_id IN (SELECT id FROM Etapas WHERE processo_id = @id)
     `);
     const r = await pool.request().input('id', sql.Int, id).query('DELETE FROM Processos WHERE id=@id');
     if (r.rowsAffected[0] === 0) return res.status(404).json({ error: 'Processo não encontrado' });

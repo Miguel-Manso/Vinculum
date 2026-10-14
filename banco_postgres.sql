@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS Tarefas (
   id                    SERIAL PRIMARY KEY,
   titulo                VARCHAR(200) NOT NULL,
   descricao             TEXT,
-  etapa_id              INT NOT NULL REFERENCES Etapas(id),
+  etapa_id              INT NOT NULL REFERENCES Etapas(id) ON DELETE CASCADE,
   responsavel_id        INT REFERENCES Usuarios(id),
   prazo                 DATE,
   campos_personalizados TEXT,

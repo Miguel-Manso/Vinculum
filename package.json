@@ -1,0 +1,12 @@
+{
+  "name": "vinculum",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "npm --prefix frontend run build",
+    "test:neon": "node backend/src/scripts/test_neon_e2e.js"
+  },
+  "dependencies": {
+    "@neon/config": "^1.9.1",
+    "@neon/env": "^1.6.2"
+  }
+}

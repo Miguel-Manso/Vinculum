@@ -1,5 +1,7 @@
 const sql = require('mssql');
+const path = require('path');
 require('dotenv').config();
+require('dotenv').config({ path: path.resolve(__dirname, '../../../.env.local') });
 const os = require('os');
 const { Pool: PgPool } = require('pg');
 

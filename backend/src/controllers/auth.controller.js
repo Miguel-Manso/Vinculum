@@ -24,7 +24,11 @@ async function login(req, res) {
     const ok = await bcrypt.compare(senha, usuario.senha_hash);
     if (!ok) return res.status(401).json({ error: 'Email ou senha incorretos' });
     const perfil = usuario.perfil || (usuario.email === 'admin@vinculum.com' ? 'admin' : 'usuario');
-    const token = jwt.sign({ id: usuario.id, nome: usuario.nome, email: usuario.email, perfil }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN });
+    const token = jwt.sign(
+      { id: usuario.id, nome: usuario.nome, email: usuario.email, perfil },
+      process.env.JWT_SECRET || 'vinculum_default_secret_key',
+      { expiresIn: process.env.JWT_EXPIRES_IN || '8h' }
+    );
     res.json({ token, usuario: { id: usuario.id, nome: usuario.nome, email: usuario.email, perfil } });
   } catch (err) { res.status(500).json({ error: err.message }); }
 }
