@@ -53,7 +53,6 @@ export default function Logo({
       <div className={styles.brandText}>
         <div className={styles.titleRow}>
           <span className={`${styles.title} ${titleSizeClass}`}>VINCULUM</span>
-          <span className={styles.glowingDot} title="Online"></span>
         </div>
         {showSubtitle && subtitleText && <span className={styles.subtitle}>{subtitleText}</span>}
       </div>

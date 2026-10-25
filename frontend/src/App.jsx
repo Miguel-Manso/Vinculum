@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import Login     from './pages/Login';
 import Dashboard from './pages/Dashboard';
@@ -9,14 +9,16 @@ import Tabela    from './pages/Tabela';
 import Usuarios  from './pages/Usuarios';
 import Chatbot   from './components/Chatbot';
 
-function RotaProtegida({ children }) {
+function LayoutAutenticado() {
   const { token } = useAuth();
-  return token ? (
+  if (!token) return <Navigate to="/login" replace />;
+
+  return (
     <>
-      {children}
+      <Outlet />
       <Chatbot />
     </>
-  ) : <Navigate to="/login" replace />;
+  );
 }
 
 export default function App() {
@@ -24,26 +26,15 @@ export default function App() {
     <Routes>
       <Route path="/login" element={<Login />} />
 
-      <Route path="/dashboard" element={
-        <RotaProtegida><Dashboard /></RotaProtegida>
-      } />
-      <Route path="/processos" element={
-        <RotaProtegida><Processos /></RotaProtegida>
-      } />
-      <Route path="/processos/:id/fluxo" element={
-        <RotaProtegida><Fluxo /></RotaProtegida>
-      } />
-      <Route path="/tarefas/:id" element={
-        <RotaProtegida><Tarefa /></RotaProtegida>
-      } />
-      <Route path="/tabela" element={
-        <RotaProtegida><Tabela /></RotaProtegida>
-      } />
-      <Route path="/usuarios" element={
-        <RotaProtegida><Usuarios /></RotaProtegida>
-      } />
-
-      {/* Próximas: chatbot (out/nov) */}
+      {/* Rotas protegidas com layout persistente: Chatbot não desmonta entre navegações */}
+      <Route element={<LayoutAutenticado />}>
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/processos" element={<Processos />} />
+        <Route path="/processos/:id/fluxo" element={<Fluxo />} />
+        <Route path="/tarefas/:id" element={<Tarefa />} />
+        <Route path="/tabela" element={<Tabela />} />
+        <Route path="/usuarios" element={<Usuarios />} />
+      </Route>
 
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>

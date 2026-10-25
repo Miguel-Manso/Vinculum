@@ -359,7 +359,6 @@
 
 .colorChipActive {
   border-color: #ffffff;
-  box-shadow: 0 0 8px currentColor;
   transform: scale(1.15);
 }
 

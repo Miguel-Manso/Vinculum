@@ -1,62 +1,74 @@
+/* ========================================================
+   DASHBOARD - OBSIDIAN & ELECTRIC CYAN DESIGN SYSTEM
+   Stitch Theme - High-Density Executive Layout
+   ======================================================== */
+
 .layout {
   display: flex;
   min-height: 100vh;
-  background: var(--surface-canvas, #121316);
+  background-color: var(--surface-canvas, #121316);
   font-family: inherit;
   position: relative;
+  color: var(--text-body, #e3e2e6);
 }
 
 .main {
   flex: 1;
-  padding: 32px 36px 48px;
+  padding: 32px 40px 60px;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 28px;
   overflow-y: auto;
+  overflow-x: hidden;
   position: relative;
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
 }
 
-/* Ambient glow sutil no fundo (Stitch motif) */
+/* Ambient glow no topo */
 .ambientGlowWrap {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  height: 300px;
+  height: 380px;
   overflow: hidden;
   pointer-events: none;
   z-index: 0;
 }
 
-.ambientGlowLeft {
+.ambientGlowCyan {
   position: absolute;
-  top: -40px;
-  left: 20%;
-  width: 380px;
+  top: -60px;
+  left: 15%;
+  width: 450px;
+  height: 220px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(47, 217, 244, 0.05) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.ambientGlowMint {
+  position: absolute;
+  top: -50px;
+  right: 20%;
+  width: 400px;
   height: 200px;
   border-radius: 50%;
-  background: rgba(47, 217, 244, 0.04);
-  filter: blur(90px);
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.04) 0%, transparent 70%);
+  pointer-events: none;
 }
 
-.ambientGlowRight {
-  position: absolute;
-  top: -40px;
-  right: 25%;
-  width: 340px;
-  height: 180px;
-  border-radius: 50%;
-  background: rgba(20, 184, 166, 0.04);
-  filter: blur(90px);
-}
-
-/* Top Workspace Header */
+/* ========================================================
+   1. HEADER EXECUTIVO
+   ======================================================== */
 .topHeader {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: 20px;
   position: relative;
   z-index: 1;
 }
@@ -64,106 +76,139 @@
 .headerTitleWrap {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
+}
+
+.dateLabelRow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+
+
+.dateLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted, #94a3b8);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
 }
 
 .greetingRow {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 .pageTitle {
-  font-size: 26px;
-  font-weight: 700;
+  font-size: 28px;
+  font-weight: 800;
   color: var(--text-main, #f8fafc);
   margin: 0;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
+  line-height: 1.2;
 }
 
 .waveEmoji {
   font-size: 24px;
   user-select: none;
-  animation: wave 2.5s infinite;
+  animation: waveMotion 2.5s infinite;
   transform-origin: 70% 70%;
   display: inline-block;
+}
+
+@keyframes waveMotion {
+  0%, 100% { transform: rotate(0deg); }
+  20%, 60% { transform: rotate(14deg); }
+  40%, 80% { transform: rotate(-10deg); }
 }
 
 .sectorChipHeader {
   display: inline-flex;
   align-items: center;
+  gap: 8px;
+  padding: 4px 12px;
+  border-radius: 999px;
   font-size: 12px;
   font-weight: 600;
-  padding: 3px 10px;
-  border-radius: 999px;
-  margin-left: 6px;
+  border: 1px solid transparent;
   letter-spacing: -0.01em;
 }
 
-@keyframes wave {
-  0%, 100% { transform: rotate(0deg); }
-  20%, 60% { transform: rotate(14deg); }
-  40%, 80% { transform: rotate(-10deg); }
+.sectorDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
 }
 
 .pageSubtitle {
   font-size: 13.5px;
   color: var(--text-muted, #94a3b8);
   margin: 0;
+  max-width: 680px;
+  line-height: 1.5;
 }
 
 .headerToolbar {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
-.btnToolbarSecondary {
-  display: flex;
+.btnSecondary {
+  display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 14px;
+  padding: 9px 16px;
   border-radius: 8px;
-  border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.08));
   background: var(--surface-low, #18191d);
-  color: var(--text-muted, #94a3b8);
-  font-size: 13px;
-  font-weight: 500;
-  text-decoration: none;
-  transition: all 0.15s ease;
-}
-
-.btnToolbarSecondary:hover {
-  background: var(--surface-container, #1f1f23);
-  color: var(--text-main, #f8fafc);
-  border-color: var(--border-prominent, rgba(255, 255, 255, 0.14));
-}
-
-.btnToolbarPrimary {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  border-radius: 8px;
-  background: var(--surface-highest, #343538);
-  color: var(--primary, #2fd9f4);
-  border: 1px solid rgba(47, 217, 244, 0.2);
+  border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.08));
+  color: var(--text-body, #e3e2e6);
   font-size: 13px;
   font-weight: 600;
   text-decoration: none;
-  transition: all 0.15s ease;
+  transition: all 0.18s ease;
 }
 
-.btnToolbarPrimary:hover {
-  background: var(--surface-bright, #38393c);
-  border-color: var(--primary, #2fd9f4);
-  box-shadow: 0 0 16px rgba(47, 217, 244, 0.2);
+.btnSecondary:hover {
+  background: var(--surface-container, #1f1f23);
+  border-color: var(--border-prominent, rgba(255, 255, 255, 0.16));
+  color: var(--text-main, #f8fafc);
+  transform: translateY(-1px);
 }
 
-/* 4 KPI Summary Cards Grid */
+.btnPrimary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 18px;
+  border-radius: 8px;
+  background: var(--primary, #2fd9f4);
+  border: 1px solid rgba(47, 217, 244, 0.4);
+  color: #002b33;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: all 0.18s ease;
+  box-shadow: 0 2px 10px rgba(47, 217, 244, 0.25);
+}
+
+.btnPrimary:hover {
+  background: #57f1db;
+  border-color: #57f1db;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(47, 217, 244, 0.35);
+}
+
+/* ========================================================
+   2. KPI CARDS GRID (4 Executivos)
+   ======================================================== */
 .kpiGrid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 16px;
   position: relative;
   z-index: 1;
@@ -173,28 +218,110 @@
   background: var(--surface-low, #18191d);
   border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.08));
   border-radius: 12px;
-  padding: 16px 18px;
+  padding: 18px 20px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: 12px;
+  gap: 14px;
   transition: all 0.2s ease;
+  min-width: 0;
+  position: relative;
+  overflow: hidden;
 }
 
 .kpiCard:hover {
   border-color: var(--border-prominent, rgba(255, 255, 255, 0.16));
   background: var(--surface-container, #1f1f23);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
 }
 
-.kpiCardHeader {
+.kpiCardCritical {
+  border-color: rgba(239, 68, 68, 0.25);
+  background: linear-gradient(180deg, rgba(239, 68, 68, 0.04) 0%, var(--surface-low, #18191d) 100%);
+}
+
+.kpiCardCritical:hover {
+  border-color: rgba(239, 68, 68, 0.45);
+  box-shadow: 0 6px 22px rgba(239, 68, 68, 0.15);
+}
+
+.kpiCardTop {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 8px;
+}
+
+.kpiIconWrapper {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.kpiChipMuted {
+  font-size: 11px;
+  color: var(--text-muted, #94a3b8);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.kpiChipSuccess {
+  font-size: 11px;
+  color: var(--status-success, #10b981);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.badgePulseRed {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  padding: 3px 8px;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.pulseInnerRed {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ef4444;
+  box-shadow: 0 0 6px #ef4444;
+  animation: pulseLive 1.4s infinite;
+}
+
+.badgeEmerald {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  padding: 3px 8px;
+  border-radius: 999px;
+}
+
+.kpiContent {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .kpiLabel {
-  font-size: 11.5px;
+  font-size: 12px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -205,137 +332,359 @@
   display: flex;
   align-items: baseline;
   gap: 10px;
+  flex-wrap: wrap;
 }
 
 .kpiValue {
-  font-family: 'Inter', sans-serif;
-  font-size: 26px;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
+  font-size: 32px;
+  font-weight: 800;
   color: var(--text-main, #f8fafc);
   line-height: 1;
-  letter-spacing: -0.02em;
-}
-
-.kpiChipMuted {
-  font-size: 11px;
-  font-family: 'Inter', sans-serif;
+  letter-spacing: -0.03em;
   font-variant-numeric: tabular-nums;
-  color: var(--text-muted, #94a3b8);
 }
 
-.kpiChipPrimary {
+.valDanger {
+  color: #f87171;
+}
+
+.kpiBadgeCyan {
   font-size: 11.5px;
+  font-weight: 600;
+  color: var(--primary, #2fd9f4);
+  background: rgba(47, 217, 244, 0.1);
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+
+.kpiBadgeSky {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.1);
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+
+.kpiBadgeDanger {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+
+.kpiBadgeSuccess {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.1);
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+
+.kpiFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  font-size: 12px;
+}
+
+.kpiFooterLink {
+  color: var(--text-muted, #94a3b8);
+  text-decoration: none;
   font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: color 0.15s ease;
+}
+
+.kpiFooterLink:hover {
   color: var(--primary, #2fd9f4);
 }
 
-.kpiChipSuccess {
+.kpiFooterNote {
+  color: var(--text-muted, #94a3b8);
   font-size: 11.5px;
-  font-weight: 500;
-  color: var(--status-success, #10b981);
 }
 
-.kpiChipWarning {
+.kpiFooterActionText {
+  color: #f87171;
+  font-weight: 600;
   font-size: 11.5px;
-  font-weight: 500;
-  color: var(--status-warning, #f59e0b);
 }
 
-.dotWarningPulse {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--status-warning, #f59e0b);
-  box-shadow: 0 0 6px var(--status-warning, #f59e0b);
+.miniProgressTrack {
+  width: 100%;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.miniProgressFill {
+  height: 100%;
+  background: linear-gradient(90deg, #10b981, #059669);
+  border-radius: 999px;
+  transition: width 0.4s ease;
 }
 
 /* ========================================================
-   CONTAINER DE SEÇÃO (Tarefas Pendentes & Processos Configurados)
+   3. SEÇÕES EM CONTAINER (Tarefas no Overview & Processos)
    ======================================================== */
 .sectionContainer {
   background: var(--surface-low, #18191d);
   border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.08));
   border-radius: 14px;
-  padding: 22px 24px;
+  padding: 24px;
   display: flex;
   flex-direction: column;
+  gap: 18px;
   position: relative;
   z-index: 1;
-  transition: border-color 0.2s ease;
+  box-sizing: border-box;
 }
 
 .sectionHeaderRow {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 16px;
   flex-wrap: wrap;
+  gap: 16px;
 }
 
-.sectionHeaderTitles {
+.sectionTitleBlock {
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
+.sectionTitleWithPill {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .sectionTitle {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 700;
   color: var(--text-main, #f8fafc);
   margin: 0;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
+}
+
+.sectionCounterPill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface-high, #292a2d);
+  color: var(--primary, #2fd9f4);
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(47, 217, 244, 0.2);
 }
 
 .sectionSubtitle {
-  font-size: 12.5px;
+  font-size: 13px;
   color: var(--text-muted, #94a3b8);
   margin: 0;
 }
 
-.sectionHeaderAction {
+.sectionControls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.searchBox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: var(--surface-high, #292a2d);
+  border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.08));
+  border-radius: 8px;
+  color: var(--text-muted, #94a3b8);
+  width: 220px;
+  transition: all 0.15s ease;
+}
+
+.searchBox:focus-within {
+  border-color: var(--primary, #2fd9f4);
+  box-shadow: 0 0 10px rgba(47, 217, 244, 0.15);
+  color: var(--primary, #2fd9f4);
+}
+
+.searchInput {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text-main, #f8fafc);
+  font-size: 12.5px;
+  width: 100%;
+}
+
+.searchInput::placeholder {
+  color: var(--text-muted, #94a3b8);
+}
+
+.searchClearBtn {
+  background: none;
+  border: none;
+  color: var(--text-muted, #94a3b8);
+  cursor: pointer;
+  font-size: 16px;
+  padding: 0 4px;
+}
+
+.searchClearBtn:hover {
+  color: var(--text-main, #f8fafc);
+}
+
+.linkVerTudo {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 12.5px;
+  font-size: 13px;
   font-weight: 600;
-  color: var(--text-body, #e3e2e6);
-  text-decoration: none;
-  transition: all 0.15s ease;
-  white-space: nowrap;
-}
-
-.sectionHeaderAction:hover {
   color: var(--primary, #2fd9f4);
-  transform: translateX(2px);
+  text-decoration: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  background: rgba(47, 217, 244, 0.06);
+  border: 1px solid rgba(47, 217, 244, 0.15);
+  transition: all 0.15s ease;
 }
 
-.arrowIcon {
-  font-size: 14px;
-  transition: transform 0.15s ease;
-}
-
-.sectionHeaderAction:hover .arrowIcon {
+.linkVerTudo:hover {
+  background: rgba(47, 217, 244, 0.14);
+  border-color: var(--primary, #2fd9f4);
   transform: translateX(2px);
 }
 
 /* ========================================================
-   SEÇÃO 1: GRID DE 3 CARDS DE TAREFAS PENDENTES
+   ABAS SEGMENTADAS DE FILTROS DE TAREFAS
+   ======================================================== */
+.tabsStrip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  overflow-x: auto;
+}
+
+.tabBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 14px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-muted, #94a3b8);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.tabBtn:hover {
+  background: var(--surface-high, #292a2d);
+  color: var(--text-main, #f8fafc);
+}
+
+.tabBtnActive {
+  background: var(--surface-high, #292a2d);
+  color: var(--primary, #2fd9f4);
+  border-color: rgba(47, 217, 244, 0.3);
+}
+
+.tabBadge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-body, #e3e2e6);
+}
+
+.tabBtnDanger:hover {
+  color: #f87171;
+}
+
+.tabBtnActiveDanger {
+  background: rgba(239, 68, 68, 0.12);
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.35);
+}
+
+.tabBadgeDanger {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: rgba(239, 68, 68, 0.2);
+  color: #f87171;
+}
+
+.tabBtnWarning:hover {
+  color: #fbbf24;
+}
+
+.tabBtnActiveWarning {
+  background: rgba(245, 158, 11, 0.12);
+  color: #f59e0b;
+  border-color: rgba(245, 158, 11, 0.35);
+}
+
+.tabBadgeWarning {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: rgba(245, 158, 11, 0.2);
+  color: #fbbf24;
+}
+
+.tabBtnSky:hover {
+  color: #38bdf8;
+}
+
+.tabBtnActiveSky {
+  background: rgba(56, 189, 248, 0.12);
+  color: #38bdf8;
+  border-color: rgba(56, 189, 248, 0.35);
+}
+
+.tabBadgeSky {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: rgba(56, 189, 248, 0.2);
+  color: #7dd3fc;
+}
+
+/* ========================================================
+   GRID DE CARDS DE TAREFAS NO OVERVIEW
    ======================================================== */
 .taskCardsGrid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 14px;
-  margin: 20px 0 16px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  width: 100%;
 }
 
-.cardLinkWrap {
-  text-decoration: none;
-  display: flex;
-  flex-direction: column;
-}
-
-.taskOverviewCard {
+.taskCard {
   background: #141518;
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 10px;
@@ -343,84 +692,109 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: 14px;
-  height: 100%;
-  box-sizing: border-box;
-  transition: all 0.2s ease;
+  gap: 12px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  position: relative;
+  overflow: hidden;
 }
 
-.taskOverviewCard:hover {
-  background: #16171b;
-  border-color: rgba(47, 217, 244, 0.25);
+.taskCard:hover {
+  background: #17181d;
+  border-color: rgba(47, 217, 244, 0.3);
   transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
 }
 
-.taskCardTopRow {
+.taskCardHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
 }
 
-/* Badges de Categoria */
-.categoryBadge {
+.taskSectorWrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  flex: 1;
+}
+
+.sectorDotMini {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.taskProcessName {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-muted, #94a3b8);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.taskPillsRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.urgentFlagPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.deadlinePill {
   font-size: 11px;
   font-weight: 600;
-  padding: 2.5px 8px;
+  padding: 2px 7px;
   border-radius: 4px;
-  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 
-.cat_amber {
-  background: rgba(245, 158, 11, 0.12);
-  color: #f59e0b;
+.deadlineDanger {
+  background: rgba(239, 68, 68, 0.14);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.25);
+}
+
+.deadlineWarning {
+  background: rgba(245, 158, 11, 0.14);
+  color: #fbbf24;
   border: 1px solid rgba(245, 158, 11, 0.25);
 }
 
-.cat_blue {
-  background: rgba(56, 189, 248, 0.12);
-  color: #38bdf8;
-  border: 1px solid rgba(56, 189, 248, 0.25);
-}
-
-.cat_neutral {
-  background: rgba(148, 163, 184, 0.12);
-  color: #cbd5e1;
-  border: 1px solid rgba(148, 163, 184, 0.22);
-}
-
-/* Chips de Urgência */
-.urgencyChip {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 11.5px;
-  font-weight: 600;
-}
-
-.urg_urgente {
-  color: #f87171;
-}
-
-.urg_warning {
-  color: #38bdf8;
-}
-
-.urg_emDia {
-  color: var(--primary, #2fd9f4);
+.deadlineNormal {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-muted, #94a3b8);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .taskCardBody {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  min-width: 0;
 }
 
-.taskCardTitle {
-  font-size: 13.5px;
-  font-weight: 600;
+.taskTitle {
+  font-size: 14px;
+  font-weight: 700;
   color: var(--text-main, #f8fafc);
   margin: 0;
   line-height: 1.35;
@@ -429,7 +803,7 @@
   text-overflow: ellipsis;
 }
 
-.taskCardSnippet {
+.taskSnippet {
   font-size: 12px;
   color: var(--text-muted, #94a3b8);
   margin: 0;
@@ -439,101 +813,181 @@
   text-overflow: ellipsis;
 }
 
+.taskSnippetEmpty {
+  font-size: 11.5px;
+  color: var(--text-subtle, #64748b);
+  margin: 0;
+  font-style: italic;
+}
+
+.taskStageRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  color: var(--text-muted, #94a3b8);
+  padding: 4px 8px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.stageIndicatorIcon {
+  color: var(--primary, #2fd9f4);
+  font-size: 12px;
+}
+
+.stageLabelText strong {
+  color: var(--text-body, #e3e2e6);
+  font-weight: 600;
+}
+
 .taskCardFooter {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 8px;
   padding-top: 10px;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
 }
 
-.userRow {
+.assigneeWrap {
   display: flex;
   align-items: center;
-  gap: 7px;
+  gap: 6px;
+  min-width: 0;
+  flex: 1;
 }
 
-.avatarMini {
+.assigneeAvatar {
   width: 22px;
   height: 22px;
   border-radius: 50%;
   background: #1e293b;
-  color: #38bdf8;
+  color: var(--primary, #2fd9f4);
   font-size: 10.5px;
   font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgba(56, 189, 248, 0.25);
+  border: 1px solid rgba(47, 217, 244, 0.3);
   flex-shrink: 0;
 }
 
-.userNome {
-  font-size: 12px;
-  color: var(--text-body, #e3e2e6);
-  font-weight: 500;
-}
-
-.deadlineLabel {
+.assigneeName {
   font-size: 11.5px;
-  color: var(--text-muted, #94a3b8);
-  font-weight: 500;
-  font-variant-numeric: tabular-nums;
-}
-
-/* Compliance Banner */
-.complianceBanner {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 12px 16px;
-  background: rgba(47, 217, 244, 0.03);
-  border: 1px solid rgba(47, 217, 244, 0.14);
-  border-radius: 8px;
-  font-size: 12.5px;
   color: var(--text-body, #e3e2e6);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.complianceIconWrap {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.cardActionHint {
+  font-size: 11.5px;
+  font-weight: 600;
   color: var(--primary, #2fd9f4);
-  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  opacity: 0.8;
+  transition: opacity 0.15s ease;
 }
 
-.complianceText {
-  line-height: 1.4;
+.taskCard:hover .cardActionHint {
+  opacity: 1;
 }
 
 /* ========================================================
-   SEÇÃO 2: PROCESSOS CONFIGURADOS
+   BANNER DE CONFORMIDADE / AUDITORIA
    ======================================================== */
-.processRowsList {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin: 20px 0 16px;
-}
-
-.processRowItem {
+.complianceBanner {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 16px;
-  background: rgba(255, 255, 255, 0.015);
-  border: 1px solid rgba(255, 255, 255, 0.04);
-  border-radius: 10px;
-  transition: all 0.15s ease;
   gap: 16px;
+  padding: 14px 18px;
+  border-radius: 10px;
+  background: rgba(16, 185, 129, 0.05);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  margin-top: 6px;
 }
 
-.processRowItem:hover {
-  background: rgba(255, 255, 255, 0.035);
-  border-color: rgba(255, 255, 255, 0.08);
+.complianceBannerWarning {
+  background: rgba(245, 158, 11, 0.05);
+  border-color: rgba(245, 158, 11, 0.22);
 }
 
-.processRowLeft {
+.complianceIcon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+.complianceContent {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.complianceTitle {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-main, #f8fafc);
+}
+
+.complianceText {
+  font-size: 12px;
+  color: var(--text-muted, #94a3b8);
+  line-height: 1.4;
+}
+
+.complianceActionBtn {
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  color: #fbbf24;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.complianceActionBtn:hover {
+  background: rgba(245, 158, 11, 0.25);
+  border-color: #fbbf24;
+}
+
+/* ========================================================
+   4. LISTA DE PROCESSOS CONFIGURADOS
+   ======================================================== */
+.processList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.processItemCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  background: rgba(255, 255, 255, 0.015);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  gap: 20px;
+  transition: all 0.15s ease;
+}
+
+.processItemCard:hover {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(47, 217, 244, 0.2);
+  transform: translateX(2px);
+}
+
+.processLeft {
   display: flex;
   align-items: center;
   gap: 14px;
@@ -541,253 +995,361 @@
   flex: 1;
 }
 
-.sectorIconBox {
-  width: 36px;
-  height: 36px;
+.processSectorIcon {
+  width: 40px;
+  height: 40px;
   border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
+  border: 1px solid;
   flex-shrink: 0;
 }
 
-.sector_cyan {
-  background: rgba(47, 217, 244, 0.1);
-  border: 1px solid rgba(47, 217, 244, 0.2);
-  color: var(--primary, #2fd9f4);
-}
-
-.sector_blue {
-  background: rgba(59, 130, 246, 0.1);
-  border: 1px solid rgba(59, 130, 246, 0.2);
-  color: #60a5fa;
-}
-
-.sector_amber {
-  background: rgba(245, 158, 11, 0.1);
-  border: 1px solid rgba(245, 158, 11, 0.2);
-  color: #f59e0b;
-}
-
-.processMetaWrap {
+.processInfo {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 4px;
   min-width: 0;
 }
 
-.processTitleRow {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.processTitleLink {
-  font-size: 13.5px;
-  font-weight: 600;
-  color: var(--text-main, #f8fafc);
-  text-decoration: none;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  transition: color 0.15s ease;
-}
-
-.processTitleLink:hover {
-  color: var(--primary, #2fd9f4);
-}
-
-.cyanDot {
-  color: var(--primary, #2fd9f4);
-  font-size: 14px;
-  line-height: 1;
-}
-
-.processMetaSub {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 11.5px;
-  color: var(--text-muted, #94a3b8);
-}
-
-.metaDotSep {
-  color: rgba(255, 255, 255, 0.2);
-}
-
-.processRowRight {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  flex-shrink: 0;
-}
-
-.globalProgressWrap {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 4px;
-  width: 140px;
-}
-
-.progressLabel {
-  font-size: 10.5px;
-  font-weight: 600;
-  color: var(--text-muted, #94a3b8);
-  letter-spacing: 0.02em;
-}
-
-.progressBarRow {
+.processHeaderTitle {
   display: flex;
   align-items: center;
   gap: 8px;
-  width: 100%;
+  flex-wrap: wrap;
 }
 
-.progressBarTrack {
-  height: 5px;
-  flex: 1;
+.processLinkName {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--text-main, #f8fafc);
+  text-decoration: none;
+  transition: color 0.15s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.processLinkName:hover {
+  color: var(--primary, #2fd9f4);
+}
+
+.processSectorTag {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 1px 7px;
+  border-radius: 4px;
+  border: 1px solid;
+}
+
+.processMetaDetails {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-muted, #94a3b8);
+  flex-wrap: wrap;
+}
+
+.metaDot {
+  color: rgba(255, 255, 255, 0.15);
+}
+
+.textCyan {
+  color: var(--primary, #2fd9f4);
+  font-weight: 600;
+}
+
+.textSuccess {
+  color: #10b981;
+  font-weight: 600;
+}
+
+.textDanger {
+  color: #ef4444;
+  font-weight: 600;
+}
+
+.processRight {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-shrink: 0;
+}
+
+.progressContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  width: 150px;
+}
+
+.progressHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+}
+
+.progressTitle {
+  color: var(--text-muted, #94a3b8);
+  font-weight: 500;
+}
+
+.progressPercent {
+  color: var(--text-main, #f8fafc);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.progressTrack {
+  width: 100%;
+  height: 6px;
   background: #1f1f23;
   border-radius: 999px;
   overflow: hidden;
 }
 
-.progressBarFillCyan {
+.progressFill {
   height: 100%;
-  background: var(--primary, #2fd9f4);
   border-radius: 999px;
-  box-shadow: 0 0 8px rgba(47, 217, 244, 0.35);
-  transition: width 0.3s ease;
+  transition: width 0.4s ease;
 }
 
-.progressPercentText {
-  font-size: 11.5px;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  color: var(--text-main, #f8fafc);
-  min-width: 28px;
-  text-align: right;
-}
-
-.btnRowMore {
-  width: 28px;
-  height: 28px;
-  border-radius: 6px;
-  display: flex;
+.btnOpenFlow {
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  color: var(--text-muted, #94a3b8);
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--text-body, #e3e2e6);
+  font-size: 12.5px;
+  font-weight: 600;
   text-decoration: none;
-  background: transparent;
   transition: all 0.15s ease;
+  white-space: nowrap;
 }
 
-.btnRowMore:hover {
-  background: rgba(255, 255, 255, 0.08);
-  color: var(--text-main, #f8fafc);
+.btnOpenFlow:hover {
+  background: var(--surface-highest, #343538);
+  border-color: var(--primary, #2fd9f4);
+  color: var(--primary, #2fd9f4);
+  transform: translateX(2px);
 }
 
-/* Rodapé CTA */
-.bottomCtaRow {
+/* ========================================================
+   RODAPÉ CTA DA SEÇÃO DE PROCESSOS
+   ======================================================== */
+.sectionFooterCta {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding-top: 14px;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.footerCtaInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.footerCtaTitle {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-main, #f8fafc);
+}
+
+.footerCtaSub {
+  font-size: 12px;
+  color: var(--text-muted, #94a3b8);
+}
+
+.btnCreateProcessQuick {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  background: rgba(47, 217, 244, 0.08);
+  border: 1px solid rgba(47, 217, 244, 0.25);
+  color: var(--primary, #2fd9f4);
   font-size: 12.5px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+
+.btnCreateProcessQuick:hover {
+  background: var(--primary, #2fd9f4);
+  color: #002b33;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(47, 217, 244, 0.25);
+}
+
+/* ========================================================
+   ESTADOS DE CARREGAMENTO & VAZIO
+   ======================================================== */
+.loadingState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 48px 20px;
+  color: var(--text-muted, #94a3b8);
+  font-size: 13.5px;
+}
+
+.spinner {
+  width: 28px;
+  height: 28px;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-top-color: var(--primary, #2fd9f4);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 40px 20px;
+  background: rgba(255, 255, 255, 0.015);
+  border: 1px dashed rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  gap: 8px;
+}
+
+.emptyIconWrap {
+  color: var(--primary, #2fd9f4);
+  margin-bottom: 4px;
+}
+
+.emptyTitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-main, #f8fafc);
+  margin: 0;
+}
+
+.emptySubtitle {
+  font-size: 13px;
+  color: var(--text-muted, #94a3b8);
+  margin: 0;
+  max-width: 460px;
+}
+
+.emptyResetBtn {
+  margin-top: 8px;
+  padding: 6px 14px;
+  border-radius: 6px;
+  background: var(--surface-high, #292a2d);
+  border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.1));
+  color: var(--primary, #2fd9f4);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+
+.emptyResetBtn:hover {
+  background: var(--surface-highest, #343538);
+  border-color: var(--primary, #2fd9f4);
+}
+
+.sectionShowMoreRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px dashed rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  font-size: 12px;
+  color: var(--text-muted, #94a3b8);
   flex-wrap: wrap;
   gap: 8px;
 }
 
-.bottomCtaText {
-  color: var(--text-muted, #94a3b8);
+.showMoreNotice strong {
+  color: var(--text-main, #f8fafc);
 }
 
-.bottomCtaLink {
-  color: var(--primary, #2fd9f4);
-  text-decoration: none;
-  font-weight: 600;
+.linkShowMore {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
+  color: var(--primary, #2fd9f4);
+  font-weight: 600;
+  text-decoration: none;
+  font-size: 12px;
   transition: all 0.15s ease;
 }
 
-.bottomCtaLink:hover {
+.linkShowMore:hover {
   text-decoration: underline;
   transform: translateX(2px);
 }
 
-.chevronIcon {
-  font-size: 14px;
-  font-weight: 700;
+.arrowIcon {
+  font-size: 13px;
+  transition: transform 0.15s ease;
 }
 
-/* Estado vazio limpo e elegante */
-.emptyStateContainer {
-  padding: 32px 20px;
-  text-align: center;
-  color: var(--text-muted, #94a3b8);
-  font-size: 13.5px;
-  background: rgba(255, 255, 255, 0.015);
-  border: 1px dashed rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
-  margin: 18px 0;
+.linkShowMore:hover .arrowIcon {
+  transform: translateX(2px);
 }
 
-/* Responsividade Mobile e Telas Médias */
-@media (max-width: 1024px) {
+/* ========================================================
+   RESPONSIVIDADE
+   ======================================================== */
+@media (max-width: 1280px) {
+  .kpiGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .taskCardsGrid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .main {
+    padding: 24px 20px 48px;
   }
 
   .kpiGrid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: 1fr;
   }
-}
 
-@media (max-width: 768px) {
   .taskCardsGrid {
     grid-template-columns: 1fr;
   }
 
-  .processRowItem {
+  .processItemCard {
     flex-direction: column;
     align-items: flex-start;
   }
 
-  .processRowRight {
+  .processRight {
     width: 100%;
     justify-content: space-between;
   }
 
-  .globalProgressWrap {
-    width: 100%;
-  }
-
-  .bottomCtaRow {
-    flex-direction: column;
-    align-items: flex-start;
+  .progressContainer {
+    width: 60%;
   }
 }
-
-@media (max-width: 640px) {
-  .main {
-    padding: 76px 16px 32px;
-  }
-
-  .kpiGrid {
-    grid-template-columns: 1fr;
-  }
-
-  .topHeader {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .headerToolbar {
-    width: 100%;
-    justify-content: flex-start;
-  }
-}
-

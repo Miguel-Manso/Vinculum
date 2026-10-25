@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
+import ProcessIcon from '../components/ProcessIcon';
 import api from '../services/api';
 import styles from './Fluxo.module.css';
 
@@ -681,7 +682,26 @@ export default function Fluxo() {
 
           <div className={styles.headerRow}>
             <div className={styles.headerInfo}>
-              <h1 className={styles.pageTitle}>{processo.nome}</h1>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: '32px',
+                    height: '32px',
+                    borderRadius: '8px',
+                    backgroundColor: `${processo.setor_cor || '#2fd9f4'}18`,
+                    color: processo.setor_cor || '#2fd9f4',
+                    border: `1px solid ${processo.setor_cor || '#2fd9f4'}30`,
+                    flexShrink: 0,
+                  }}
+                  title={`Setor: ${processo.setor_nome || 'Geral'}`}
+                >
+                  <ProcessIcon processo={processo} size={18} />
+                </span>
+                <h1 className={styles.pageTitle}>{processo.nome}</h1>
+              </div>
               <p className={styles.pageSubtitle}>
                 {processo.descricao ? `${processo.descricao} • ` : ''}
                 {tarefas.length} {tarefas.length === 1 ? 'tarefa' : 'tarefas'} em {etapas.length} {etapas.length === 1 ? 'etapa' : 'etapas'} • Arraste tarefas entre etapas ou cabeçalhos para reordenar

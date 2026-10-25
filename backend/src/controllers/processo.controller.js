@@ -96,7 +96,7 @@ async function buscarPorId(req, res) {
 
 async function criar(req, res) {
   try {
-    const { nome, descricao, setor_id, criarEtapasPadrao = true } = req.body;
+    const { nome, descricao, setor_id, icone, criarEtapasPadrao = true } = req.body;
     if (!nome || !nome.trim()) {
       return res.status(400).json({ error: 'O nome do processo é obrigatório' });
     }
@@ -126,7 +126,8 @@ async function criar(req, res) {
       .input('descricao', sql.NVarChar, descricao?.trim() || null)
       .input('setor_id', sql.Int, setorIdNum)
       .input('criado_por', sql.Int, usuarioId)
-      .query('INSERT INTO Processos (nome, descricao, setor_id, criado_por) OUTPUT INSERTED.id VALUES (@nome, @descricao, @setor_id, @criado_por)');
+      .input('icone', sql.NVarChar, icone?.trim() || null)
+      .query('INSERT INTO Processos (nome, descricao, setor_id, criado_por, icone) OUTPUT INSERTED.id VALUES (@nome, @descricao, @setor_id, @criado_por, @icone)');
     
     const novoId = insertRes.recordset[0]?.id;
     if (criarEtapasPadrao && novoId) {
@@ -147,7 +148,7 @@ async function criar(req, res) {
 
 async function editar(req, res) {
   try {
-    const { nome, descricao, setor_id } = req.body;
+    const { nome, descricao, setor_id, icone } = req.body;
     const { id } = req.params;
     if (!nome || !nome.trim()) {
       return res.status(400).json({ error: 'O nome do processo é obrigatório' });
@@ -199,7 +200,8 @@ async function editar(req, res) {
       .input('nome', sql.NVarChar, nome.trim())
       .input('descricao', sql.NVarChar, descricao?.trim() || null)
       .input('setor_id', sql.Int, finalSetorId)
-      .query('UPDATE Processos SET nome=@nome, descricao=@descricao, setor_id=@setor_id WHERE id=@id');
+      .input('icone', sql.NVarChar, icone !== undefined ? (icone?.trim() || null) : null)
+      .query('UPDATE Processos SET nome=@nome, descricao=@descricao, setor_id=@setor_id, icone=COALESCE(@icone, icone) WHERE id=@id');
 
     if (r.rowsAffected[0] === 0) return res.status(404).json({ error: 'Processo não encontrado' });
     res.json({ mensagem: 'Processo atualizado com sucesso' });

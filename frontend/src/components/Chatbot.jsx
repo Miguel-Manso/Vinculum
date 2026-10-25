@@ -5,7 +5,13 @@ import styles from './Chatbot.module.css';
 const MENSAGEM_BOAS_VINDAS = {
   id: 'intro',
   remetente: 'ia',
-  texto: 'Olá! Sou o assistente de processos do Vinculum com IA. Como posso ajudar você hoje? Posso tirar dúvidas sobre seus fluxos, tarefas, prazos ou regras de negócio.',
+  texto: `Olá! Sou o **Vinculum IA**, seu consultor de processos e especialista na plataforma.
+
+- 📋 **Estruturação de Processos**: Desenho de quadros Kanban sob medida para o seu setor.
+- ⚡ **Otimização Operacional**: Eliminação de gargalos, acompanhamento de prazos e controle de WIP.
+- 🛠️ **Recursos da Plataforma**: Orientações práticas sobre fluxos, campos personalizados e relatórios.
+
+💡 **Dica Prática:** Clique em uma das sugestões abaixo ou digite o ramo da sua empresa para desenharmos seu fluxo ideal!`,
   horario: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
 };
 
@@ -16,10 +22,10 @@ const PROMPTS_SUGERIDOS = [
   'Como mover tarefas no Kanban?',
 ];
 
-// Formatador inline para destacar termos em negrito, italico ou tags de codigo
+// Formatador inline para destacar termos em negrito, itálico ou tags de código
 function formatarTextoInline(texto) {
   if (!texto) return '';
-  const regex = /(\*\*.*?\*\*|\*.*?\*|`.*?`)/g;
+  const regex = /(\*\*.*?\*\*|\*[^*]+\*|`[^`]+`)/g;
   const partes = texto.split(regex);
 
   return partes.map((parte, index) => {
@@ -48,7 +54,23 @@ function formatarTextoInline(texto) {
   });
 }
 
-// Renderizador visual elegante e palatavel das respostas da IA
+// Normaliza o texto da IA antes de dividir em blocos para que listas e dicas nunca quebrem
+function estruturarBlocosVisuais(textoBruto) {
+  if (!textoBruto) return [];
+
+  const normalizado = textoBruto
+    .replace(/\r\n/g, '\n')
+    // Garante que "💡" sempre fique em um bloco separado no final
+    .replace(/\n?(💡\s*(?:\*\*Dica[^:]*:\*\*|Dica[^:]*:)?)/gi, '\n\n$1')
+    // Junta itens numerados consecutivos que a IA tenha separado com linha em branco
+    .replace(/(\n\d+[\.\)]\s[^\n]+)\n\s*\n(?=\d+[\.\)]\s)/g, '$1\n')
+    // Junta bullets consecutivos que a IA tenha separado com linha em branco
+    .replace(/(\n[•\-\*]\s[^\n]+)\n\s*\n(?=[•\-\*]\s)/g, '$1\n');
+
+  return normalizado.split(/\n\s*\n/).map(b => b.trim()).filter(Boolean);
+}
+
+// Renderizador visual elegante das respostas da IA
 function RenderizadorMensagem({ texto, isUser }) {
   if (isUser) {
     return <span className={styles.userText}>{texto}</span>;
@@ -56,16 +78,13 @@ function RenderizadorMensagem({ texto, isUser }) {
 
   if (!texto) return null;
 
-  // Divide o texto em blocos estruturados
-  const blocos = texto.split(/\n\s*\n/).filter(Boolean);
+  const blocos = estruturarBlocosVisuais(texto);
 
   return (
     <div className={styles.iaFormattedContent}>
-      {blocos.map((bloco, bIdx) => {
-        const trimmed = bloco.trim();
-
+      {blocos.map((trimmed, bIdx) => {
         // 1. Dicas e Callouts destacados
-        if (trimmed.startsWith('💡') || trimmed.startsWith('Dica:')) {
+        if (trimmed.startsWith('💡') || /^(\*\*)?dica/i.test(trimmed)) {
           const conteudoDica = trimmed.replace(/^💡\s*/, '');
           return (
             <div key={bIdx} className={styles.tipCard}>
@@ -75,7 +94,7 @@ function RenderizadorMensagem({ texto, isUser }) {
           );
         }
 
-        // 2. Titulos de seção
+        // 2. Títulos de seção
         if (trimmed.startsWith('#')) {
           const limpo = trimmed.replace(/^#+\s*/, '');
           return (
@@ -132,7 +151,7 @@ function RenderizadorMensagem({ texto, isUser }) {
           );
         }
 
-        // 5. Paragrafo comum
+        // 5. Parágrafo comum
         return (
           <p key={bIdx} className={styles.standardParagraph}>
             {linhas.map((l, lIdx) => (
@@ -162,7 +181,6 @@ export default function Chatbot() {
   const [carregando, setCarregando] = useState(false);
   const messagesEndRef = useRef(null);
 
-  // Persiste o histórico na sessão atual
   useEffect(() => {
     try {
       sessionStorage.setItem('vinculum_chat_historico', JSON.stringify(mensagens));
@@ -171,7 +189,6 @@ export default function Chatbot() {
     }
   }, [mensagens]);
 
-  // Rola até a última mensagem
   useEffect(() => {
     if (aberto) {
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -195,10 +212,9 @@ export default function Chatbot() {
     setCarregando(true);
 
     try {
-      // POST /api/chatbot com a mensagem e o histórico da conversa
       const res = await api.post('/chatbot', {
         mensagem: texto,
-        historico: novoHistorico.map(m => ({
+        historico: novoHistorico.slice(-6).map(m => ({
           remetente: m.remetente,
           texto: m.texto,
         })),
@@ -248,7 +264,6 @@ export default function Chatbot() {
 
   return (
     <>
-      {/* Botão flutuante no canto inferior direito */}
       <button
         type="button"
         className={styles.floatingBtn}
@@ -271,7 +286,6 @@ export default function Chatbot() {
         )}
       </button>
 
-      {/* Janela Flutuante do Chat */}
       {aberto && (
         <div className={styles.chatWindow}>
           <div className={styles.chatHeader}>
@@ -286,7 +300,7 @@ export default function Chatbot() {
               <div className={styles.chatHeaderText}>
                 <span className={styles.chatTitle}>Vinculum IA</span>
                 <span className={styles.chatSubtitle}>
-                  <span className={styles.onlineDot} /> Online • Llama & Mistral
+                  <span className={styles.onlineDot} /> Online • Consultor Inteligente
                 </span>
               </div>
             </div>
@@ -317,7 +331,6 @@ export default function Chatbot() {
             </div>
           </div>
 
-          {/* Lista de Mensagens */}
           <div className={styles.messagesContainer}>
             {mensagens.map(msg => {
               const isUser = msg.remetente === 'usuario';
@@ -336,7 +349,7 @@ export default function Chatbot() {
 
             {carregando && (
               <div className={styles.typingIndicator}>
-                <span>Consultando IA</span>
+                <span>Analisando</span>
                 <span className={styles.typingDot} />
                 <span className={styles.typingDot} />
                 <span className={styles.typingDot} />
@@ -345,7 +358,6 @@ export default function Chatbot() {
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Sugestões Rápidas */}
           <div className={styles.quickPrompts}>
             {PROMPTS_SUGERIDOS.map((sugestao, idx) => (
               <button
@@ -359,7 +371,6 @@ export default function Chatbot() {
             ))}
           </div>
 
-          {/* Input de Envio */}
           <div className={styles.chatInputArea}>
             <textarea
               className={styles.chatTextarea}

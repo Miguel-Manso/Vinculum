@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useSetor } from '../context/SetorContext';
@@ -10,10 +10,14 @@ export default function Dashboard() {
   const { usuario } = useAuth();
   const { setorAtivo } = useSetor();
   const navigate = useNavigate();
+
   const [processos, setProcessos] = useState([]);
   const [tarefas, setTarefas] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('pendentes'); // 'pendentes', 'atrasadas', 'hoje', 'urgentes'
+  const [busca, setBusca] = useState('');
 
+  // Carrega dados da API
   useEffect(() => {
     async function carregarDados() {
       setLoading(true);
@@ -34,422 +38,793 @@ export default function Dashboard() {
     carregarDados();
   }, [setorAtivo]);
 
+  // Checagem de conclusão
   function isConcluida(t) {
     if (t.concluida === 1 || t.concluida === true) return true;
-    const nome = t.etapa_nome?.toLowerCase() || '';
+    const nome = (t.etapa_nome || '').toLowerCase();
     return nome.includes('finaliz') || nome.includes('concluíd') || nome.includes('concluid');
   }
 
-  const tarefasPendentes = tarefas.filter(t => !isConcluida(t));
-  const tarefasConcluidas = tarefas.filter(t => isConcluida(t));
-  const totalEtapas = processos.reduce((acc, p) => acc + (parseInt(p.etapas) || 0), 0);
-  const taxaConclusao = tarefas.length > 0 
-    ? Math.round((tarefasConcluidas.length / tarefas.length) * 100) 
-    : 100;
-
-  // Tarefas com alerta de prazo
-  const tarefasAlerta = tarefasPendentes.filter(t => {
-    if (!t.prazo) return false;
-    const prazoDate = new Date(t.prazo);
+  // Cálculos de Status de Prazo
+  function getPrazoInfo(prazoStr) {
+    if (!prazoStr) return { status: 'sem_prazo', label: 'Sem prazo', dias: null };
+    
+    // Normalizar para data local considerando apenas dia/mês/ano
+    const [ano, mes, dia] = prazoStr.split('T')[0].split('-').map(Number);
+    const prazoDate = new Date(ano, mes - 1, dia);
+    
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0);
-    return prazoDate <= hoje;
-  });
 
-  // Preparação de dados para a Seção de Tarefas Pendentes no Overview (apenas tarefas reais)
-  const tarefasOverview = tarefasPendentes.map((t, idx) => {
-    let urgencia = { tipo: 'emDia', label: 'Em dia', icon: 'check' };
-    let prazoLabel = 'Sem prazo';
+    const diffMs = prazoDate.getTime() - hoje.getTime();
+    const diffDias = Math.round(diffMs / (1000 * 60 * 60 * 24));
 
-    const isUrgente = t.urgente === 1 || t.urgente === true;
-    if (isUrgente) {
-      urgencia = { tipo: 'urgente', label: 'Urgente', icon: 'flag' };
+    if (diffDias < 0) {
+      return { 
+        status: 'atrasada', 
+        label: `Atrasada (${Math.abs(diffDias)}d)`, 
+        dias: diffDias,
+        color: '#ef4444' 
+      };
+    } else if (diffDias === 0) {
+      return { 
+        status: 'hoje', 
+        label: 'Vence hoje', 
+        dias: 0,
+        color: '#f59e0b' 
+      };
+    } else if (diffDias === 1) {
+      return { 
+        status: 'amanha', 
+        label: 'Vence amanhã', 
+        dias: 1,
+        color: '#38bdf8' 
+      };
+    } else if (diffDias <= 3) {
+      return { 
+        status: 'em_breve', 
+        label: `Em ${diffDias} dias`, 
+        dias: diffDias,
+        color: '#38bdf8' 
+      };
+    } else {
+      const dataFormatada = prazoDate.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+      return { 
+        status: 'em_dia', 
+        label: dataFormatada, 
+        dias: diffDias,
+        color: '#94a3b8' 
+      };
     }
+  }
 
-    if (t.prazo) {
-      const prazoDate = new Date(t.prazo);
-      const hoje = new Date();
-      hoje.setHours(0, 0, 0, 0);
-      const diffDias = Math.ceil((prazoDate - hoje) / (1000 * 60 * 60 * 24));
+  // Métricas agregadas
+  const metricas = useMemo(() => {
+    const total = tarefas.length;
+    const concluidas = tarefas.filter(t => isConcluida(t));
+    const pendentes = tarefas.filter(t => !isConcluida(t));
 
-      if (diffDias < 0) {
-        if (!isUrgente) urgencia = { tipo: 'urgente', label: 'Atrasada', icon: 'flag' };
-        prazoLabel = `Atrasada (${Math.abs(diffDias)}d)`;
-      } else if (diffDias === 0) {
-        if (!isUrgente) urgencia = { tipo: 'urgente', label: 'Vence hoje', icon: 'flag' };
-        prazoLabel = 'Vence hoje';
-      } else if (diffDias === 1) {
-        if (!isUrgente) urgencia = { tipo: 'warning', label: 'Amanhã', icon: 'clock' };
-        prazoLabel = 'Amanhã';
-      } else if (diffDias <= 3) {
-        if (!isUrgente) urgencia = { tipo: 'warning', label: `${diffDias}d`, icon: 'clock' };
-        prazoLabel = `Em ${diffDias} dias`;
-      } else {
-        prazoLabel = `Em ${diffDias} dias`;
-      }
-    }
+    const atrasadas = pendentes.filter(t => {
+      const info = getPrazoInfo(t.prazo);
+      return info.status === 'atrasada';
+    });
 
-    const categoria = t.processo_nome || 'Geral';
-    const categoriaTipo = idx % 3 === 0 ? 'amber' : idx % 3 === 1 ? 'blue' : 'neutral';
-    const responsavel = t.responsavel_nome || 'Não atribuído';
+    const vencendoHoje = pendentes.filter(t => {
+      const info = getPrazoInfo(t.prazo);
+      return info.status === 'hoje';
+    });
+
+    const vencendoEmBreve = pendentes.filter(t => {
+      const info = getPrazoInfo(t.prazo);
+      return info.status === 'hoje' || info.status === 'amanha' || (info.dias !== null && info.dias >= 0 && info.dias <= 3);
+    });
+
+    const urgentes = pendentes.filter(t => t.urgente === 1 || t.urgente === true);
+
+    const taxa = total > 0 ? Math.round((concluidas.length / total) * 100) : 100;
+    const totalEtapas = processos.reduce((acc, p) => acc + (parseInt(p.etapas) || 0), 0);
 
     return {
-      id: t.id,
-      titulo: t.titulo,
-      descricao: t.descricao || `Etapa: ${t.etapa_nome || 'Em andamento'}`,
-      categoria,
-      categoriaTipo,
-      urgencia,
-      responsavel,
-      prazoLabel,
+      total,
+      concluidas: concluidas.length,
+      pendentes: pendentes.length,
+      atrasadas: atrasadas.length,
+      vencendoHoje: vencendoHoje.length,
+      vencendoEmBreve: vencendoEmBreve.length,
+      urgentes: urgentes.length,
+      taxa,
+      totalEtapas,
+      mediaEtapas: processos.length > 0 ? (totalEtapas / processos.length).toFixed(1) : '0'
     };
-  });
+  }, [tarefas, processos]);
 
-  // Preparação de dados para a Seção de Processos Configurados (apenas processos reais)
-  const processosLista = processos.map((p, idx) => {
-    const iconColors = ['cyan', 'blue', 'amber'];
-    const icons = ['workflow', 'shield', 'idcard'];
+  // Filtro de tarefas para a seção Overview
+  const tarefasFiltradasOverview = useMemo(() => {
+    let lista = tarefas.filter(t => !isConcluida(t));
 
-    const tarefasProc = tarefas.filter(t => t.processo_id === p.id);
-    const concluidas = tarefasProc.filter(t => isConcluida(t));
-    const pct = tarefasProc.length > 0 
-      ? Math.round((concluidas.length / tarefasProc.length) * 100) 
-      : 0;
-
-    const respsUnicos = new Set(tarefasProc.map(t => t.responsavel_id).filter(Boolean));
-    const totalResp = respsUnicos.size > 0 ? respsUnicos.size : 1;
-
-    let atualizado = 'hoje';
-    if (p.criado_em) {
-      const d = new Date(p.criado_em);
-      atualizado = d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+    if (activeTab === 'atrasadas') {
+      lista = lista.filter(t => getPrazoInfo(t.prazo).status === 'atrasada');
+    } else if (activeTab === 'em_breve') {
+      lista = lista.filter(t => {
+        const info = getPrazoInfo(t.prazo);
+        return info.status === 'hoje' || info.status === 'amanha' || (info.dias !== null && info.dias >= 0 && info.dias <= 3);
+      });
+    } else if (activeTab === 'urgentes') {
+      lista = lista.filter(t => t.urgente === 1 || t.urgente === true);
     }
 
-    return {
-      id: p.id,
-      nome: p.nome,
-      etapas: p.etapas || 0,
-      responsaveis: totalResp,
-      atualizado,
-      progresso: pct,
-      iconType: icons[idx % icons.length],
-      colorTheme: iconColors[idx % iconColors.length],
-    };
-  });
+    if (busca.trim()) {
+      const q = busca.toLowerCase();
+      lista = lista.filter(t => 
+        (t.titulo && t.titulo.toLowerCase().includes(q)) ||
+        (t.processo_nome && t.processo_nome.toLowerCase().includes(q)) ||
+        (t.responsavel_nome && t.responsavel_nome.toLowerCase().includes(q)) ||
+        (t.etapa_nome && t.etapa_nome.toLowerCase().includes(q))
+      );
+    }
+
+    return lista;
+  }, [tarefas, activeTab, busca]);
+
+  // Limite executivo para não poluir o Dashboard
+  const tarefasExibidas = useMemo(() => {
+    return tarefasFiltradasOverview.slice(0, 6);
+  }, [tarefasFiltradasOverview]);
+
+  // Lista de processos detalhada com progresso e contadores
+  const processosCards = useMemo(() => {
+    return processos.map(p => {
+      const tarefasProc = tarefas.filter(t => t.processo_id === p.id);
+      const concluidas = tarefasProc.filter(t => isConcluida(t));
+      const pendentes = tarefasProc.filter(t => !isConcluida(t));
+      const atrasadas = pendentes.filter(t => getPrazoInfo(t.prazo).status === 'atrasada');
+      
+      const pct = tarefasProc.length > 0
+        ? Math.round((concluidas.length / tarefasProc.length) * 100)
+        : 0;
+
+      const respsUnicos = new Set(tarefasProc.map(t => t.responsavel_id).filter(Boolean));
+
+      return {
+        ...p,
+        totalTarefas: tarefasProc.length,
+        tarefasPendentes: pendentes.length,
+        tarefasAtrasadas: atrasadas.length,
+        progresso: pct,
+        totalResponsaveis: respsUnicos.size || 1,
+        corSetor: p.setor_cor || '#2fd9f4'
+      };
+    });
+  }, [processos, tarefas]);
+
+  // Limite executivo para não poluir o Dashboard (máximo 3 fluxos)
+  const processosExibidos = useMemo(() => {
+    return processosCards.slice(0, 3);
+  }, [processosCards]);
+
+  // Formatação de data amigável para o cabeçalho executivo
+  const dataHojeFormatada = useMemo(() => {
+    const agora = new Date();
+    const str = agora.toLocaleDateString('pt-BR', { 
+      weekday: 'long', 
+      day: 'numeric', 
+      month: 'long' 
+    });
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  }, []);
 
   return (
     <div className={styles.layout}>
       <Sidebar />
 
       <main className={styles.main}>
-        {/* Ambient Glow sutil no fundo */}
+        {/* Glow de Iluminação Ambiente (Stitch Obsidian Motif) */}
         <div className={styles.ambientGlowWrap} aria-hidden="true">
-          <div className={styles.ambientGlowLeft}></div>
-          <div className={styles.ambientGlowRight}></div>
+          <div className={styles.ambientGlowCyan}></div>
+          <div className={styles.ambientGlowMint}></div>
         </div>
 
-        {/* Top Header / Workspace Banner */}
-        <section className={styles.topHeader}>
+        {/* 1. Header Executivo com Saudação e Controles */}
+        <header className={styles.topHeader}>
           <div className={styles.headerTitleWrap}>
+            <div className={styles.dateLabelRow}>
+              <span className={styles.dateLabel}>{dataHojeFormatada}</span>
+            </div>
+            
             <div className={styles.greetingRow}>
               <h1 className={styles.pageTitle}>
-                Olá, {usuario?.nome ? usuario.nome.split(' ')[0] : 'Administrador'}
+                Olá, {usuario?.nome ? usuario.nome.split(' ')[0] : 'Gestor'}
               </h1>
               <span className={styles.waveEmoji} role="img" aria-label="Aceno">👋</span>
-              <span
+              
+              <div 
                 className={styles.sectorChipHeader}
                 style={{
-                  backgroundColor: `${setorAtivo?.cor || '#2fd9f4'}18`,
+                  backgroundColor: `${setorAtivo?.cor || '#2fd9f4'}16`,
                   color: setorAtivo?.cor || '#2fd9f4',
-                  border: `1px solid ${setorAtivo?.cor || '#2fd9f4'}44`,
+                  borderColor: `${setorAtivo?.cor || '#2fd9f4'}38`,
                 }}
               >
-                <span
-                  style={{
-                    width: 7,
-                    height: 7,
-                    borderRadius: '50%',
-                    backgroundColor: setorAtivo?.cor || '#2fd9f4',
-                    display: 'inline-block',
-                    marginRight: 6
-                  }}
+                <span 
+                  className={styles.sectorDot} 
+                  style={{ backgroundColor: setorAtivo?.cor || '#2fd9f4' }} 
                 />
-                {setorAtivo ? `Setor: ${setorAtivo.nome}` : 'Todos os Setores'}
-              </span>
+                <span>{setorAtivo ? setorAtivo.nome : 'Visão Geral Consolidada'}</span>
+              </div>
             </div>
+
             <p className={styles.pageSubtitle}>
               {setorAtivo
-                ? `Visualizando indicadores, tarefas e processos exclusivos do setor "${setorAtivo.nome}".`
-                : 'Visão consolidada do fluxo operacional e monitoramento de todos os seus setores.'}
+                ? `Painel de controle com processos, metas e tarefas operacionais exclusivas do setor "${setorAtivo.nome}".`
+                : 'Monitoramento unificado de produtividade, gargalos e execução de fluxos operacionais em todos os setores.'}
             </p>
           </div>
 
           <div className={styles.headerToolbar}>
-            <Link to="/tabela" className={styles.btnToolbarSecondary}>
+            <Link to="/tabela" className={styles.btnSecondary} title="Visualizar planilha avançada de tarefas">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                <polyline points="7 10 12 15 17 10" />
-                <line x1="12" y1="15" x2="12" y2="3" />
+                <rect x="3" y="3" width="18" height="18" rx="2" />
+                <path d="M3 9h18M3 15h18M9 3v18M15 3v18" />
               </svg>
-              <span>Exportar Tabela</span>
+              <span>Tabela Operacional</span>
             </Link>
 
-            <Link to="/processos" className={styles.btnToolbarPrimary}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <Link to="/processos" className={styles.btnPrimary} title="Configurar ou modelar novo fluxo">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
                 <line x1="12" y1="5" x2="12" y2="19" />
                 <line x1="5" y1="12" x2="19" y2="12" />
               </svg>
               <span>Novo Processo</span>
             </Link>
           </div>
-        </section>
+        </header>
 
-        {/* 4 KPI Summary Cards no padrão Stitch */}
-        <section className={styles.kpiGrid}>
+        {/* 2. Grid de 4 KPIs Executivos com Acentos Visuais */}
+        <section className={styles.kpiGrid} aria-label="Indicadores Chave">
+          {/* Card 1: Processos */}
           <div className={styles.kpiCard}>
-            <div className={styles.kpiCardHeader}>
+            <div className={styles.kpiCardTop}>
+              <div className={styles.kpiIconWrapper} style={{ color: '#2fd9f4', background: 'rgba(47, 217, 244, 0.1)' }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <rect x="2" y="7" width="6" height="6" rx="1" />
+                  <rect x="16" y="3" width="6" height="6" rx="1" />
+                  <rect x="16" y="15" width="6" height="6" rx="1" />
+                  <path d="M8 10h4a2 2 0 0 1 2 2v4a2 2 0 0 0 2 2" />
+                  <path d="M12 10V5a2 2 0 0 1 2-2h2" />
+                </svg>
+              </div>
+              <span className={styles.kpiChipMuted}>{loading ? '...' : `${metricas.totalEtapas} etapas ativas`}</span>
+            </div>
+            
+            <div className={styles.kpiContent}>
               <span className={styles.kpiLabel}>Processos Ativos</span>
-              <span className={styles.kpiChipMuted}>{loading ? '...' : `${processos.length} total`}</span>
+              <div className={styles.kpiValueRow}>
+                <span className={styles.kpiValue}>{loading ? '—' : processos.length}</span>
+                <span className={styles.kpiBadgeCyan}>
+                  {metricas.mediaEtapas} etapas/fluxo
+                </span>
+              </div>
             </div>
-            <div className={styles.kpiValueRow}>
-              <span className={styles.kpiValue}>{loading ? '—' : processos.length}</span>
-              <span className={styles.kpiChipPrimary}>fluxos em execução</span>
+
+            <div className={styles.kpiFooter}>
+              <Link to="/processos" className={styles.kpiFooterLink}>
+                Ver todos os fluxos
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <path d="m9 18 6-6-6-6" />
+                </svg>
+              </Link>
             </div>
           </div>
 
+          {/* Card 2: Tarefas Pendentes */}
           <div className={styles.kpiCard}>
-            <div className={styles.kpiCardHeader}>
-              <span className={styles.kpiLabel}>Tarefas em Andamento</span>
-              <span className={styles.dotWarningPulse}></span>
+            <div className={styles.kpiCardTop}>
+              <div className={styles.kpiIconWrapper} style={{ color: '#38bdf8', background: 'rgba(56, 189, 248, 0.1)' }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="12" cy="12" r="10" />
+                  <polyline points="12 6 12 12 16 14" />
+                </svg>
+              </div>
+              <span className={styles.kpiChipMuted}>
+                {loading ? '...' : `${metricas.total} registradas`}
+              </span>
             </div>
-            <div className={styles.kpiValueRow}>
-              <span className={styles.kpiValue}>{loading ? '—' : tarefasPendentes.length}</span>
-              {tarefasAlerta.length > 0 ? (
-                <span className={styles.kpiChipWarning}>{tarefasAlerta.length} com alerta</span>
-              ) : (
-                <span className={styles.kpiChipSuccess}>fluxo regular</span>
-              )}
+            
+            <div className={styles.kpiContent}>
+              <span className={styles.kpiLabel}>Tarefas em Execução</span>
+              <div className={styles.kpiValueRow}>
+                <span className={styles.kpiValue}>{loading ? '—' : metricas.pendentes}</span>
+                <span className={styles.kpiBadgeSky}>
+                  {metricas.pendentes - metricas.atrasadas} em dia
+                </span>
+              </div>
             </div>
-          </div>
 
-          <div className={styles.kpiCard}>
-            <div className={styles.kpiCardHeader}>
-              <span className={styles.kpiLabel}>Taxa de Conclusão</span>
-              <span className={styles.kpiChipSuccess}>{loading ? '...' : `${taxaConclusao}%`}</span>
-            </div>
-            <div className={styles.kpiValueRow}>
-              <span className={styles.kpiValue}>{loading ? '—' : `${taxaConclusao}%`}</span>
-              <span className={styles.kpiChipMuted}>{tarefasConcluidas.length} finalizadas</span>
-            </div>
-          </div>
-
-          <div className={styles.kpiCard}>
-            <div className={styles.kpiCardHeader}>
-              <span className={styles.kpiLabel}>Etapas Configuradas</span>
-              <span className={styles.kpiChipMuted}>{loading ? '...' : `${totalEtapas} etapas`}</span>
-            </div>
-            <div className={styles.kpiValueRow}>
-              <span className={styles.kpiValue}>{loading ? '—' : totalEtapas}</span>
-              <span className={styles.kpiChipPrimary}>
-                {processos.length > 0 ? `${(totalEtapas / processos.length).toFixed(1)} méd/fluxo` : '—'}
+            <div className={styles.kpiFooter}>
+              <span className={styles.kpiFooterNote}>
+                {metricas.vencendoHoje > 0 ? `${metricas.vencendoHoje} vencem hoje` : 'Nenhuma tarefa expira hoje'}
               </span>
             </div>
           </div>
-        </section>
 
-        {/* SEÇÃO 1: Tarefas Pendentes no Overview (Stitch Grid Layout) */}
-        <section className={styles.sectionContainer}>
-          <div className={styles.sectionHeaderRow}>
-            <div className={styles.sectionHeaderTitles}>
-              <h2 className={styles.sectionTitle}>Tarefas Pendentes no Overview</h2>
-              <p className={styles.sectionSubtitle}>
-                Tarefas em andamento que exigem atenção (etapa Finalizado é desconsiderada como pendente)
-              </p>
+          {/* Card 3: Gargalos e Atrasos (Crítico) */}
+          <div 
+            className={`${styles.kpiCard} ${metricas.atrasadas > 0 ? styles.kpiCardCritical : ''}`}
+            onClick={() => setActiveTab('atrasadas')}
+            style={{ cursor: 'pointer' }}
+            title="Clique para filtrar apenas tarefas atrasadas"
+          >
+            <div className={styles.kpiCardTop}>
+              <div 
+                className={styles.kpiIconWrapper} 
+                style={{ 
+                  color: metricas.atrasadas > 0 ? '#ef4444' : '#10b981', 
+                  background: metricas.atrasadas > 0 ? 'rgba(239, 68, 68, 0.12)' : 'rgba(16, 185, 129, 0.1)' 
+                }}
+              >
+                {metricas.atrasadas > 0 ? (
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                    <line x1="12" y1="9" x2="12" y2="13" />
+                    <line x1="12" y1="17" x2="12.01" y2="17" />
+                  </svg>
+                ) : (
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                    <polyline points="22 4 12 14.01 9 11.01" />
+                  </svg>
+                )}
+              </div>
+              {metricas.atrasadas > 0 ? (
+                <span className={styles.badgePulseRed}>
+                  <span className={styles.pulseInnerRed}></span>
+                  Atenção Necessária
+                </span>
+              ) : (
+                <span className={styles.badgeEmerald}>100% no Prazo</span>
+              )}
             </div>
-            <Link to="/tabela" className={styles.sectionHeaderAction}>
-              <span>Ver Todas na Tabela</span>
-              <span className={styles.arrowIcon}>→</span>
-            </Link>
+            
+            <div className={styles.kpiContent}>
+              <span className={styles.kpiLabel}>Gargalos & Atrasos</span>
+              <div className={styles.kpiValueRow}>
+                <span className={`${styles.kpiValue} ${metricas.atrasadas > 0 ? styles.valDanger : ''}`}>
+                  {loading ? '—' : metricas.atrasadas}
+                </span>
+                <span className={metricas.atrasadas > 0 ? styles.kpiBadgeDanger : styles.kpiBadgeSuccess}>
+                  {metricas.atrasadas > 0 ? 'tarefas vencidas' : 'operação regular'}
+                </span>
+              </div>
+            </div>
+
+            <div className={styles.kpiFooter}>
+              <span className={styles.kpiFooterActionText}>
+                {metricas.atrasadas > 0 ? 'Ver tarefas atrasadas →' : 'Tudo em conformidade'}
+              </span>
+            </div>
           </div>
 
-          {/* Grid de Cards de Tarefas Pendentes */}
+          {/* Card 4: Taxa de Conclusão */}
+          <div className={styles.kpiCard}>
+            <div className={styles.kpiCardTop}>
+              <div className={styles.kpiIconWrapper} style={{ color: '#10b981', background: 'rgba(16, 185, 129, 0.1)' }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                </svg>
+              </div>
+              <span className={styles.kpiChipSuccess}>{loading ? '...' : `${metricas.concluidas} finalizadas`}</span>
+            </div>
+            
+            <div className={styles.kpiContent}>
+              <span className={styles.kpiLabel}>Taxa de Conclusão</span>
+              <div className={styles.kpiValueRow}>
+                <span className={styles.kpiValue}>{loading ? '—' : `${metricas.taxa}%`}</span>
+                <span className={styles.kpiBadgeSuccess}>
+                  eficiência global
+                </span>
+              </div>
+            </div>
+
+            <div className={styles.kpiFooter}>
+              <div className={styles.miniProgressTrack}>
+                <div 
+                  className={styles.miniProgressFill} 
+                  style={{ width: `${Math.min(100, Math.max(0, metricas.taxa))}%` }}
+                />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* 3. Seção Interativa: Tarefas no Overview */}
+        <section className={styles.sectionContainer}>
+          <div className={styles.sectionHeaderRow}>
+            <div className={styles.sectionTitleBlock}>
+              <div className={styles.sectionTitleWithPill}>
+                <h2 className={styles.sectionTitle}>Tarefas no Overview</h2>
+                <span className={styles.sectionCounterPill}>{tarefasFiltradasOverview.length}</span>
+              </div>
+              <p className={styles.sectionSubtitle}>
+                Acompanhamento em tempo real de itens que demandam ação ou resolução
+              </p>
+            </div>
+
+            {/* Ações e Pesquisa Rápida */}
+            <div className={styles.sectionControls}>
+              <div className={styles.searchBox}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="11" cy="11" r="8" />
+                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                </svg>
+                <input
+                  type="text"
+                  placeholder="Pesquisar tarefas..."
+                  value={busca}
+                  onChange={(e) => setBusca(e.target.value)}
+                  className={styles.searchInput}
+                />
+                {busca && (
+                  <button onClick={() => setBusca('')} className={styles.searchClearBtn} title="Limpar busca">
+                    ×
+                  </button>
+                )}
+              </div>
+
+              <Link to="/tabela" className={styles.linkVerTudo}>
+                <span>Abrir Tabela Completa</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <path d="M5 12h14M12 5l7 7-7 7" />
+                </svg>
+              </Link>
+            </div>
+          </div>
+
+          {/* Filtros em Abas Segmentadas */}
+          <div className={styles.tabsStrip}>
+            <button
+              onClick={() => setActiveTab('pendentes')}
+              className={`${styles.tabBtn} ${activeTab === 'pendentes' ? styles.tabBtnActive : ''}`}
+            >
+              <span>Todas Pendentes</span>
+              <span className={styles.tabBadge}>{metricas.pendentes}</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('atrasadas')}
+              className={`${styles.tabBtn} ${styles.tabBtnDanger} ${activeTab === 'atrasadas' ? styles.tabBtnActiveDanger : ''}`}
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="12" />
+                <line x1="12" y1="16" x2="12.01" y2="16" />
+              </svg>
+              <span>Atrasadas</span>
+              <span className={styles.tabBadgeDanger}>{metricas.atrasadas}</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('em_breve')}
+              className={`${styles.tabBtn} ${styles.tabBtnWarning} ${activeTab === 'em_breve' ? styles.tabBtnActiveWarning : ''}`}
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+              </svg>
+              <span>Vencendo em Breve</span>
+              <span className={styles.tabBadgeWarning}>{metricas.vencendoEmBreve}</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('urgentes')}
+              className={`${styles.tabBtn} ${styles.tabBtnSky} ${activeTab === 'urgentes' ? styles.tabBtnActiveSky : ''}`}
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
+                <line x1="4" y1="22" x2="4" y2="15" stroke="currentColor" strokeWidth="2" />
+              </svg>
+              <span>Urgentes</span>
+              <span className={styles.tabBadgeSky}>{metricas.urgentes}</span>
+            </button>
+          </div>
+
+          {/* Cards de Tarefas no Layout Stitch */}
           {loading ? (
-            <div className={styles.emptyStateContainer}>Carregando tarefas em andamento...</div>
-          ) : tarefasOverview.length === 0 ? (
-            <div className={styles.emptyStateContainer}>
-              <span>Nenhuma tarefa pendente no momento. Todas as rotinas operacionais estão em conformidade!</span>
+            <div className={styles.loadingState}>
+              <div className={styles.spinner}></div>
+              <span>Carregando tarefas operacionais...</span>
+            </div>
+          ) : tarefasFiltradasOverview.length === 0 ? (
+            <div className={styles.emptyState}>
+              <div className={styles.emptyIconWrap}>
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="m9 12 2 2 4-4" />
+                </svg>
+              </div>
+              <h3 className={styles.emptyTitle}>Nenhuma tarefa encontrada neste filtro</h3>
+              <p className={styles.emptySubtitle}>
+                {busca 
+                  ? `Nenhum resultado corresponde à pesquisa "${busca}".` 
+                  : activeTab === 'atrasadas'
+                  ? 'Excelente notícia! Nenhuma tarefa está em atraso neste momento.'
+                  : 'Todas as tarefas desta categoria foram concluídas ou não foram criadas.'}
+              </p>
+              {(busca || activeTab !== 'pendentes') && (
+                <button
+                  onClick={() => { setActiveTab('pendentes'); setBusca(''); }}
+                  className={styles.emptyResetBtn}
+                >
+                  Restaurar Filtro Padrão
+                </button>
+              )}
             </div>
           ) : (
             <div className={styles.taskCardsGrid}>
-              {tarefasOverview.map(card => (
-                <Link key={card.id} to={`/tarefas/${card.id}`} className={styles.cardLinkWrap}>
-                  <div className={styles.taskOverviewCard}>
-                    <div className={styles.taskCardTopRow}>
-                      <span className={`${styles.categoryBadge} ${styles['cat_' + card.categoriaTipo]}`}>
-                        {card.categoria}
-                      </span>
-                      <span className={`${styles.urgencyChip} ${styles['urg_' + card.urgencia.tipo]}`}>
-                        {card.urgencia.icon === 'flag' && (
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
-                            <line x1="4" y1="22" x2="4" y2="15" stroke="currentColor" strokeWidth="2" />
-                          </svg>
-                        )}
-                        {card.urgencia.icon === 'clock' && (
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <circle cx="12" cy="12" r="10" />
-                            <polyline points="12 6 12 12 16 14" />
-                          </svg>
-                        )}
-                        {card.urgencia.icon === 'check' && (
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                            <circle cx="12" cy="12" r="10" />
-                            <polyline points="9 12 12 15 16 10" />
-                          </svg>
-                        )}
-                        <span>{card.urgencia.label}</span>
-                      </span>
-                    </div>
+              {tarefasExibidas.map((t) => {
+                const prazoInfo = getPrazoInfo(t.prazo);
+                const isUrgente = t.urgente === 1 || t.urgente === true;
+                const corSetor = t.setor_cor || '#2fd9f4';
 
-                    <div className={styles.taskCardBody}>
-                      <h3 className={styles.taskCardTitle} title={card.titulo}>
-                        {card.titulo}
-                      </h3>
-                      <p className={styles.taskCardSnippet} title={card.descricao}>
-                        {card.descricao}
-                      </p>
-                    </div>
-
-                    <div className={styles.taskCardFooter}>
-                      <div className={styles.userRow}>
-                        <span className={styles.avatarMini}>
-                          {card.responsavel ? card.responsavel.trim().charAt(0).toUpperCase() : 'U'}
+                return (
+                  <div
+                    key={t.id}
+                    onClick={() => navigate(`/tarefas/${t.id}`)}
+                    className={styles.taskCard}
+                  >
+                    {/* Header do Card: Processo / Setor + Urgência/Prazo */}
+                    <div className={styles.taskCardHeader}>
+                      <div className={styles.taskSectorWrap}>
+                        <span 
+                          className={styles.sectorDotMini} 
+                          style={{ backgroundColor: corSetor }} 
+                        />
+                        <span className={styles.taskProcessName} title={t.processo_nome || 'Geral'}>
+                          {t.processo_nome || 'Geral'}
                         </span>
-                        <span className={styles.userNome}>{card.responsavel}</span>
                       </div>
-                      <span className={styles.deadlineLabel}>{card.prazoLabel}</span>
+
+                      <div className={styles.taskPillsRow}>
+                        {isUrgente && (
+                          <span className={styles.urgentFlagPill} title="Tarefa prioritária">
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
+                            </svg>
+                            Urgente
+                          </span>
+                        )}
+
+                        <span 
+                          className={`${styles.deadlinePill} ${
+                            prazoInfo.status === 'atrasada' 
+                              ? styles.deadlineDanger 
+                              : prazoInfo.status === 'hoje' 
+                              ? styles.deadlineWarning 
+                              : styles.deadlineNormal
+                          }`}
+                        >
+                          {prazoInfo.label}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Corpo do Card: Título + Descrição */}
+                    <div className={styles.taskCardBody}>
+                      <h3 className={styles.taskTitle} title={t.titulo}>
+                        {t.titulo}
+                      </h3>
+                      {t.descricao ? (
+                        <p className={styles.taskSnippet} title={t.descricao}>
+                          {t.descricao}
+                        </p>
+                      ) : (
+                        <p className={styles.taskSnippetEmpty}>Sem observações adicionais</p>
+                      )}
+                    </div>
+
+                    {/* Etapa Atual do Fluxo */}
+                    <div className={styles.taskStageRow}>
+                      <span className={styles.stageIndicatorIcon}>➔</span>
+                      <span className={styles.stageLabelText}>
+                        Etapa: <strong>{t.etapa_nome || 'Em Andamento'}</strong>
+                      </span>
+                    </div>
+
+                    {/* Footer do Card: Responsável + Link Ação */}
+                    <div className={styles.taskCardFooter}>
+                      <div className={styles.assigneeWrap} title={`Responsável: ${t.responsavel_nome || 'Não atribuído'}`}>
+                        <span className={styles.assigneeAvatar}>
+                          {t.responsavel_nome ? t.responsavel_nome.trim().charAt(0).toUpperCase() : 'U'}
+                        </span>
+                        <span className={styles.assigneeName}>
+                          {t.responsavel_nome || 'Não atribuído'}
+                        </span>
+                      </div>
+
+                      <span className={styles.cardActionHint}>
+                        Detalhes
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                          <path d="m9 18 6-6-6-6" />
+                        </svg>
+                      </span>
                     </div>
                   </div>
-                </Link>
-              ))}
+                );
+              })}
             </div>
           )}
 
-          {/* Banner de Conformidade */}
-          <div className={styles.complianceBanner}>
-            <div className={styles.complianceIconWrap}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-                <circle cx="12" cy="12" r="10" />
-                <path d="m9 12 2 2 4-4" />
-              </svg>
+          {/* Aviso e link quando houver mais de 6 tarefas pendentes */}
+          {tarefasFiltradasOverview.length > 6 && (
+            <div className={styles.sectionShowMoreRow}>
+              <span className={styles.showMoreNotice}>
+                Exibindo as <strong>6</strong> tarefas mais prioritárias de <strong>{tarefasFiltradasOverview.length}</strong> pendentes.
+              </span>
+              <Link to="/tabela" className={styles.linkShowMore}>
+                <span>Ver todas na Tabela Completa ({tarefasFiltradasOverview.length})</span>
+                <span className={styles.arrowIcon}>→</span>
+              </Link>
             </div>
-            <span className={styles.complianceText}>
-              {tarefasAlerta.length === 0 ? (
-                'Operação em conformidade. Nenhuma tarefa atrasada registrada nas últimas 24 horas.'
+          )}
+
+          {/* Banner de Auditoria e Conformidade */}
+          <div className={`${styles.complianceBanner} ${metricas.atrasadas > 0 ? styles.complianceBannerWarning : ''}`}>
+            <div className={styles.complianceIcon}>
+              {metricas.atrasadas > 0 ? (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2">
+                  <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                  <line x1="12" y1="9" x2="12" y2="13" />
+                  <line x1="12" y1="17" x2="12.01" y2="17" />
+                </svg>
               ) : (
-                `Atenção operacional: ${tarefasAlerta.length} tarefa(s) pendente(s) com prazo crítico ou em atraso.`
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2.5">
+                  <circle cx="12" cy="12" r="10" />
+                  <polyline points="9 12 12 15 16 10" />
+                </svg>
               )}
-            </span>
+            </div>
+            <div className={styles.complianceContent}>
+              <span className={styles.complianceTitle}>
+                {metricas.atrasadas > 0 ? 'Atenção Operacional' : 'Operação em Total Conformidade'}
+              </span>
+              <span className={styles.complianceText}>
+                {metricas.atrasadas > 0
+                  ? `Identificamos ${metricas.atrasadas} tarefa(s) com prazo estourado que requerem intervenção prioritária dos gestores.`
+                  : 'Nenhuma pendência crítica ou atraso detectado nas últimas 24 horas. SLAs mantidos com sucesso.'}
+              </span>
+            </div>
+            {metricas.atrasadas > 0 && (
+              <button 
+                onClick={() => setActiveTab('atrasadas')}
+                className={styles.complianceActionBtn}
+              >
+                Filtrar Atrasos
+              </button>
+            )}
           </div>
         </section>
 
-        {/* SEÇÃO 2: Processos Configurados */}
+        {/* 4. Seção: Processos e Fluxos Operacionais Configurados */}
         <section className={styles.sectionContainer}>
           <div className={styles.sectionHeaderRow}>
-            <div className={styles.sectionHeaderTitles}>
-              <h2 className={styles.sectionTitle}>Processos Configurados</h2>
+            <div className={styles.sectionTitleBlock}>
+              <div className={styles.sectionTitleWithPill}>
+                <h2 className={styles.sectionTitle}>Processos e Fluxos Operacionais</h2>
+                <span className={styles.sectionCounterPill}>{processos.length}</span>
+              </div>
               <p className={styles.sectionSubtitle}>
-                Fluxos operacionais em execução contínua com gatilhos automáticos
+                Mapeamento e automação de rotinas contínuas entre setores e colaboradores
               </p>
             </div>
-            <Link to="/processos" className={styles.sectionHeaderAction}>
-              <span>Ver Todos</span>
-              <span className={styles.arrowIcon}>→</span>
+
+            <Link to="/processos" className={styles.linkVerTudo}>
+              <span>Gerenciar Fluxos</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
             </Link>
           </div>
 
-          {/* Lista de Processos Configurados */}
           {loading ? (
-            <div className={styles.emptyStateContainer}>Carregando processos...</div>
-          ) : processosLista.length === 0 ? (
-            <div className={styles.emptyStateContainer}>
-              <span>Nenhum processo configurado no momento. Crie seu primeiro fluxo de trabalho no botão abaixo.</span>
+            <div className={styles.loadingState}>
+              <div className={styles.spinner}></div>
+              <span>Carregando fluxos de trabalho...</span>
+            </div>
+          ) : processosCards.length === 0 ? (
+            <div className={styles.emptyState}>
+              <p className={styles.emptySubtitle}>Nenhum processo mapeado para este setor até o momento.</p>
+              <Link to="/processos" className={styles.emptyResetBtn}>
+                Criar Primeiro Processo
+              </Link>
             </div>
           ) : (
-            <div className={styles.processRowsList}>
-              {processosLista.map(p => (
-                <div key={p.id} className={styles.processRowItem}>
-                  <div className={styles.processRowLeft}>
-                    {/* Ícone Setorial */}
-                    <div className={`${styles.sectorIconBox} ${styles['sector_' + p.colorTheme]}`}>
-                      {p.iconType === 'workflow' && (
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <rect x="2" y="7" width="6" height="6" rx="1" />
-                          <rect x="16" y="3" width="6" height="6" rx="1" />
-                          <rect x="16" y="15" width="6" height="6" rx="1" />
-                          <path d="M8 10h4a2 2 0 0 1 2 2v4a2 2 0 0 0 2 2" />
-                          <path d="M12 10V5a2 2 0 0 1 2-2h2" />
-                        </svg>
-                      )}
-                      {p.iconType === 'shield' && (
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                          <path d="m9 12 2 2 4-4" />
-                        </svg>
-                      )}
-                      {p.iconType === 'idcard' && (
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <rect x="3" y="4" width="18" height="16" rx="2" />
-                          <line x1="7" y1="8" x2="11" y2="8" />
-                          <line x1="7" y1="12" x2="17" y2="12" />
-                          <line x1="7" y1="16" x2="13" y2="16" />
-                        </svg>
-                      )}
+            <div className={styles.processList}>
+              {processosExibidos.map((p) => (
+                <div key={p.id} className={styles.processItemCard}>
+                  {/* Lado Esquerdo: Ícone + Título + Metadados */}
+                  <div className={styles.processLeft}>
+                    <div 
+                      className={styles.processSectorIcon}
+                      style={{
+                        backgroundColor: `${p.corSetor}16`,
+                        color: p.corSetor,
+                        borderColor: `${p.corSetor}33`,
+                      }}
+                    >
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <rect x="3" y="3" width="7" height="7" rx="1" />
+                        <rect x="14" y="3" width="7" height="7" rx="1" />
+                        <rect x="14" y="14" width="7" height="7" rx="1" />
+                        <rect x="3" y="14" width="7" height="7" rx="1" />
+                      </svg>
                     </div>
 
-                    <div className={styles.processMetaWrap}>
-                      <div className={styles.processTitleRow}>
-                        <Link
-                          to={`/processos/${p.id}/fluxo`}
-                          className={styles.processTitleLink}
-                        >
+                    <div className={styles.processInfo}>
+                      <div className={styles.processHeaderTitle}>
+                        <Link to={`/processos/${p.id}/fluxo`} className={styles.processLinkName}>
                           {p.nome}
                         </Link>
-                        <span className={styles.cyanDot}>•</span>
+                        {p.setor_nome && (
+                          <span 
+                            className={styles.processSectorTag}
+                            style={{
+                              color: p.corSetor,
+                              backgroundColor: `${p.corSetor}12`,
+                              borderColor: `${p.corSetor}2b`
+                            }}
+                          >
+                            {p.setor_nome}
+                          </span>
+                        )}
                       </div>
-                      <div className={styles.processMetaSub}>
-                        <span>{p.etapas} etapas</span>
-                        <span className={styles.metaDotSep}>•</span>
-                        <span>{p.responsaveis} responsável{p.responsaveis !== 1 ? 'is' : ''}</span>
-                        <span className={styles.metaDotSep}>•</span>
-                        <span>Atualizado {p.atualizado}</span>
+
+                      <div className={styles.processMetaDetails}>
+                        <span>{p.etapas || 0} etapas</span>
+                        <span className={styles.metaDot}>•</span>
+                        <span>{p.totalTarefas} tarefa(s) total</span>
+                        <span className={styles.metaDot}>•</span>
+                        <span className={p.tarefasPendentes > 0 ? styles.textCyan : styles.textSuccess}>
+                          {p.tarefasPendentes} em andamento
+                        </span>
+                        {p.tarefasAtrasadas > 0 && (
+                          <>
+                            <span className={styles.metaDot}>•</span>
+                            <span className={styles.textDanger}>
+                              ⚠️ {p.tarefasAtrasadas} atrasada(s)
+                            </span>
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>
 
-                  <div className={styles.processRowRight}>
-                    <div className={styles.globalProgressWrap}>
-                      <span className={styles.progressLabel}>Progresso Global</span>
-                      <div className={styles.progressBarRow}>
-                        <div className={styles.progressBarTrack}>
-                          <div
-                            className={styles.progressBarFillCyan}
-                            style={{ width: `${Math.min(100, Math.max(p.progresso === 0 ? 0 : 8, p.progresso))}%` }}
-                          ></div>
-                        </div>
-                        <span className={styles.progressPercentText}>{p.progresso}%</span>
+                  {/* Lado Direito: Barra de Progresso + Botão Acessar */}
+                  <div className={styles.processRight}>
+                    <div className={styles.progressContainer}>
+                      <div className={styles.progressHeader}>
+                        <span className={styles.progressTitle}>Conclusão</span>
+                        <span className={styles.progressPercent}>{p.progresso}%</span>
+                      </div>
+                      <div className={styles.progressTrack}>
+                        <div 
+                          className={styles.progressFill}
+                          style={{ 
+                            width: `${Math.min(100, Math.max(p.progresso > 0 ? 5 : 0, p.progresso))}%`,
+                            background: p.progresso === 100 
+                              ? 'linear-gradient(90deg, #10b981, #059669)' 
+                              : 'linear-gradient(90deg, #2fd9f4, #14b8a6)'
+                          }}
+                        />
                       </div>
                     </div>
 
-                    <Link
+                    <Link 
                       to={`/processos/${p.id}/fluxo`}
-                      className={styles.btnRowMore}
-                      title="Acessar quadro do processo"
+                      className={styles.btnOpenFlow}
+                      title="Visualizar etapas e tarefas deste fluxo"
                     >
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                        <circle cx="12" cy="5" r="2" />
-                        <circle cx="12" cy="12" r="2" />
-                        <circle cx="12" cy="19" r="2" />
+                      <span>Abrir Fluxo</span>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <path d="M5 12h14M12 5l7 7-7 7" />
                       </svg>
                     </Link>
                   </div>
@@ -458,12 +833,31 @@ export default function Dashboard() {
             </div>
           )}
 
-          {/* Rodapé CTA para Mapear Novo Processo */}
-          <div className={styles.bottomCtaRow}>
-            <span className={styles.bottomCtaText}>Precisa mapear um novo fluxo de trabalho?</span>
-            <Link to="/processos" className={styles.bottomCtaLink}>
-              <span>Clique aqui para criar um novo processo</span>
-              <span className={styles.chevronIcon}>›</span>
+          {/* Aviso e link quando houver mais de 3 processos */}
+          {processosCards.length > 3 && (
+            <div className={styles.sectionShowMoreRow}>
+              <span className={styles.showMoreNotice}>
+                Exibindo <strong>3</strong> de <strong>{processosCards.length}</strong> fluxos de trabalho configurados.
+              </span>
+              <Link to="/processos" className={styles.linkShowMore}>
+                <span>Ver todos os processos ({processosCards.length})</span>
+                <span className={styles.arrowIcon}>→</span>
+              </Link>
+            </div>
+          )}
+
+          {/* Footer CTA: Criar novo processo */}
+          <div className={styles.sectionFooterCta}>
+            <div className={styles.footerCtaInfo}>
+              <span className={styles.footerCtaTitle}>Quer desenhar um novo procedimento operacional?</span>
+              <span className={styles.footerCtaSub}>Crie formulários, defina etapas com responsáveis e automatize transições.</span>
+            </div>
+            <Link to="/processos" className={styles.btnCreateProcessQuick}>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+              <span>Cadastrar Novo Fluxo</span>
             </Link>
           </div>
         </section>
