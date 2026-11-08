@@ -1,28 +1,34 @@
+/* ==========================================================
+   SIDEBAR COMPONENT - STITCH DESIGN SYSTEM & MEDIATOR INSPIRED
+   Layout fixo, rolagem independente, rodapé permanente
+   e alinhamento perfeito da Logo original
+   ========================================================== */
+
 .aside {
-  width: 256px;
-  min-height: 100vh;
+  width: 260px;
+  height: 100vh;
+  max-height: 100vh;
+  position: sticky;
+  top: 0;
+  left: 0;
   background: var(--surface-low, #18191d);
   border-right: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.08));
   display: flex;
   flex-direction: column;
-  flex-shrink: 0;
   justify-content: space-between;
-  transition: transform 0.25s ease;
+  overflow: hidden;
+  flex-shrink: 0;
+  transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1), transform 0.25s ease;
   z-index: 50;
+  box-sizing: border-box;
 }
 
-.mobileHeader {
-  display: none;
+/* Modo Minimizado (Icon-only) */
+.asideCollapsed {
+  width: 72px;
 }
 
-.btnCloseMobile {
-  display: none;
-}
-
-.mobileBackdrop {
-  display: none;
-}
-
+/* Cabeçalho da Sidebar (Logo posicionada exatamente como antes) */
 .asideLogo {
   display: flex;
   align-items: center;
@@ -32,147 +38,234 @@
   border-bottom: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.08));
   height: 64px;
   background: var(--surface-low, #18191d);
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+.asideCollapsed .asideLogo {
+  justify-content: center;
+  padding: 16px 0;
+}
+
+.btnCloseMobile {
+  display: none;
+}
+
+.mobileHeader {
+  display: none;
+}
+
+.mobileBackdrop {
+  display: none;
+}
+
+/* Conteúdo central com rolagem independente */
+.asideContent {
+  flex: 1 1 0%;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 12px;
+}
+
+/* Scrollbar refinada e discreta */
+.asideContent::-webkit-scrollbar {
+  width: 4px;
+}
+
+.asideContent::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.asideContent::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+.asideContent::-webkit-scrollbar-thumb:hover {
+  background: rgba(47, 217, 244, 0.3);
 }
 
 /* ============================================================ */
-/* SELETOR DE SETOR (WORKSPACE SWITCHER)                        */
+/* SELETOR DE SETOR (REWORK VISUAL MODERNO - WORKSPACE CARD)    */
 /* ============================================================ */
-.workspaceSection {
+.workspaceWrapper {
   position: relative;
-  padding: 14px 14px 4px;
+  padding: 12px 12px 6px;
 }
 
-.workspaceHeaderRow {
+.asideCollapsed .workspaceWrapper {
+  padding: 12px 10px 6px;
+  display: flex;
+  justify-content: center;
+}
+
+.sectorCard {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 11px;
+  padding: 7px 10px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin-bottom: 6px;
-  padding: 0 4px;
+  gap: 10px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  text-align: left;
+  box-sizing: border-box;
 }
 
-.workspaceLabel {
-  font-size: 10px;
+.sectorCard:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(47, 217, 244, 0.3);
+  transform: translateY(-1px);
+}
+
+.sectorCardOpen {
+  background: rgba(47, 217, 244, 0.08);
+  border-color: rgba(47, 217, 244, 0.45);
+  box-shadow: 0 0 14px rgba(47, 217, 244, 0.12);
+}
+
+.sectorCardCollapsed {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  justify-content: center;
+  border-radius: 10px;
+}
+
+.sectorBadgeBox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.sectorColorBadge {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  color: #0b1522;
+  font-weight: 800;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  transition: transform 0.2s ease;
+}
+
+.sectorGeneralBadge {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  background: rgba(47, 217, 244, 0.12);
+  border: 1px solid rgba(47, 217, 244, 0.25);
+  color: #2fd9f4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sectorInfo {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.sectorTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sectorTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-main, #f8fafc);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: -0.01em;
+}
+
+.sectorSubtitle {
+  font-size: 10.5px;
+  color: var(--text-muted, #94a3b8);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 1px;
+}
+
+.sectorChevronWrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-subtle, #64748b);
+  flex-shrink: 0;
+  transition: color 0.2s ease;
+}
+
+.sectorCard:hover .sectorChevronWrap {
+  color: var(--primary, #2fd9f4);
+}
+
+.chevronsUpDownIcon {
+  display: block;
+}
+
+/* Dropdown Popover de Setores */
+.sectorDropdownPopover {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 12px;
+  right: 12px;
+  background: #14161b;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.7), 0 0 16px rgba(47, 217, 244, 0.08);
+  padding: 6px;
+  z-index: 100;
+  animation: dropdownPopIn 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  box-sizing: border-box;
+}
+
+.sectorDropdownFloating {
+  left: 74px;
+  right: auto;
+  top: 6px;
+  width: 230px;
+}
+
+@keyframes dropdownPopIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.dropdownHeaderLabel {
+  padding: 6px 8px 4px;
+}
+
+.dropdownHeaderLabel span {
+  font-size: 9.5px;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--text-muted, #94a3b8);
 }
 
-.btnGerenciarSetoresMini {
-  background: transparent;
-  border: none;
-  color: #2fd9f4;
-  font-size: 11px;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  cursor: pointer;
-  padding: 2px 4px;
-  border-radius: 4px;
-  transition: all 0.15s ease;
-}
-
-.btnGerenciarSetoresMini:hover {
-  background: rgba(47, 217, 244, 0.1);
-  color: #38bdf8;
-}
-
-.workspaceSelector {
-  width: 100%;
-  background: rgba(14, 18, 25, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
-  padding: 8px 10px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  text-align: left;
-}
-
-.workspaceSelector:hover, .workspaceSelectorOpen {
-  border-color: rgba(47, 217, 244, 0.4);
-  background: rgba(18, 26, 38, 0.9);
-  box-shadow: 0 0 16px rgba(47, 217, 244, 0.08);
-}
-
-.workspaceSelectorLeft {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  min-width: 0;
-}
-
-.workspaceDot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.workspaceNameCol {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-
-.workspaceName {
-  font-size: 13px;
-  font-weight: 600;
-  color: #f1f5f9;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.workspaceScope {
-  font-size: 11px;
-  color: #64748b;
-  line-height: 1.2;
-}
-
-.chevronIcon {
-  color: #94a3b8;
-  transition: transform 0.2s ease;
-  flex-shrink: 0;
-}
-
-.chevronIconRotate {
-  transform: rotate(180deg);
-  color: #2fd9f4;
-}
-
-.workspaceDropdown {
-  position: absolute;
-  top: calc(100% + 4px);
-  left: 14px;
-  right: 14px;
-  background: #0f1623;
-  border: 1px solid rgba(47, 217, 244, 0.25);
-  border-radius: 12px;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.75), 0 0 20px rgba(47, 217, 244, 0.1);
-  z-index: 100;
-  padding: 6px;
-  animation: dropdownIn 0.15s ease;
-}
-
-@keyframes dropdownIn {
-  from { opacity: 0; transform: translateY(-6px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.dropdownHeader {
-  padding: 6px 8px 4px;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  color: #64748b;
-  text-transform: uppercase;
-}
-
-.dropdownListScroll {
+.dropdownScrollArea {
   max-height: 190px;
   overflow-y: auto;
   display: flex;
@@ -180,41 +273,50 @@
   gap: 2px;
 }
 
-.dropdownItem {
+.dropdownScrollArea::-webkit-scrollbar {
+  width: 4px;
+}
+
+.dropdownScrollArea::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+}
+
+.dropdownOption {
   width: 100%;
-  background: transparent;
-  border: none;
-  border-radius: 8px;
-  padding: 7px 8px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  padding: 7px 8px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
   cursor: pointer;
   transition: all 0.15s ease;
   text-align: left;
+  box-sizing: border-box;
 }
 
-.dropdownItem:hover {
+.dropdownOption:hover {
   background: rgba(255, 255, 255, 0.06);
 }
 
-.dropdownItemActive {
+.dropdownOptionActive {
   background: rgba(47, 217, 244, 0.12) !important;
-  border: 1px solid rgba(47, 217, 244, 0.25);
 }
 
-.dropdownItemLeft {
+.dropdownOptionLeft {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 9px;
   min-width: 0;
 }
 
-.dropdownItemIconGeneral {
-  width: 22px;
-  height: 22px;
+.dropdownOptionIconGrid {
+  width: 24px;
+  height: 24px;
   border-radius: 6px;
-  background: rgba(47, 217, 244, 0.15);
+  background: rgba(47, 217, 244, 0.12);
   color: #2fd9f4;
   display: flex;
   align-items: center;
@@ -222,138 +324,155 @@
   flex-shrink: 0;
 }
 
-.dropdownItemDot {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
+.dropdownSectorBadge {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  border: 1px solid transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
 }
 
-.dropdownItemText {
+.dropdownOptionText {
   display: flex;
   flex-direction: column;
   min-width: 0;
 }
 
-.dropdownItemTitle {
+.dropdownOptionName {
   font-size: 12.5px;
   font-weight: 600;
-  color: #f1f5f9;
+  color: var(--text-main, #f8fafc);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.dropdownItemSub {
-  font-size: 10.5px;
-  color: #64748b;
+.dropdownOptionMeta {
+  font-size: 10px;
+  color: var(--text-muted, #94a3b8);
 }
 
-.checkIcon {
+.activeCheckIcon {
   color: #2fd9f4;
   flex-shrink: 0;
 }
 
 .dropdownDivider {
   height: 1px;
-  background: rgba(255, 255, 255, 0.07);
-  margin: 4px 0;
+  background: rgba(255, 255, 255, 0.08);
+  margin: 5px 0;
 }
 
-.dropdownBtnGerenciar {
-  width: 100%;
-  background: transparent;
-  border: 1px dashed rgba(47, 217, 244, 0.3);
-  color: #2fd9f4;
-  border-radius: 8px;
-  padding: 7px;
-  font-size: 12px;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.dropdownBtnGerenciar:hover {
-  background: rgba(47, 217, 244, 0.12);
-  border-color: #2fd9f4;
-}
-
-.navLinkButton {
+.dropdownFooterBtn {
   width: 100%;
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 10px 14px;
-  border-radius: 8px;
-  font-size: 13.5px;
-  color: var(--text-muted, #94a3b8);
+  gap: 8px;
+  padding: 8px;
   background: transparent;
   border: none;
+  border-radius: 8px;
+  color: #2fd9f4;
+  font-size: 12px;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.15s ease;
-  font-weight: 500;
-  text-align: left;
-  font-family: inherit;
 }
 
-.navLinkButton:hover {
-  background: var(--surface-container, #1f1f23);
-  color: var(--text-main, #f8fafc);
+.dropdownFooterBtn:hover {
+  background: rgba(47, 217, 244, 0.12);
+  color: #57f1db;
 }
 
-.navLinkButton:hover svg {
-  color: var(--primary, #2fd9f4);
+/* ============================================================ */
+/* GRUPOS E LINKS DE NAVEGAÇÃO                                  */
+/* ============================================================ */
+.navGroup {
+  display: flex;
+  flex-direction: column;
+  margin-top: 6px;
 }
 
-.navSectionHeader {
-  padding: 18px 16px 6px;
-}
-
-.navSectionLabel {
-  font-size: 11px;
+.navGroupLabel {
+  font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--text-muted, #94a3b8);
+  padding: 10px 18px 4px 18px;
+  user-select: none;
 }
 
-.asideNav {
+.navGroupDivider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+  margin: 8px 14px;
+}
+
+.navGroupMenu {
   display: flex;
   flex-direction: column;
-  padding: 8px 10px 0;
-  gap: 4px;
+  gap: 3px;
+  padding: 0 10px;
 }
 
-.navLink {
+.asideCollapsed .navGroupMenu {
+  padding: 0 10px;
+  align-items: center;
+}
+
+.navLink,
+.navLinkButton {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px 14px;
+  padding: 9px 12px;
   border-radius: 8px;
-  font-size: 13.5px;
-  color: var(--text-muted, #94a3b8);
+  color: var(--text-body, #e3e2e6);
   text-decoration: none;
-  transition: all 0.15s ease;
+  font-size: 13.5px;
   font-weight: 500;
+  transition: all 0.15s ease;
   border-left: 3px solid transparent;
+  cursor: pointer;
+  background: transparent;
+  border-top: none;
+  border-right: none;
+  border-bottom: none;
+  width: 100%;
+  text-align: left;
+  box-sizing: border-box;
 }
 
-.navLink svg {
+.navLinkCollapsed {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  justify-content: center;
+  border-left: none;
+  border-radius: 8px;
+}
+
+.navLink svg,
+.navLinkButton svg {
   color: var(--text-muted, #94a3b8);
   transition: color 0.15s ease, transform 0.15s ease;
   flex-shrink: 0;
 }
 
-.navLink:hover {
+.navLink:hover,
+.navLinkButton:hover {
   background: var(--surface-container, #1f1f23);
   color: var(--text-main, #f8fafc);
 }
 
-.navLink:hover svg {
+.navLink:hover svg,
+.navLinkButton:hover svg {
   color: var(--primary, #2fd9f4);
 }
 
@@ -365,25 +484,53 @@
   box-shadow: inset 1px 0 12px rgba(47, 217, 244, 0.12);
 }
 
+.navLinkCollapsed.navLinkActive {
+  border-left: none;
+  background: rgba(47, 217, 244, 0.15);
+  box-shadow: 0 0 12px rgba(47, 217, 244, 0.2);
+}
+
 .navLinkActive svg {
   color: var(--primary, #2fd9f4) !important;
 }
 
+/* ============================================================ */
+/* RODAPÉ FIXO PERMANENTE: CARD DE PERFIL OPERADOR              */
+/* ============================================================ */
 .userFooter {
-  padding: 14px 16px;
+  flex-shrink: 0;
+  margin-top: auto;
+  padding: 12px 10px;
   border-top: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.08));
+  background: var(--surface-low, #18191d);
+  z-index: 10;
+  box-sizing: border-box;
+}
+
+.userCard {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  background: var(--surface-lowest, #0d0e11);
+  background: rgba(13, 14, 17, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 8px 10px;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
 }
 
-.userInfo {
-  display: flex;
+.userCardCollapsed {
+  padding: 6px;
+  flex-direction: column;
+  gap: 6px;
+  justify-content: center;
   align-items: center;
-  gap: 10px;
-  min-width: 0;
+}
+
+.userCard:hover {
+  border-color: rgba(47, 217, 244, 0.3);
+  background: rgba(18, 26, 38, 0.75);
 }
 
 .userAvatar {
@@ -395,12 +542,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: inherit;
   flex-shrink: 0;
-  border: 1.5px solid rgba(47, 217, 244, 0.35);
-  box-shadow: none;
+  border: 1.5px solid rgba(47, 217, 244, 0.45);
+  box-shadow: 0 0 10px rgba(47, 217, 244, 0.18);
 }
 
 .userText {
@@ -408,34 +555,39 @@
   flex-direction: column;
   overflow: hidden;
   gap: 2px;
+  flex: 1;
+  min-width: 0;
 }
 
 .userNameRow {
   display: flex;
   align-items: center;
   gap: 6px;
+  overflow: hidden;
 }
 
 .userName {
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--text-main, #f8fafc);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  line-height: 1.2;
 }
 
 .userBadge {
-  font-size: 10px;
-  font-weight: 700;
+  font-size: 9px;
+  font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
-  padding: 1px 6px;
+  letter-spacing: 0.05em;
+  padding: 1.5px 5.5px;
   border-radius: 4px;
   background: rgba(47, 217, 244, 0.12);
-  border: 1px solid rgba(47, 217, 244, 0.25);
+  border: 1px solid rgba(47, 217, 244, 0.3);
   color: var(--primary, #2fd9f4);
   line-height: 1.2;
+  flex-shrink: 0;
 }
 
 .userEmail {
@@ -444,6 +596,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  line-height: 1.2;
 }
 
 .btnLogout {
@@ -457,17 +610,38 @@
   align-items: center;
   justify-content: center;
   transition: all 0.15s ease;
+  flex-shrink: 0;
 }
 
 .btnLogout:hover {
   background: rgba(239, 68, 68, 0.15);
   color: var(--status-danger, #ef4444);
+  transform: translateX(1px);
 }
 
 /* ==========================================================
    RESPONSIVIDADE: Mobile Menu Hambúrguer (max-width: 768px)
    ========================================================== */
 @media (max-width: 768px) {
+  .aside {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    height: 100vh;
+    z-index: 1100;
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.6);
+    transform: translateX(-100%);
+  }
+
+  .asideCollapsed {
+    width: 260px;
+  }
+
+  .asideOpenMobile {
+    transform: translateX(0);
+  }
+
   .mobileHeader {
     display: flex;
     align-items: center;
@@ -539,21 +713,5 @@
   .btnCloseMobile:hover {
     background: rgba(255, 255, 255, 0.1);
     color: #ffffff;
-  }
-
-  /* Aside como drawer deslizante */
-  .aside {
-    position: fixed;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    height: 100vh;
-    z-index: 1100;
-    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.6);
-    transform: translateX(-100%);
-  }
-
-  .asideOpenMobile {
-    transform: translateX(0);
   }
 }

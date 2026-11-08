@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
+import SidebarTrigger from '../components/SidebarTrigger';
 import { useAuth } from '../context/AuthContext';
 import { useSetor } from '../context/SetorContext';
 import api from '../services/api';
@@ -185,6 +186,7 @@ export default function Usuarios() {
         {/* Cabeçalho Minimalista com Ribbon */}
         <header className={styles.minimalHeader}>
           <div className={styles.headerLeft}>
+            <SidebarTrigger />
             <h1 className={styles.pageTitle}>Equipe e Acessos</h1>
             <div className={styles.headerMetricsRibbon}>
               <span className={styles.ribbonItem}>

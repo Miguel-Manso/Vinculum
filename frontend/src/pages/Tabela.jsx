@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
+import SidebarTrigger from '../components/SidebarTrigger';
 import { useAuth } from '../context/AuthContext';
 import { useSetor } from '../context/SetorContext';
 import api from '../services/api';
@@ -831,6 +832,7 @@ export default function Tabela() {
         {/* Cabeçalho Minimalista e Clean */}
         <header className={styles.minimalHeader}>
           <div className={styles.headerLeft}>
+            <SidebarTrigger />
             <h1 className={styles.pageTitle}>Tarefas</h1>
             <div className={styles.headerMetricsRibbon}>
               <span className={styles.ribbonItem}>

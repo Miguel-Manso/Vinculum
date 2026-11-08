@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useSetor } from '../context/SetorContext';
 import Sidebar from '../components/Sidebar';
+import SidebarTrigger from '../components/SidebarTrigger';
 import api from '../services/api';
 import styles from './Dashboard.module.css';
 
@@ -226,7 +227,9 @@ export default function Dashboard() {
 
         {/* 1. Header Executivo com Saudação e Controles */}
         <header className={styles.topHeader}>
-          <div className={styles.headerTitleWrap}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+            <SidebarTrigger />
+            <div className={styles.headerTitleWrap}>
             <div className={styles.dateLabelRow}>
               <span className={styles.dateLabel}>{dataHojeFormatada}</span>
             </div>
@@ -259,8 +262,9 @@ export default function Dashboard() {
                 : 'Monitoramento unificado de produtividade, gargalos e execução de fluxos operacionais em todos os setores.'}
             </p>
           </div>
+        </div>
 
-          <div className={styles.headerToolbar}>
+        <div className={styles.headerToolbar}>
             <Link to="/tabela" className={styles.btnSecondary} title="Visualizar planilha avançada de tarefas">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <rect x="3" y="3" width="18" height="18" rx="2" />

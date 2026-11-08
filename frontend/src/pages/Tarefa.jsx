@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
+import SidebarTrigger from '../components/SidebarTrigger';
 import api from '../services/api';
 import styles from './Tarefa.module.css';
 
@@ -185,12 +186,15 @@ export default function Tarefa() {
 
       <main className={styles.main}>
         <div className={styles.pageHeader}>
-          <button className={styles.btnBack} onClick={() => navigate(-1)}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <polyline points="15 18 9 12 15 6" />
-            </svg>
-            Voltar
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <SidebarTrigger />
+            <button className={styles.btnBack} onClick={() => navigate(-1)}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+              Voltar
+            </button>
+          </div>
 
           <div className={styles.headerRow}>
             <div className={styles.headerInfo}>

@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
+import SidebarTrigger from '../components/SidebarTrigger';
 import ProcessIcon, { OPCOES_ICONES, getProcessIconKey } from '../components/ProcessIcon';
 import { useSetor } from '../context/SetorContext';
 import api from '../services/api';
@@ -175,6 +176,7 @@ export default function Processos() {
         {/* Cabeçalho Minimalista com Ribbon */}
         <header className={styles.minimalHeader}>
           <div className={styles.headerLeft}>
+            <SidebarTrigger />
             <h1 className={styles.pageTitle}>Processos</h1>
             <div className={styles.headerMetricsRibbon}>
               <span className={styles.ribbonItem}>

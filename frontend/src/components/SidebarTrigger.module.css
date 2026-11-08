@@ -1,0 +1,35 @@
+.triggerBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--text-muted, #94a3b8);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+.triggerBtn:hover {
+  background: rgba(47, 217, 244, 0.1);
+  border-color: rgba(47, 217, 244, 0.3);
+  color: var(--primary, #2fd9f4);
+  transform: translateY(-1px);
+}
+
+.triggerBtn:active {
+  transform: translateY(0);
+}
+
+.icon {
+  transition: transform 0.2s ease;
+}
+
+.triggerBtn:hover .icon {
+  stroke: var(--primary, #2fd9f4);
+}
+
