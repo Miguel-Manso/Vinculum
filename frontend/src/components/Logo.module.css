@@ -1,84 +1,23 @@
-.logoWrap {
-  display: inline-flex;
-  align-items: center;
-  user-select: none;
-  text-decoration: none;
-}
-
-.horizontal {
-  flex-direction: row;
-  align-items: center;
-  gap: 12px;
-}
-
-.vertical {
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: 14px;
-}
-
-.iconOnly {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
+.logoWrap { display: inline-flex; align-items: center; user-select: none; text-decoration: none; }
+.horizontal { flex-direction: row; gap: 10px; }
+.vertical { flex-direction: column; text-align: center; gap: 14px; }
+.iconOnly { justify-content: center; }
 
 .image {
   object-fit: contain;
   display: block;
-  filter: drop-shadow(0 2px 8px rgba(80, 197, 189, 0.25));
-  transition: transform 0.2s ease, filter 0.2s ease;
+  filter: drop-shadow(0 2px 10px rgba(47, 217, 244, 0.22));
+  transition: transform var(--dur-slow) var(--ease-out), filter var(--dur-slow) var(--ease-out);
 }
+.logoWrap:hover .image { transform: scale(1.04) rotate(-2deg); filter: drop-shadow(0 4px 14px rgba(47, 217, 244, 0.38)); }
 
-.image:hover {
-  transform: scale(1.03);
-  filter: drop-shadow(0 3px 12px rgba(80, 197, 189, 0.4));
-}
+.brandText { display: flex; flex-direction: column; }
+.vertical .brandText { align-items: center; }
+.titleRow { display: flex; align-items: center; gap: 6px; }
 
-.brandText {
-  display: flex;
-  flex-direction: column;
-}
+.title { font-family: var(--font-display); font-weight: 700; color: var(--text-main); line-height: 1.05; }
+.titleSm { font-size: 17px; letter-spacing: 0.06em; }
+.titleMd { font-size: 21px; letter-spacing: 0.07em; }
+.titleLg { font-size: 28px; letter-spacing: 0.08em; }
 
-.vertical .brandText {
-  align-items: center;
-}
-
-.titleRow {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.title {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-weight: 800;
-  letter-spacing: 0.5px;
-  color: var(--text-main, #ffffff);
-  line-height: 1.1;
-}
-
-.titleSm {
-  font-size: 16px;
-  letter-spacing: 0.4px;
-}
-
-.titleMd {
-  font-size: 20px;
-  letter-spacing: 0.6px;
-}
-
-.titleLg {
-  font-size: 26px;
-  letter-spacing: 0.8px;
-}
-
-.subtitle {
-  font-size: 10px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--text-muted, #94a3b8);
-  margin-top: 2px;
-}
+.subtitle { font-size: var(--fs-2xs); font-weight: 500; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-subtle); margin-top: 6px; }

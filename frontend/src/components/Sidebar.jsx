@@ -4,6 +4,8 @@ import { useAuth } from '../context/AuthContext';
 import { useSetor } from '../context/SetorContext';
 import { useSidebar } from '../context/SidebarContext';
 import Logo from './Logo';
+import useMediaQuery from '../hooks/useMediaQuery';
+import useEscapeKey from '../hooks/useEscapeKey';
 import ModalGerenciarSetores from './ModalGerenciarSetores';
 import styles from './Sidebar.module.css';
 
@@ -16,7 +18,10 @@ export default function Sidebar() {
     modalGerenciarAberto,
     setModalGerenciarAberto,
   } = useSetor();
-  const { collapsed } = useSidebar();
+  const { collapsed: collapsedPreferencia } = useSidebar();
+  // No mobile a gaveta sempre mostra rótulos completos (a preferência de recolher vale só no desktop)
+  const isMobile = useMediaQuery('(max-width: 768px)');
+  const collapsed = collapsedPreferencia && !isMobile;
 
   const navigate = useNavigate();
   const [menuAberto, setMenuAberto] = useState(false);
@@ -39,6 +44,24 @@ export default function Sidebar() {
     document.addEventListener('mousedown', handleClickFora);
     return () => document.removeEventListener('mousedown', handleClickFora);
   }, []);
+
+  // ESC fecha o seletor de setor e, em seguida, a gaveta mobile
+  useEscapeKey(dropdownSetorAberto || menuAberto, () => {
+    if (dropdownSetorAberto) setDropdownSetorAberto(false);
+    else setMenuAberto(false);
+  });
+
+  // Fecha a gaveta ao voltar para desktop e trava a rolagem da página enquanto aberta
+  useEffect(() => {
+    if (!isMobile) setMenuAberto(false);
+  }, [isMobile]);
+
+  useEffect(() => {
+    if (!menuAberto) return;
+    const anterior = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = anterior; };
+  }, [menuAberto]);
 
   function handleLogout() {
     encerrarSessao();
@@ -67,6 +90,7 @@ export default function Sidebar() {
           className={styles.btnHamburger}
           onClick={() => setMenuAberto(prev => !prev)}
           aria-label={menuAberto ? 'Fechar menu de navegação' : 'Abrir menu de navegação'}
+          aria-expanded={menuAberto}
           title="Menu de navegação"
         >
           {menuAberto ? (
@@ -135,6 +159,7 @@ export default function Sidebar() {
               }`}
               onClick={() => setDropdownSetorAberto(prev => !prev)}
               aria-expanded={dropdownSetorAberto}
+              aria-haspopup="listbox"
               title={setorAtivo ? `Setor ativo: ${setorAtivo.nome}` : 'Todos os Setores (Consolidado)'}
             >
               <div className={styles.sectorBadgeBox}>
@@ -288,7 +313,7 @@ export default function Sidebar() {
                     >
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <circle cx="12" cy="12" r="3" />
-                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
                       </svg>
                       <span>Gerenciar Setores</span>
                     </button>
@@ -406,7 +431,7 @@ export default function Sidebar() {
                 >
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <circle cx="12" cy="12" r="3" />
-                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
                   </svg>
                   {!collapsed && <span>Gerenciar Setores</span>}
                 </button>

@@ -1,17 +1,9 @@
 .layout {
-  display: flex;
-  min-height: 100vh;
-  background: var(--surface-canvas, #121316);
-  font-family: inherit;
+  composes: layout from '../styles/ui.module.css';
 }
 
 .main {
-  flex: 1;
-  padding: 32px 36px 48px;
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-  overflow-y: auto;
+  composes: main from '../styles/ui.module.css';
 }
 
 /* Header Minimalista (alinhado ao padrão da Tabela) */
@@ -33,7 +25,7 @@
 .pageTitle {
   font-size: 22px;
   font-weight: 700;
-  color: var(--text-main, #f8fafc);
+  color: var(--text-main, var(--text-main));
   letter-spacing: -0.02em;
   margin: 0;
 }
@@ -43,7 +35,7 @@
   align-items: center;
   gap: 8px;
   font-size: 12px;
-  color: var(--text-muted, #94a3b8);
+  color: var(--text-muted, var(--text-muted));
 }
 
 .ribbonItem {
@@ -53,12 +45,12 @@
 }
 
 .ribbonItem strong {
-  color: var(--text-main, #f8fafc);
+  color: var(--text-main, var(--text-main));
   font-weight: 600;
 }
 
 .ribbonDot {
-  color: var(--text-subtle, #64748b);
+  color: var(--text-subtle, var(--text-subtle));
   opacity: 0.5;
   font-size: 11px;
 }
@@ -70,26 +62,9 @@
 }
 
 .btnPrimary {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  height: 32px;
-  padding: 0 12px;
-  background: var(--primary, #2fd9f4);
-  color: #002b33;
-  border: none;
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  font-family: inherit;
+  composes: btnPrimary from '../styles/ui.module.css';
 }
 
-.btnPrimary:hover {
-  background: #57f1db;
-  transform: translateY(-1px);
-}
 
 /* Toolbar Unificada Minimalista */
 .cleanToolbar {
@@ -98,8 +73,8 @@
   justify-content: space-between;
   gap: 12px;
   flex-wrap: wrap;
-  background: #16171b;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--surface-low);
+  border: 1px solid var(--hover);
   border-radius: 10px;
   padding: 8px 12px;
 }
@@ -116,31 +91,31 @@
 .searchIcon {
   position: absolute;
   left: 10px;
-  color: var(--text-subtle, #64748b);
+  color: var(--text-subtle, var(--text-subtle));
   pointer-events: none;
 }
 
 .searchInput {
   width: 100%;
   height: 32px;
-  background: #111215;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--surface-canvas);
+  border: 1px solid var(--border-default);
   border-radius: 6px;
   padding: 0 26px 0 32px;
   font-size: 12px;
-  color: var(--text-main, #f8fafc);
+  color: var(--text-main, var(--text-main));
   outline: none;
   font-family: inherit;
   transition: all 0.15s ease;
 }
 
 .searchInput:focus {
-  border-color: var(--primary, #2fd9f4);
-  background: #141519;
+  border-color: var(--primary, var(--primary));
+  background: var(--surface-low);
 }
 
 .searchInput::placeholder {
-  color: var(--text-subtle, #64748b);
+  color: var(--text-subtle, var(--text-subtle));
   font-size: 12px;
 }
 
@@ -149,7 +124,7 @@
   right: 8px;
   background: none;
   border: none;
-  color: var(--text-muted, #94a3b8);
+  color: var(--text-muted, var(--text-muted));
   font-size: 14px;
   cursor: pointer;
 }
@@ -167,7 +142,7 @@
   gap: 6px;
   background: transparent;
   border: 1px solid transparent;
-  color: var(--text-muted, #94a3b8);
+  color: var(--text-muted, var(--text-muted));
   font-size: 12px;
   font-weight: 500;
   padding: 4px 10px;
@@ -178,13 +153,13 @@
 }
 
 .pillBtn:hover {
-  background: rgba(255, 255, 255, 0.04);
-  color: var(--text-main, #f8fafc);
+  background: var(--hover-subtle);
+  color: var(--text-main, var(--text-main));
 }
 
 .pillBtnActive {
-  background: rgba(47, 217, 244, 0.1) !important;
-  color: var(--primary, #2fd9f4) !important;
+  background: var(--primary-soft) !important;
+  color: var(--primary, var(--primary)) !important;
   border-color: rgba(47, 217, 244, 0.25) !important;
   font-weight: 600;
 }
@@ -211,8 +186,8 @@
 }
 
 .card {
-  background: #16171b;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--surface-low);
+  border: 1px solid var(--hover);
   border-radius: 10px;
   display: flex;
   flex-direction: column;
@@ -224,7 +199,7 @@
 
 .card:hover {
   border-color: rgba(47, 217, 244, 0.25);
-  background: #1a1b20;
+  background: var(--surface-container);
   transform: translateY(-2px);
 }
 
@@ -285,45 +260,19 @@
 }
 
 .btnIconQuick {
-  background: none;
-  border: none;
-  color: var(--text-subtle, #64748b);
-  padding: 5px;
-  border-radius: 4px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.12s ease;
+  composes: btnIcon from '../styles/ui.module.css';
 }
 
-.btnIconQuick:hover {
-  background: rgba(255, 255, 255, 0.06);
-  color: var(--text-main, #f8fafc);
-}
 
 .btnIconQuickDanger {
-  background: none;
-  border: none;
-  color: var(--text-subtle, #64748b);
-  padding: 5px;
-  border-radius: 4px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.12s ease;
+  composes: btnIconDanger from '../styles/ui.module.css';
 }
 
-.btnIconQuickDanger:hover {
-  background: rgba(239, 68, 68, 0.12);
-  color: #f87171;
-}
 
 .cardNome {
   font-size: 15px;
   font-weight: 600;
-  color: var(--text-main, #f8fafc);
+  color: var(--text-main, var(--text-main));
   margin: 0 0 6px 0;
   white-space: nowrap;
   overflow: hidden;
@@ -332,7 +281,7 @@
 
 .cardDesc {
   font-size: 12.5px;
-  color: var(--text-muted, #94a3b8);
+  color: var(--text-muted, var(--text-muted));
   line-height: 1.45;
   margin: 0 0 14px 0;
   display: -webkit-box;
@@ -347,7 +296,7 @@
   align-items: center;
   justify-content: space-between;
   padding-top: 12px;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-top: 1px solid var(--border-subtle);
 }
 
 .cardMetrics {
@@ -361,11 +310,11 @@
   align-items: center;
   gap: 5px;
   font-size: 11.5px;
-  color: var(--text-muted, #94a3b8);
+  color: var(--text-muted, var(--text-muted));
 }
 
 .metricItem svg {
-  color: var(--text-subtle, #64748b);
+  color: var(--text-subtle, var(--text-subtle));
 }
 
 .btnAbrirFluxo {
@@ -374,7 +323,7 @@
   gap: 4px;
   font-size: 11.5px;
   font-weight: 600;
-  color: var(--text-muted, #94a3b8);
+  color: var(--text-muted, var(--text-muted));
   text-decoration: none;
   padding: 3px 8px;
   border-radius: 4px;
@@ -383,7 +332,7 @@
 }
 
 .card:hover .btnAbrirFluxo {
-  color: var(--primary, #2fd9f4);
+  color: var(--primary, var(--primary));
 }
 
 .arrowIcon {
@@ -398,13 +347,13 @@
 .loadingBox {
   padding: 40px 0;
   text-align: center;
-  color: var(--text-muted, #94a3b8);
+  color: var(--text-muted, var(--text-muted));
   font-size: 13px;
 }
 
 .emptyStateBox {
-  background: #16171b;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--surface-low);
+  border: 1px solid var(--hover);
   border-radius: 10px;
   padding: 40px 24px;
   text-align: center;
@@ -417,21 +366,21 @@
 .emptyStateTitle {
   font-size: 14.5px;
   font-weight: 600;
-  color: var(--text-main, #f8fafc);
+  color: var(--text-main, var(--text-main));
   margin: 0;
 }
 
 .emptyStateDesc {
   font-size: 12.5px;
-  color: var(--text-muted, #94a3b8);
+  color: var(--text-muted, var(--text-muted));
   margin: 0;
   max-width: 400px;
 }
 
 .btnLimparBusca {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  color: var(--text-main, #f8fafc);
+  background: var(--hover-subtle);
+  border: 1px solid var(--border-default);
+  color: var(--text-main, var(--text-main));
   padding: 6px 14px;
   border-radius: 6px;
   font-size: 12px;
@@ -440,25 +389,13 @@
 }
 
 .btnLimparBusca:hover {
-  border-color: var(--primary, #2fd9f4);
-  color: var(--primary, #2fd9f4);
+  border-color: var(--primary, var(--primary));
+  color: var(--primary, var(--primary));
 }
 
 /* Modal de Criação / Edição */
 .modalOverlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.75);
-  backdrop-filter: blur(4px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: 16px;
-  animation: fadeIn 0.15s ease;
+  composes: modalOverlay from '../styles/ui.module.css';
 }
 
 @keyframes fadeIn {
@@ -467,14 +404,9 @@
 }
 
 .modalCard {
-  background: var(--surface-low, #18191d);
-  border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.1));
-  border-radius: 14px;
+  composes: modalCard from '../styles/ui.module.css';
   width: 100%;
   max-width: 500px;
-  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.75);
-  overflow: hidden;
-  animation: scaleUp 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @keyframes scaleUp {
@@ -483,136 +415,61 @@
 }
 
 .modalHeader {
-  padding: 18px 22px;
-  border-bottom: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.08));
+  composes: modalHeader from '../styles/ui.module.css';
 }
 
 .modalTitle {
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--text-main, #f8fafc);
-  margin: 0;
+  composes: modalTitle from '../styles/ui.module.css';
 }
 
 .modalBody {
-  padding: 22px;
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
+  composes: modalBody from '../styles/ui.module.css';
 }
 
 .formField {
-  display: flex;
+  composes: field from '../styles/ui.module.css';
   flex-direction: column;
-  gap: 6px;
 }
 
 .formLabel {
-  font-size: 12.5px;
-  font-weight: 600;
-  color: var(--text-main, #f8fafc);
+  composes: label from '../styles/ui.module.css';
 }
 
 .formInput {
-  background: var(--surface-container, #1f1f23);
-  border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.1));
-  border-radius: 8px;
-  padding: 10px 14px;
-  font-size: 13.5px;
-  color: var(--text-main, #f8fafc);
-  font-family: inherit;
-  outline: none;
-  transition: all 0.15s ease;
+  composes: input from '../styles/ui.module.css';
 }
 
-.formInput:focus {
-  border-color: var(--primary, #2fd9f4);
-  box-shadow: 0 0 0 2px rgba(47, 217, 244, 0.25);
-}
 
 .formTextarea {
-  background: var(--surface-container, #1f1f23);
-  border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.1));
-  border-radius: 8px;
-  padding: 10px 14px;
-  font-size: 13.5px;
-  color: var(--text-main, #f8fafc);
-  font-family: inherit;
-  outline: none;
+  composes: textarea from '../styles/ui.module.css';
   min-height: 85px;
   resize: vertical;
-  transition: all 0.15s ease;
 }
 
-.formTextarea:focus {
-  border-color: var(--primary, #2fd9f4);
-  box-shadow: 0 0 0 2px rgba(47, 217, 244, 0.25);
-}
 
 .modalFooter {
-  padding: 16px 22px;
-  border-top: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.08));
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  background: var(--surface-lowest, #0d0e11);
+  composes: modalFooter from '../styles/ui.module.css';
 }
 
 .btnCancel {
-  background: transparent;
-  border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.08));
-  color: var(--text-muted, #94a3b8);
-  padding: 8px 16px;
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.15s;
+  composes: btnSecondary from '../styles/ui.module.css';
 }
 
-.btnCancel:hover {
-  background: var(--surface-container, #1f1f23);
-  color: var(--text-main, #f8fafc);
-}
 
 .btnSave {
-  background: linear-gradient(135deg, var(--primary-container, #14b8a6) 0%, var(--primary, #2fd9f4) 100%);
-  border: none;
-  color: #00363e;
-  padding: 8px 18px;
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.15s;
+  composes: btnPrimary from '../styles/ui.module.css';
 }
 
-.btnSave:hover {
-  opacity: 0.95;
-  box-shadow: 0 0 16px rgba(47, 217, 244, 0.4);
-}
 
 .formSelect {
+  composes: select from '../styles/ui.module.css';
   width: 100%;
-  background: var(--surface-container, #1f1f23);
-  border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.08));
-  border-radius: 8px;
-  color: var(--text-main, #f8fafc);
-  padding: 10px 12px;
-  font-size: 13.5px;
-  outline: none;
-  transition: all 0.15s;
-  cursor: pointer;
 }
 
-.formSelect:focus {
-  border-color: var(--primary, #2fd9f4);
-  box-shadow: 0 0 0 3px rgba(47, 217, 244, 0.12);
-}
 
 .formSelect option {
   background: #0f1623;
-  color: #f1f5f9;
+  color: var(--text-main);
 }
 
 .iconGrid {
@@ -629,10 +486,10 @@
   justify-content: center;
   gap: 5px;
   padding: 8px 4px;
-  background: var(--surface-container, #1f1f23);
-  border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.08));
+  background: var(--surface-container, var(--surface-container));
+  border: 1px solid var(--border-subtle, var(--border-default));
   border-radius: 8px;
-  color: var(--text-muted, #94a3b8);
+  color: var(--text-muted, var(--text-muted));
   cursor: pointer;
   transition: all 0.12s ease;
   font-size: 10px;
@@ -640,15 +497,15 @@
 }
 
 .iconOptionBtn:hover {
-  background: rgba(255, 255, 255, 0.06);
-  color: var(--text-main, #f8fafc);
+  background: var(--hover);
+  color: var(--text-main, var(--text-main));
   border-color: rgba(255, 255, 255, 0.16);
 }
 
 .iconOptionBtnActive {
-  background: rgba(47, 217, 244, 0.12) !important;
-  border-color: var(--primary, #2fd9f4) !important;
-  color: var(--primary, #2fd9f4) !important;
+  background: var(--primary-soft) !important;
+  border-color: var(--primary, var(--primary)) !important;
+  color: var(--primary, var(--primary)) !important;
   font-weight: 600;
 }
 
@@ -666,10 +523,10 @@
   align-items: center;
   gap: 8px;
   padding: 8px 16px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--hover-subtle);
+  border: 1px solid var(--border-default);
   border-radius: 999px;
-  color: #94a3b8;
+  color: var(--text-muted);
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
@@ -678,16 +535,16 @@
 }
 
 .sectorTab:hover {
-  background: rgba(255, 255, 255, 0.08);
-  color: #f1f5f9;
+  background: var(--border-default);
+  color: var(--text-main);
 }
 
 .sectorTabActive {
-  background: rgba(47, 217, 244, 0.12) !important;
-  border-color: #2fd9f4 !important;
-  color: #2fd9f4 !important;
+  background: var(--primary-soft) !important;
+  border-color: var(--primary) !important;
+  color: var(--primary) !important;
   font-weight: 600;
-  box-shadow: 0 0 16px rgba(47, 217, 244, 0.15);
+  box-shadow: 0 0 16px var(--primary-soft-2);
 }
 
 .sectorTabDot {
@@ -698,7 +555,7 @@
 }
 
 .sectorTabBadge {
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--border-default);
   color: inherit;
   font-size: 11px;
   padding: 1px 6px;
@@ -726,10 +583,6 @@
 }
 
 @media (max-width: 640px) {
-  .main {
-    padding: 76px 16px 32px;
-  }
-
   .grid {
     grid-template-columns: 1fr;
   }
@@ -737,4 +590,11 @@
   .quickStatStrip {
     grid-template-columns: 1fr;
   }
+}
+
+/* ===== REWORK UI/UX — refinamentos ===== */
+@media (max-width: 640px) {
+  .sectorPills { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin-inline: calc(-1 * var(--sp-1)); padding: 2px var(--sp-1); }
+  .sectorPills::-webkit-scrollbar { display: none; }
+  .sectorPills > * { flex-shrink: 0; }
 }

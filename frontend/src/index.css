@@ -1,45 +1,148 @@
+/* ==========================================================================
+   VINCULUM DESIGN SYSTEM — "Obsidian & Electric Cyan"
+   Fonte única de verdade para cores, tipografia, espaçamento, raios,
+   sombras e movimento. Veja DESIGN.md na raiz do repositório.
+   ========================================================================== */
+
 :root {
+  /* ---------- Superfícies (do mais profundo ao mais elevado) ---------- */
+  --surface-lowest:    #0b0c0f;
+  --surface-canvas:    #111215;   /* fundo da página */
+  --surface-low:       #16171b;   /* sidebar, toolbars, cabeçalhos de tabela */
+  --surface-container: #1b1c21;   /* cards e blocos */
+  --surface-high:      #23242a;   /* inputs e elementos elevados */
+  --surface-highest:   #2d2e35;   /* hover / ativo */
+  --surface-bright:    #383a42;
+  --surface-overlay:   rgba(6, 7, 9, 0.72);
+
+  /* ---------- Bordas ---------- */
+  --border-subtle:     rgba(255, 255, 255, 0.07);
+  --border-default:    rgba(255, 255, 255, 0.11);
+  --border-prominent:  rgba(255, 255, 255, 0.17);
+  --border-focus:      #2fd9f4;
+
+  /* ---------- Marca: Cyan elétrico / Mint / Teal ---------- */
+  --primary:           #2fd9f4;
+  --primary-hover:     #62e4f8;
+  --primary-press:     #1cc2dc;
+  --primary-mint:      #57f1db;
+  --primary-container: #14b8a6;
+  --primary-light:     #8aebff;
+  --primary-dim:       #2dd4bf;
+  --on-primary:        #00323a;
+  --primary-soft:      rgba(47, 217, 244, 0.10);
+  --primary-soft-2:    rgba(47, 217, 244, 0.16);
+  --primary-border:    rgba(47, 217, 244, 0.32);
+  --gradient-brand:    linear-gradient(135deg, #2fd9f4 0%, #14b8a6 100%);
+
+  /* ---------- Texto (contraste AA sobre --surface-canvas) ---------- */
+  --text-main:         #f4f6fa;
+  --text-body:         #d9dce3;
+  --text-muted:        #9ea7b7;
+  --text-subtle:       #7f899b;
+  --text-faint:        #5b6474;
+
+  /* ---------- Semânticas ---------- */
+  --status-success:    #10b981;
+  --status-warning:    #f59e0b;
+  --status-danger:     #ef4444;
+  --status-info:       #38bdf8;
+  --success-text:      #4ade9b;
+  --warning-text:      #fbbf24;
+  --danger-text:       #f87171;
+  --info-text:         #7dd3fc;
+  --success-soft:      rgba(16, 185, 129, 0.12);
+  --warning-soft:      rgba(245, 158, 11, 0.12);
+  --danger-soft:       rgba(239, 68, 68, 0.12);
+  --info-soft:         rgba(56, 189, 248, 0.12);
+  --success-border:    rgba(16, 185, 129, 0.32);
+  --warning-border:    rgba(245, 158, 11, 0.32);
+  --danger-border:     rgba(239, 68, 68, 0.34);
+  --info-border:       rgba(56, 189, 248, 0.32);
+
+  --hover-subtle:      rgba(255, 255, 255, 0.035);
+  --hover:             rgba(255, 255, 255, 0.06);
+  --active:            rgba(255, 255, 255, 0.09);
+
+  /* ---------- Tipografia ---------- */
+  --font-sans:    'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Outfit', 'Geist', -apple-system, sans-serif;
+  --font-mono:    'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --fs-2xs: 11px;
+  --fs-xs:  12px;
+  --fs-sm:  13px;
+  --fs-base: 14px;
+  --fs-md:  15px;
+  --fs-lg:  17px;
+  --fs-xl:  20px;
+  --fs-2xl: 26px;
+  --fs-3xl: 32px;
+
+  --lh-tight: 1.2;
+  --lh-snug:  1.35;
+  --lh-base:  1.55;
+
+  /* ---------- Espaçamento (grid de 4px) ---------- */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+  --sp-10: 40px;
+  --sp-12: 48px;
+  --sp-16: 64px;
+  --sp-20: 80px;
+
+  /* ---------- Raios ---------- */
+  --r-xs: 4px;
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 14px;
+  --r-xl: 18px;
+  --r-full: 9999px;
+
+  /* ---------- Controles ---------- */
+  --control-h-sm: 32px;
+  --control-h:    38px;
+  --control-h-lg: 44px;
+
+  /* ---------- Sombras ---------- */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 6px 18px -4px rgba(0, 0, 0, 0.5), 0 2px 6px rgba(0, 0, 0, 0.25);
+  --shadow-lg: 0 16px 40px -8px rgba(0, 0, 0, 0.6), 0 4px 12px rgba(0, 0, 0, 0.3);
+  --shadow-xl: 0 28px 64px -12px rgba(0, 0, 0, 0.7), 0 8px 20px rgba(0, 0, 0, 0.35);
+  --shadow-glow: 0 0 0 1px rgba(47, 217, 244, 0.25), 0 8px 24px -6px rgba(47, 217, 244, 0.35);
+  --focus-ring: 0 0 0 3px rgba(47, 217, 244, 0.28);
+
+  /* ---------- Movimento ---------- */
+  --ease-out:    cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --dur-fast: 120ms;
+  --dur:      180ms;
+  --dur-slow: 280ms;
+
+  /* ---------- Layout ---------- */
+  --sidebar-w: 264px;
+  --sidebar-w-collapsed: 76px;
+  --mobile-header-h: 60px;
+  --page-px: var(--sp-8);
+  --page-py: var(--sp-8);
+
+  --z-sidebar: 50;
+  --z-dropdown: 300;
+  --z-chat: 900;
+  --z-mobile-header: 1000;
+  --z-drawer: 1100;
+  --z-modal: 1200;
+  --z-confirm: 1300;
+  --z-toast: 1400;
+
   /* ==========================================================
-     STITCH DESIGN SYSTEM - Obsidian & Electric Cyan/Teal Palette
-     Baseado no Projeto Stitch: 16529458011722319407
-     ========================================================== */
-
-  /* Camadas de Superfície Obsidian (Deep non-glare zinc/slate) */
-  --surface-canvas:      #121316; /* Fundo base da página */
-  --surface-lowest:      #0d0e11; /* Contraste profundo */
-  --surface-low:         #18191d; /* Sidebar e cabeçalhos */
-  --surface-container:   #1f1f23; /* Cartões e blocos centrais */
-  --surface-high:        #292a2d; /* Inputs e elementos elevados */
-  --surface-highest:     #343538; /* Itens ativos e hover */
-  --surface-bright:      #38393c; /* Destaques claros */
-
-  /* Bordas Ultra-Limpas */
-  --border-subtle:       rgba(255, 255, 255, 0.08); /* Linhas refinadas sem ruído */
-  --border-prominent:    rgba(255, 255, 255, 0.14); /* Destaque e hover */
-  --border-focus:        #2fd9f4;
-
-  /* Primária e Acentos (Electric Cyan / Mint / Deep Teal) */
-  --primary:             #2fd9f4; /* Cyan elétrico para foco e interações */
-  --primary-mint:        #57f1db; /* Mint luminoso */
-  --primary-container:   #14b8a6; /* Teal institucional */
-  --primary-light:       #8aebff; /* Realce suave de texto */
-  --primary-dim:         #2dd4bf;
-  --on-primary:          #00363e; /* Texto escuro de alto contraste sobre primária */
-
-  /* Tipografia & Hierarquia de Texto */
-  --text-main:           #f8fafc; /* Branco suave para títulos */
-  --text-body:           #e3e2e6; /* Texto de leitura confortável */
-  --text-muted:          #94a3b8; /* Metadados e rótulos secundários */
-  --text-subtle:         #64748b; /* Placeholders e divisores */
-
-  /* Indicadores Semânticos de Status */
-  --status-success:      #10b981; /* Verde esmeralda (Concluído/No prazo) */
-  --status-warning:      #f59e0b; /* Âmbar vibrante (Em atenção) */
-  --status-danger:       #ef4444; /* Vermelho carmim (Atraso/Crítico) */
-  --status-info:         #38bdf8; /* Azul céu (Em andamento) */
-
-  /* ==========================================================
-     Mapeamento de Compatibilidade Retroativa (evita quebra de CSS)
+     Compatibilidade retroativa (nomes usados em versões anteriores)
      ========================================================== */
   --gray-deep:           var(--surface-canvas);
   --gray-sidebar:        var(--surface-low);
@@ -49,84 +152,109 @@
   --gray-hover:          var(--surface-highest);
   --gray-border:         var(--border-subtle);
   --gray-border-subtle:  var(--border-subtle);
-
   --gray-text-main:      var(--text-main);
   --gray-text-body:      var(--text-body);
   --gray-text-muted:     var(--text-muted);
   --gray-text-subtle:    var(--text-subtle);
-
+  --slate-800:           var(--surface-container);
+  --slate-400:           var(--text-muted);
   --turquesa-50:         #d5ffff;
   --turquesa-100:        #bbf3ef;
   --turquesa-200:        var(--primary-mint);
   --turquesa-400:        var(--primary);
   --turquesa-600:        var(--primary-container);
   --turquesa-800:        var(--on-primary);
-
   --color-primary:       var(--primary);
-  --color-primary-hover: var(--primary-mint);
+  --color-primary-hover: var(--primary-hover);
   --color-primary-text:  var(--on-primary);
   --color-accent:        var(--primary);
-  --color-accent-hover:  var(--primary-mint);
-
+  --color-accent-hover:  var(--primary-hover);
   --color-text-main:     var(--text-main);
   --color-text-body:     var(--text-body);
   --color-text-muted:    var(--text-muted);
   --color-text-subtle:   var(--text-subtle);
-
   --color-bg-page:       var(--surface-canvas);
   --color-bg-surface:    var(--surface-container);
   --color-bg-elevated:   var(--surface-high);
   --color-bg-subtle:     var(--surface-low);
-  --color-bg-hover:      rgba(47, 217, 244, 0.12);
-
+  --color-bg-hover:      var(--primary-soft);
   --color-border:        var(--border-subtle);
   --color-border-light:  var(--border-subtle);
   --color-border-focus:  var(--border-focus);
-
-  /* Sombras & Efeitos de Luz */
-  --shadow-sm:           0 1px 3px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.5);
-  --shadow-md:           0 4px 16px rgba(0, 0, 0, 0.5), 0 2px 6px rgba(0, 0, 0, 0.3);
-  --shadow-lg:           0 12px 36px rgba(0, 0, 0, 0.65), 0 4px 12px rgba(0, 0, 0, 0.4);
-  --shadow-glow:         0 0 24px rgba(47, 217, 244, 0.25);
-  --focus-ring:          0 0 0 2px rgba(47, 217, 244, 0.4);
 }
 
-*, *::before, *::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+@media (max-width: 1024px) {
+  :root { --page-px: var(--sp-6); --page-py: var(--sp-6); }
 }
+
+@media (max-width: 768px) {
+  :root { --page-px: var(--sp-4); --page-py: var(--sp-5); --fs-2xl: 22px; --fs-3xl: 26px; }
+}
+
+/* ==========================================================================
+   Base
+   ========================================================================== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 
 body {
-  font-family: 'Geist', 'DM Sans', 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background-color: var(--color-bg-page);
-  color: var(--color-text-main);
+  font-family: var(--font-sans);
+  font-size: var(--fs-base);
+  line-height: var(--lh-base);
+  background-color: var(--surface-canvas);
+  color: var(--text-body);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
   color-scheme: dark;
+  -webkit-tap-highlight-color: transparent;
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: 'Outfit', 'Geist', -apple-system, sans-serif;
-  letter-spacing: -0.025em;
+  font-family: var(--font-display);
+  color: var(--text-main);
+  line-height: var(--lh-tight);
+  letter-spacing: -0.02em;
+  font-weight: 600;
 }
 
-button, input, select, textarea {
-  font-family: inherit;
+p { text-wrap: pretty; }
+a { color: inherit; }
+button, input, select, textarea { font-family: inherit; font-size: inherit; color: inherit; }
+button { cursor: pointer; }
+button:disabled { cursor: not-allowed; }
+svg { flex-shrink: 0; }
+
+input[type='date']::-webkit-calendar-picker-indicator { filter: invert(0.75); cursor: pointer; opacity: 0.8; }
+
+input[type='checkbox'] {
+  accent-color: var(--primary);
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  flex-shrink: 0;
 }
 
-/* Scrollbar refinada padrão Stitch */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-::-webkit-scrollbar-track {
-  background: var(--surface-canvas);
-}
-::-webkit-scrollbar-thumb {
-  background: var(--surface-highest);
-  border-radius: 9999px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: var(--primary-container);
+select option { background: var(--surface-container); color: var(--text-main); }
+
+::selection { background: rgba(47, 217, 244, 0.3); color: var(--text-main); }
+
+:focus { outline: none; }
+:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+input:focus-visible, select:focus-visible, textarea:focus-visible { outline: none; }
+
+* { scrollbar-width: thin; scrollbar-color: var(--surface-bright) transparent; }
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--surface-highest); border-radius: var(--r-full); border: 2px solid transparent; background-clip: padding-box; }
+::-webkit-scrollbar-thumb:hover { background: var(--surface-bright); background-clip: padding-box; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

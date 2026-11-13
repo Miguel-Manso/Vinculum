@@ -1,17 +1,9 @@
 .layout {
-  display: flex;
-  min-height: 100vh;
-  background: var(--surface-canvas, #121316);
-  font-family: inherit;
+  composes: layout from '../styles/ui.module.css';
 }
 
 .main {
-  flex: 1;
-  padding: 32px 36px 48px;
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-  overflow-y: auto;
+  composes: main from '../styles/ui.module.css';
 }
 
 /* ============================================================================
@@ -35,7 +27,7 @@
 .pageTitle {
   font-size: 22px;
   font-weight: 700;
-  color: var(--text-main, #f8fafc);
+  color: var(--text-main, var(--text-main));
   letter-spacing: -0.02em;
   margin: 0;
 }
@@ -45,7 +37,7 @@
   align-items: center;
   gap: 8px;
   font-size: 12px;
-  color: var(--text-muted, #94a3b8);
+  color: var(--text-muted, var(--text-muted));
 }
 
 .ribbonItem {
@@ -55,12 +47,12 @@
 }
 
 .ribbonItem strong {
-  color: var(--text-main, #f8fafc);
+  color: var(--text-main, var(--text-main));
   font-weight: 600;
 }
 
 .ribbonDot {
-  color: var(--text-subtle, #64748b);
+  color: var(--text-subtle, var(--text-subtle));
   opacity: 0.5;
   font-size: 11px;
 }
@@ -69,7 +61,7 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--primary, #2fd9f4);
+  background: var(--primary, var(--primary));
 }
 
 .headerRight {
@@ -79,26 +71,9 @@
 }
 
 .btnPrimary {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  height: 32px;
-  padding: 0 12px;
-  background: var(--primary, #2fd9f4);
-  color: #002b33;
-  border: none;
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  font-family: inherit;
+  composes: btnPrimary from '../styles/ui.module.css';
 }
 
-.btnPrimary:hover {
-  background: #57f1db;
-  transform: translateY(-1px);
-}
 
 /* ============================================================================
    2. TOOLBAR UNIFICADA (CLEAN TOOLBAR)
@@ -109,8 +84,8 @@
   justify-content: space-between;
   gap: 12px;
   flex-wrap: wrap;
-  background: #16171b;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--surface-low);
+  border: 1px solid var(--hover);
   border-radius: 10px;
   padding: 8px 12px;
 }
@@ -127,31 +102,31 @@
 .searchIcon {
   position: absolute;
   left: 10px;
-  color: var(--text-subtle, #64748b);
+  color: var(--text-subtle, var(--text-subtle));
   pointer-events: none;
 }
 
 .searchInput {
   width: 100%;
   height: 32px;
-  background: #111215;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--surface-canvas);
+  border: 1px solid var(--border-default);
   border-radius: 6px;
   padding: 0 26px 0 32px;
   font-size: 12px;
-  color: var(--text-main, #f8fafc);
+  color: var(--text-main, var(--text-main));
   outline: none;
   font-family: inherit;
   transition: all 0.15s ease;
 }
 
 .searchInput:focus {
-  border-color: var(--primary, #2fd9f4);
-  background: #141519;
+  border-color: var(--primary, var(--primary));
+  background: var(--surface-low);
 }
 
 .searchInput::placeholder {
-  color: var(--text-subtle, #64748b);
+  color: var(--text-subtle, var(--text-subtle));
   font-size: 12px;
 }
 
@@ -160,7 +135,7 @@
   right: 8px;
   background: none;
   border: none;
-  color: var(--text-muted, #94a3b8);
+  color: var(--text-muted, var(--text-muted));
   font-size: 14px;
   cursor: pointer;
 }
@@ -178,7 +153,7 @@
   gap: 6px;
   background: transparent;
   border: 1px solid transparent;
-  color: var(--text-muted, #94a3b8);
+  color: var(--text-muted, var(--text-muted));
   font-size: 12px;
   font-weight: 500;
   padding: 4px 10px;
@@ -189,13 +164,13 @@
 }
 
 .pillBtn:hover {
-  background: rgba(255, 255, 255, 0.04);
-  color: var(--text-main, #f8fafc);
+  background: var(--hover-subtle);
+  color: var(--text-main, var(--text-main));
 }
 
 .pillBtnActive {
-  background: rgba(47, 217, 244, 0.1) !important;
-  color: var(--primary, #2fd9f4) !important;
+  background: var(--primary-soft) !important;
+  color: var(--primary, var(--primary)) !important;
   border-color: rgba(47, 217, 244, 0.25) !important;
   font-weight: 600;
 }
@@ -204,8 +179,8 @@
    3. TABELA MINIMALISTA
    ============================================================================ */
 .tableCard {
-  background: #141519;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--surface-low);
+  border: 1px solid var(--hover);
   border-radius: 8px;
   overflow: hidden;
   display: flex;
@@ -225,14 +200,14 @@
 }
 
 .table thead th {
-  background: #111215;
+  background: var(--surface-canvas);
   padding: 10px 14px;
   font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: var(--text-muted, #94a3b8);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  color: var(--text-muted, var(--text-muted));
+  border-bottom: 1px solid var(--hover);
   user-select: none;
   white-space: nowrap;
 }
@@ -249,7 +224,7 @@
 .table tbody td {
   padding: 10px 14px;
   vertical-align: middle;
-  color: var(--text-body, #e3e2e6);
+  color: var(--text-body, var(--text-body));
   white-space: nowrap;
 }
 
@@ -264,9 +239,9 @@
   width: 26px;
   height: 26px;
   border-radius: 50%;
-  background: #1c1d22;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  color: var(--primary, #2fd9f4);
+  background: var(--surface-container);
+  border: 1px solid var(--border-default);
+  color: var(--primary, var(--primary));
   font-size: 11px;
   font-weight: 700;
   display: flex;
@@ -278,14 +253,14 @@
 .userName {
   font-size: 13px;
   font-weight: 600;
-  color: var(--text-main, #f8fafc);
+  color: var(--text-main, var(--text-main));
 }
 
 .badgeCurrent {
   font-size: 10px;
   font-weight: 700;
-  color: var(--primary, #2fd9f4);
-  background: rgba(47, 217, 244, 0.1);
+  color: var(--primary, var(--primary));
+  background: var(--primary-soft);
   padding: 1px 5px;
   border-radius: 3px;
   margin-left: 4px;
@@ -293,7 +268,7 @@
 
 .emailText {
   font-size: 12.5px;
-  color: var(--text-muted, #94a3b8);
+  color: var(--text-muted, var(--text-muted));
 }
 
 /* Badges de Perfil */
@@ -304,8 +279,8 @@
   border-radius: 4px;
   font-size: 11px;
   font-weight: 600;
-  background: rgba(47, 217, 244, 0.12);
-  color: var(--primary, #2fd9f4);
+  background: var(--primary-soft);
+  color: var(--primary, var(--primary));
   border: 1px solid rgba(47, 217, 244, 0.25);
 }
 
@@ -316,9 +291,9 @@
   border-radius: 4px;
   font-size: 11px;
   font-weight: 500;
-  background: rgba(255, 255, 255, 0.04);
-  color: var(--text-body, #e3e2e6);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--hover-subtle);
+  color: var(--text-body, var(--text-body));
+  border: 1px solid var(--hover);
 }
 
 /* Setores Tags */
@@ -338,7 +313,7 @@
   font-size: 11px;
   font-weight: 500;
   background: rgba(47, 217, 244, 0.06);
-  color: var(--primary, #2fd9f4);
+  color: var(--primary, var(--primary));
   border: 1px solid rgba(47, 217, 244, 0.2);
 }
 
@@ -351,8 +326,8 @@
   font-size: 11px;
   font-weight: 500;
   background: rgba(255, 255, 255, 0.03);
-  color: var(--text-body, #e3e2e6);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  color: var(--text-body, var(--text-body));
+  border: 1px solid var(--hover);
 }
 
 .setorDot {
@@ -365,7 +340,7 @@
 .dataText {
   font-size: 12px;
   font-variant-numeric: tabular-nums;
-  color: var(--text-muted, #94a3b8);
+  color: var(--text-muted, var(--text-muted));
 }
 
 /* Ações */
@@ -383,7 +358,7 @@
 .btnActionEdit, .btnActionDelete {
   background: none;
   border: none;
-  color: var(--text-subtle, #64748b);
+  color: var(--text-subtle, var(--text-subtle));
   padding: 5px;
   border-radius: 4px;
   cursor: pointer;
@@ -393,15 +368,7 @@
   transition: all 0.12s ease;
 }
 
-.btnActionEdit:hover {
-  background: rgba(255, 255, 255, 0.06);
-  color: var(--text-main, #f8fafc);
-}
 
-.btnActionDelete:hover:not(:disabled) {
-  background: rgba(239, 68, 68, 0.12);
-  color: #f87171;
-}
 
 .btnActionDisabled {
   opacity: 0.3;
@@ -413,17 +380,17 @@
   align-items: center;
   justify-content: space-between;
   padding: 10px 14px;
-  background: #111215;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--surface-canvas);
+  border-top: 1px solid var(--hover);
   font-size: 11.5px;
-  color: var(--text-muted, #94a3b8);
+  color: var(--text-muted, var(--text-muted));
 }
 
 /* Empty e Loading States */
 .emptyState {
   padding: 48px 24px;
   text-align: center;
-  color: var(--text-muted, #94a3b8);
+  color: var(--text-muted, var(--text-muted));
   font-size: 13px;
 }
 
@@ -433,7 +400,7 @@
   justify-content: center;
   gap: 10px;
   padding: 48px 24px;
-  color: var(--text-muted, #94a3b8);
+  color: var(--text-muted, var(--text-muted));
   font-size: 13px;
 }
 
@@ -441,7 +408,7 @@
   width: 18px;
   height: 18px;
   border: 2px solid rgba(47, 217, 244, 0.2);
-  border-top-color: var(--primary, #2fd9f4);
+  border-top-color: var(--primary, var(--primary));
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -454,96 +421,70 @@
    4. MODAL DE USUÁRIO
    ============================================================================ */
 .modalOverlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.75);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 999;
-  padding: 20px;
+  composes: modalOverlay from '../styles/ui.module.css';
 }
 
 .modalCard {
-  background: #16171b;
-  border-radius: 10px;
+  composes: modalCard from '../styles/ui.module.css';
   width: 100%;
   max-width: 480px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
 }
 
 .modalHeader {
-  padding: 16px 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  background: #121316;
+  composes: modalHeader from '../styles/ui.module.css';
 }
 
 .modalTitle {
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--text-main, #f8fafc);
-  margin: 0;
+  composes: modalTitle from '../styles/ui.module.css';
 }
 
 .modalBody {
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  max-height: 70vh;
-  overflow-y: auto;
+  composes: modalBody from '../styles/ui.module.css';
 }
 
 .erroMsg {
-  background: rgba(239, 68, 68, 0.12);
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  color: #f87171;
+  background: var(--danger-soft);
+  border: 1px solid var(--danger-border);
+  color: var(--danger-text);
   padding: 8px 12px;
   border-radius: 6px;
   font-size: 12px;
 }
 
 .sucessoMsg {
-  background: rgba(16, 185, 129, 0.12);
+  background: var(--success-soft);
   border: 1px solid rgba(16, 185, 129, 0.3);
-  color: #34d399;
+  color: var(--success-text);
   padding: 8px 12px;
   border-radius: 6px;
   font-size: 12px;
 }
 
 .formField {
-  display: flex;
+  composes: field from '../styles/ui.module.css';
   flex-direction: column;
-  gap: 5px;
 }
 
 .formLabel {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text-body, #e3e2e6);
+  composes: label from '../styles/ui.module.css';
 }
 
 .formInput, .formSelect {
   height: 34px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border-default);
   border-radius: 6px;
   padding: 0 10px;
   font-size: 13px;
   font-family: inherit;
   outline: none;
-  background: #111215;
-  color: var(--text-main, #f8fafc);
+  background: var(--surface-canvas);
+  color: var(--text-main, var(--text-main));
   transition: all 0.15s ease;
 }
 
 .formInput:focus, .formSelect:focus {
-  border-color: var(--primary, #2fd9f4);
-  background: #141519;
+  border-color: var(--primary, var(--primary));
+  background: var(--surface-low);
 }
 
 .sectorsGrid {
@@ -552,9 +493,9 @@
   gap: 6px;
   margin-top: 4px;
   padding: 8px;
-  background: #111215;
+  background: var(--surface-canvas);
   border-radius: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--hover);
 }
 
 .sectorCheckItem {
@@ -562,7 +503,7 @@
   align-items: center;
   gap: 6px;
   font-size: 12px;
-  color: var(--text-body, #e3e2e6);
+  color: var(--text-body, var(--text-body));
   cursor: pointer;
   padding: 5px 8px;
   border-radius: 4px;
@@ -573,54 +514,25 @@
 .sectorCheckItemActive {
   background: rgba(47, 217, 244, 0.08);
   border-color: rgba(47, 217, 244, 0.25);
-  color: var(--text-main, #f8fafc);
+  color: var(--text-main, var(--text-main));
 }
 
 .modalFooter {
-  padding: 12px 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  background: #121316;
+  composes: modalFooter from '../styles/ui.module.css';
 }
 
 .btnCancel {
-  height: 32px;
-  padding: 0 12px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: transparent;
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--text-muted, #94a3b8);
-  cursor: pointer;
-  transition: all 0.12s ease;
+  composes: btnSecondary from '../styles/ui.module.css';
 }
 
-.btnCancel:hover {
-  background: rgba(255, 255, 255, 0.04);
-  color: var(--text-main, #f8fafc);
-}
 
 .btnSave {
-  height: 32px;
-  padding: 0 14px;
-  border: none;
-  background: var(--primary, #2fd9f4);
-  color: #002b33;
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.12s ease;
+  composes: btnPrimary from '../styles/ui.module.css';
 }
 
-.btnSave:hover:not(:disabled) {
-  background: #57f1db;
-}
-
-.btnSave:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+/* ===== REWORK UI/UX — refinamentos ===== */
+@media (max-width: 640px) {
+  .filterPills { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+  .filterPills::-webkit-scrollbar { display: none; }
+  .filterPills > * { flex-shrink: 0; }
 }

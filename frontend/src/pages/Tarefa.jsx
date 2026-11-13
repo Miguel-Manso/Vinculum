@@ -4,6 +4,7 @@ import Sidebar from '../components/Sidebar';
 import SidebarTrigger from '../components/SidebarTrigger';
 import api from '../services/api';
 import styles from './Tarefa.module.css';
+import { toast, confirmDialog } from '../components/feedback/feedback';
 
 export default function Tarefa() {
   const { id } = useParams();
@@ -84,7 +85,7 @@ export default function Tarefa() {
 
   async function handleSalvar() {
     if (!titulo.trim()) {
-      alert('O título da tarefa não pode ficar em branco.');
+      toast.warning('O título da tarefa não pode ficar em branco.');
       return;
     }
 
@@ -106,7 +107,7 @@ export default function Tarefa() {
       setTarefa(res.data);
       setUrgente(res.data.urgente === 1 || res.data.urgente === true);
     } catch (err) {
-      alert(err.response?.data?.error || 'Erro ao salvar alterações');
+      toast.error(err.response?.data?.error || 'Erro ao salvar alterações');
     } finally {
       setSalvando(false);
     }
@@ -115,7 +116,7 @@ export default function Tarefa() {
   async function handleMover() {
     if (!etapaSel) return;
     if (Number(etapaSel) === Number(tarefa.etapa_id)) {
-      alert('A tarefa já se encontra nesta etapa.');
+      toast.warning('A tarefa já se encontra nesta etapa.');
       return;
     }
 
@@ -130,7 +131,7 @@ export default function Tarefa() {
     );
 
     if (exigidos.length > 0) {
-      alert(`Para mover para a etapa "${destinoEtapaObj?.nome || 'de destino'}", preencha o campo obrigatório: "${exigidos.map(c => c.nome).join(', ')}".`);
+      toast.warning(`Para mover para a etapa "${destinoEtapaObj?.nome || 'de destino'}", preencha o campo obrigatório: "${exigidos.map(c => c.nome).join(', ')}".`);
       return;
     }
 
@@ -158,17 +159,17 @@ export default function Tarefa() {
       setSucessoMsg('Tarefa movida com sucesso!');
       setTimeout(() => setSucessoMsg(''), 3000);
     } catch (err) {
-      alert('Erro ao mover tarefa.');
+      toast.error('Erro ao mover tarefa.');
     }
   }
 
   async function handleExcluir() {
-    if (!window.confirm('Tem certeza que deseja excluir esta tarefa?')) return;
+    if (!await confirmDialog({ title: 'Excluir esta tarefa?', message: 'A tarefa e seu histórico serão removidos permanentemente.', confirmLabel: 'Excluir tarefa', tone: 'danger' })) return;
     try {
       await api.delete(`/tarefas/${id}`);
       navigate(-1);
     } catch (err) {
-      alert('Erro ao excluir tarefa.');
+      toast.error('Erro ao excluir tarefa.');
     }
   }
 

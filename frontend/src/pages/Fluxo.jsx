@@ -5,6 +5,7 @@ import SidebarTrigger from '../components/SidebarTrigger';
 import ProcessIcon from '../components/ProcessIcon';
 import api from '../services/api';
 import styles from './Fluxo.module.css';
+import { toast, confirmDialog } from '../components/feedback/feedback';
 
 export default function Fluxo() {
   const { id } = useParams();
@@ -194,11 +195,11 @@ export default function Fluxo() {
         const val = valoresCampos[c.id];
         if (c.tipo === 'checkbox') {
           if (!val) {
-            alert(`O campo obrigatório "${c.nome}" deve ser marcado.`);
+            toast.warning(`O campo obrigatório "${c.nome}" deve ser marcado.`);
             return;
           }
         } else if (val === undefined || val === null || String(val).trim() === '') {
-          alert(`O campo "${c.nome}" é obrigatório na criação da tarefa.`);
+          toast.warning(`O campo "${c.nome}" é obrigatório na criação da tarefa.`);
           return;
         }
       }
@@ -225,7 +226,7 @@ export default function Fluxo() {
       setModalTarefaAberto(false);
       await carregarDados();
     } catch (err) {
-      alert(err.response?.data?.error || 'Erro ao criar tarefa');
+      toast.error(err.response?.data?.error || 'Erro ao criar tarefa');
     } finally {
       setSalvandoTarefa(false);
     }
@@ -249,7 +250,7 @@ export default function Fluxo() {
       setTarefaEmEdicao(null);
       await carregarDados();
     } catch (err) {
-      alert(err.response?.data?.error || 'Erro ao salvar alterações da tarefa');
+      toast.error(err.response?.data?.error || 'Erro ao salvar alterações da tarefa');
     } finally {
       setSalvandoEdicaoTarefa(false);
     }
@@ -270,7 +271,7 @@ export default function Fluxo() {
       setModalEtapaAberto(false);
       await carregarDados();
     } catch (err) {
-      alert(err.response?.data?.error || 'Erro ao criar etapa');
+      toast.error(err.response?.data?.error || 'Erro ao criar etapa');
     } finally {
       setSalvandoEtapa(false);
     }
@@ -297,7 +298,7 @@ export default function Fluxo() {
       setEtapaEmEdicao(null);
       await carregarDados();
     } catch (err) {
-      alert(err.response?.data?.error || 'Erro ao editar etapa');
+      toast.error(err.response?.data?.error || 'Erro ao editar etapa');
     } finally {
       setSalvandoEdicaoEtapa(false);
     }
@@ -305,9 +306,12 @@ export default function Fluxo() {
 
   async function handleExcluirEtapa() {
     if (!etapaEmEdicao) return;
-    const confirmou = window.confirm(
-      `Tem certeza que deseja excluir a etapa "${etapaEmEdicao.nome}"?\nTodas as tarefas vinculadas a esta etapa também serão excluídas.`
-    );
+    const confirmou = await confirmDialog({
+      title: `Excluir a etapa "${etapaEmEdicao.nome}"?`,
+      message: 'Todas as tarefas vinculadas a esta etapa também serão excluídas. Esta ação não pode ser desfeita.',
+      confirmLabel: 'Excluir etapa',
+      tone: 'danger',
+    });
     if (!confirmou) return;
 
     setSalvandoEdicaoEtapa(true);
@@ -317,7 +321,7 @@ export default function Fluxo() {
       setEtapaEmEdicao(null);
       await carregarDados();
     } catch (err) {
-      alert(err.response?.data?.error || 'Erro ao excluir etapa');
+      toast.error(err.response?.data?.error || 'Erro ao excluir etapa');
     } finally {
       setSalvandoEdicaoEtapa(false);
     }
@@ -350,19 +354,19 @@ export default function Fluxo() {
       setOpcoesNovoCampo('');
       await carregarCampos();
     } catch (err) {
-      alert(err.response?.data?.error || 'Erro ao cadastrar campo');
+      toast.error(err.response?.data?.error || 'Erro ao cadastrar campo');
     } finally {
       setSalvandoCampo(false);
     }
   }
 
   async function handleExcluirCampo(campoId, nomeCampo) {
-    if (!window.confirm(`Tem certeza que deseja remover o campo "${nomeCampo}" deste processo?`)) return;
+    if (!await confirmDialog({ title: `Remover o campo "${nomeCampo}"?`, message: 'O campo deixará de aparecer nas tarefas deste processo.', confirmLabel: 'Remover campo', tone: 'danger' })) return;
     try {
       await api.delete(`/campos/${campoId}`);
       await carregarCampos();
     } catch (err) {
-      alert(err.response?.data?.error || 'Erro ao excluir campo');
+      toast.error(err.response?.data?.error || 'Erro ao excluir campo');
     }
   }
 
@@ -455,7 +459,7 @@ export default function Fluxo() {
         });
       } catch (err) {
         console.error('Erro ao reordenar etapas:', err);
-        alert('Erro ao salvar nova ordem das etapas.');
+        toast.error('Erro ao salvar nova ordem das etapas.');
         await carregarDados();
       }
       return;
@@ -517,7 +521,7 @@ export default function Fluxo() {
         await carregarDados();
       } catch (err) {
         console.error('Erro ao mover tarefa:', err);
-        alert('Erro ao mover a tarefa.');
+        toast.error('Erro ao mover a tarefa.');
         await carregarDados();
       } finally {
         setTarefaArrastada(null);
@@ -534,11 +538,11 @@ export default function Fluxo() {
       const v = valoresExigidos[c.id];
       if (c.tipo === 'checkbox') {
         if (!v) {
-          alert(`O campo obrigatório "${c.nome}" deve ser marcado para avançar.`);
+          toast.warning(`O campo obrigatório "${c.nome}" deve ser marcado para avançar.`);
           return;
         }
       } else if (v === undefined || v === null || String(v).trim() === '') {
-        alert(`O campo "${c.nome}" é obrigatório para mover a tarefa para "${etapaDestinoPendente.nome}".`);
+        toast.warning(`O campo "${c.nome}" é obrigatório para mover a tarefa para "${etapaDestinoPendente.nome}".`);
         return;
       }
     }
@@ -565,7 +569,7 @@ export default function Fluxo() {
       await carregarDados();
     } catch (err) {
       console.error('Erro ao mover tarefa com campos:', err);
-      alert('Erro ao mover tarefa.');
+      toast.error('Erro ao mover tarefa.');
     } finally {
       setSalvandoExigencia(false);
     }

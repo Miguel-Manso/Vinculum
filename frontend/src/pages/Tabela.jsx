@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { useSetor } from '../context/SetorContext';
 import api from '../services/api';
 import styles from './Tabela.module.css';
+import { toast } from '../components/feedback/feedback';
 
 /**
  * Subcomponente de Combobox / Popover Minimalista com busca interna e multi-seleção
@@ -723,7 +724,7 @@ export default function Tabela() {
 
   function exportarCSV() {
     if (tarefasFiltradas.length === 0) {
-      alert('Nenhuma tarefa para exportar.');
+      toast.warning('Nenhuma tarefa para exportar.');
       return;
     }
 

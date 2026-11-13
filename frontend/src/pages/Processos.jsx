@@ -6,6 +6,7 @@ import ProcessIcon, { OPCOES_ICONES, getProcessIconKey } from '../components/Pro
 import { useSetor } from '../context/SetorContext';
 import api from '../services/api';
 import styles from './Processos.module.css';
+import { toast, confirmDialog } from '../components/feedback/feedback';
 
 export default function Processos() {
   const navigate = useNavigate();
@@ -104,7 +105,7 @@ export default function Processos() {
     e.preventDefault();
     if (!nome.trim()) return;
     if (!setorIdForm) {
-      alert('Por favor, selecione um setor para vincular o processo.');
+      toast.warning('Por favor, selecione um setor para vincular o processo.');
       return;
     }
 
@@ -129,14 +130,14 @@ export default function Processos() {
       fecharModal();
       await Promise.all([carregarProcessos(), recarregarSetores()]);
     } catch (err) {
-      alert(err.response?.data?.error || 'Erro ao salvar processo');
+      toast.error(err.response?.data?.error || 'Erro ao salvar processo');
     } finally {
       setSalvando(false);
     }
   }
 
   async function handleExcluir(p) {
-    if (!window.confirm(`Tem certeza que deseja excluir o processo "${p.nome}"?\nTodas as etapas e tarefas vinculadas serão excluídas.`)) {
+    if (!await confirmDialog({ title: `Excluir o processo "${p.nome}"?`, message: 'Todas as etapas e tarefas vinculadas serão excluídas. Esta ação não pode ser desfeita.', confirmLabel: 'Excluir processo', tone: 'danger' })) {
       return;
     }
 
@@ -144,7 +145,7 @@ export default function Processos() {
       await api.delete(`/processos/${p.id}`);
       await Promise.all([carregarProcessos(), recarregarSetores()]);
     } catch (err) {
-      alert(err.response?.data?.error || 'Erro ao excluir processo');
+      toast.error(err.response?.data?.error || 'Erro ao excluir processo');
     }
   }
 

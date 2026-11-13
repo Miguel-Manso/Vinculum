@@ -20,7 +20,7 @@
 .modal {
   background: #0c121e;
   border: 1px solid rgba(47, 217, 244, 0.25);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 30px rgba(47, 217, 244, 0.1);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 30px var(--primary-soft);
   border-radius: 16px;
   width: 100%;
   max-width: 620px;
@@ -44,7 +44,7 @@
 
 .header {
   padding: 1.25rem 1.5rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid var(--border-default);
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -61,9 +61,9 @@
   width: 40px;
   height: 40px;
   border-radius: 10px;
-  background: rgba(47, 217, 244, 0.12);
-  border: 1px solid rgba(47, 217, 244, 0.3);
-  color: #2fd9f4;
+  background: var(--primary-soft);
+  border: 1px solid var(--primary-border);
+  color: var(--primary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -74,32 +74,20 @@
   margin: 0;
   font-size: 1.15rem;
   font-weight: 700;
-  color: #f1f5f9;
+  color: var(--text-main);
   letter-spacing: -0.01em;
 }
 
 .subtitle {
   margin: 0.2rem 0 0;
   font-size: 0.82rem;
-  color: #94a3b8;
+  color: var(--text-muted);
 }
 
 .btnClose {
-  background: transparent;
-  border: none;
-  color: #64748b;
-  font-size: 1.1rem;
-  cursor: pointer;
-  padding: 0.4rem;
-  border-radius: 8px;
-  transition: all 0.15s ease;
-  line-height: 1;
+  composes: btnIcon from '../styles/ui.module.css';
 }
 
-.btnClose:hover {
-  color: #f1f5f9;
-  background: rgba(255, 255, 255, 0.08);
-}
 
 .body {
   padding: 1.5rem;
@@ -109,8 +97,8 @@
 
 .alertError {
   background: rgba(239, 68, 68, 0.15);
-  border: 1px solid rgba(239, 68, 68, 0.35);
-  color: #fca5a5;
+  border: 1px solid var(--danger-border);
+  color: var(--danger-text);
   padding: 0.75rem 1rem;
   border-radius: 8px;
   font-size: 0.85rem;
@@ -120,7 +108,7 @@
 .alertSuccess {
   background: rgba(16, 185, 129, 0.15);
   border: 1px solid rgba(16, 185, 129, 0.35);
-  color: #6ee7b7;
+  color: var(--success-text);
   padding: 0.75rem 1rem;
   border-radius: 8px;
   font-size: 0.85rem;
@@ -145,30 +133,13 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: #64748b;
+  color: var(--text-subtle);
 }
 
 .btnNovoSetor {
-  background: linear-gradient(135deg, #2fd9f4, #0099bb);
-  color: #06090f;
-  border: none;
-  font-weight: 600;
-  font-size: 0.85rem;
-  padding: 0.5rem 0.9rem;
-  border-radius: 8px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 14px rgba(47, 217, 244, 0.25);
+  composes: btnPrimary from '../styles/ui.module.css';
 }
 
-.btnNovoSetor:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(47, 217, 244, 0.35);
-  filter: brightness(1.08);
-}
 
 .sectorCardsList {
   display: flex;
@@ -234,9 +205,9 @@
 
 .activeTag {
   font-size: 0.7rem;
-  background: rgba(47, 217, 244, 0.15);
-  color: #2fd9f4;
-  border: 1px solid rgba(47, 217, 244, 0.3);
+  background: var(--primary-soft-2);
+  color: var(--primary);
+  border: 1px solid var(--primary-border);
   padding: 0.15rem 0.45rem;
   border-radius: 4px;
   font-weight: 600;
@@ -258,24 +229,16 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  color: #94a3b8;
+  color: var(--text-muted);
   transition: all 0.15s ease;
 }
 
-.btnActionIcon:hover {
-  background: rgba(255, 255, 255, 0.08);
-  color: #f1f5f9;
-}
 
-.btnActionIconDanger:hover {
-  background: rgba(239, 68, 68, 0.15);
-  color: #ef4444;
-}
 
 .sectorDesc {
   margin: 0;
   font-size: 0.8rem;
-  color: #94a3b8;
+  color: var(--text-muted);
   line-height: 1.4;
 }
 
@@ -291,7 +254,7 @@
   align-items: center;
   gap: 0.35rem;
   font-size: 0.76rem;
-  color: #64748b;
+  color: var(--text-subtle);
 }
 
 /* Formulário */
@@ -305,25 +268,22 @@
   margin: 0 0 0.5rem;
   font-size: 1rem;
   font-weight: 600;
-  color: #f1f5f9;
+  color: var(--text-main);
 }
 
 .field {
-  display: flex;
+  composes: field from '../styles/ui.module.css';
   flex-direction: column;
-  gap: 0.4rem;
 }
 
 .label {
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: #cbd5e1;
+  composes: label from '../styles/ui.module.css';
 }
 
 .input, .textarea {
   background: #070b13;
   border: 1px solid rgba(255, 255, 255, 0.12);
-  color: #f1f5f9;
+  color: var(--text-main);
   border-radius: 8px;
   padding: 0.65rem 0.85rem;
   font-size: 0.88rem;
@@ -333,8 +293,8 @@
 }
 
 .input:focus, .textarea:focus {
-  border-color: #2fd9f4;
-  box-shadow: 0 0 0 3px rgba(47, 217, 244, 0.15);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-soft-2);
 }
 
 .colorPalette {
@@ -380,44 +340,18 @@
   gap: 0.75rem;
   margin-top: 1rem;
   padding-top: 1rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid var(--border-default);
 }
 
 .btnSecondary {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #cbd5e1;
-  padding: 0.6rem 1.1rem;
-  border-radius: 8px;
-  font-size: 0.85rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.15s ease;
+  composes: btnSecondary from '../styles/ui.module.css';
 }
 
-.btnSecondary:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.1);
-  color: #f1f5f9;
-}
 
 .btnPrimary {
-  background: linear-gradient(135deg, #2fd9f4, #0099bb);
-  border: none;
-  color: #06090f;
-  padding: 0.6rem 1.2rem;
-  border-radius: 8px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 14px rgba(47, 217, 244, 0.2);
+  composes: btnPrimary from '../styles/ui.module.css';
 }
 
-.btnPrimary:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 18px rgba(47, 217, 244, 0.35);
-  filter: brightness(1.08);
-}
 
 .btnPrimary:disabled, .btnSecondary:disabled {
   opacity: 0.5;

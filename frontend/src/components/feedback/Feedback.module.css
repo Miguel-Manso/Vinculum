@@ -1,0 +1,91 @@
+/* Toasts --------------------------------------------------------------- */
+.toastRegion {
+  position: fixed; top: var(--sp-5); right: var(--sp-5); z-index: var(--z-toast);
+  display: flex; flex-direction: column; gap: var(--sp-2);
+  width: min(380px, calc(100vw - 2 * var(--sp-4)));
+  pointer-events: none;
+}
+@media (max-width: 768px) {
+  .toastRegion { top: calc(var(--mobile-header-h) + var(--sp-3)); right: var(--sp-4); left: var(--sp-4); width: auto; }
+}
+
+.toast {
+  position: relative; display: flex; align-items: flex-start; gap: var(--sp-3);
+  padding: 12px 12px 14px 14px; border-radius: var(--r-md);
+  background: var(--surface-high); border: 1px solid var(--border-default);
+  box-shadow: var(--shadow-lg); overflow: hidden; pointer-events: auto;
+  animation: toastIn var(--dur-slow) var(--ease-out) both;
+}
+.toastLeaving { animation: toastOut 200ms var(--ease-in-out) both; }
+
+.toastIcon { display: inline-flex; margin-top: 1px; }
+.toast_success .toastIcon { color: var(--success-text); }
+.toast_error .toastIcon { color: var(--danger-text); }
+.toast_warning .toastIcon { color: var(--warning-text); }
+.toast_info .toastIcon { color: var(--primary); }
+.toast_success { border-color: var(--success-border); }
+.toast_error { border-color: var(--danger-border); }
+.toast_warning { border-color: var(--warning-border); }
+
+.toastBody { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.toastTitle { font-size: var(--fs-sm); font-weight: 600; color: var(--text-main); }
+.toastMessage { font-size: var(--fs-sm); color: var(--text-body); line-height: var(--lh-snug); white-space: pre-line; }
+
+.toastClose {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 24px; height: 24px; border-radius: var(--r-sm); border: none;
+  background: transparent; color: var(--text-subtle);
+  transition: background-color var(--dur) var(--ease-out), color var(--dur) var(--ease-out);
+}
+.toastClose:hover { background: var(--hover); color: var(--text-main); }
+
+.toastProgress {
+  position: absolute; left: 0; bottom: 0; height: 2px; width: 100%;
+  transform-origin: left; background: currentColor; opacity: 0.5;
+  animation: toastTimer linear forwards;
+}
+.toast_success .toastProgress { color: var(--success-text); }
+.toast_error .toastProgress { color: var(--danger-text); }
+.toast_warning .toastProgress { color: var(--warning-text); }
+.toast_info .toastProgress { color: var(--primary); }
+
+@keyframes toastIn { from { opacity: 0; transform: translateY(-8px) scale(0.98); } to { opacity: 1; transform: none; } }
+@keyframes toastOut { to { opacity: 0; transform: translateX(16px); } }
+@keyframes toastTimer { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+
+/* Confirmação ------------------------------------------------------------ */
+.confirmOverlay {
+  position: fixed; inset: 0; z-index: var(--z-confirm);
+  display: flex; align-items: center; justify-content: center; padding: var(--sp-4);
+  background: var(--surface-overlay);
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  animation: fade var(--dur) var(--ease-out) both;
+}
+.confirmCard {
+  width: 100%; max-width: 420px; padding: var(--sp-6); border-radius: var(--r-xl);
+  background: var(--surface-container); border: 1px solid var(--border-default);
+  box-shadow: var(--shadow-xl);
+  animation: pop var(--dur-slow) var(--ease-out) both;
+}
+.confirmIcon {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 40px; height: 40px; border-radius: var(--r-md);
+  background: var(--primary-soft); color: var(--primary); margin-bottom: var(--sp-4);
+}
+.confirmIconDanger { background: var(--danger-soft); color: var(--danger-text); }
+.confirmTitle { font-family: var(--font-display); font-size: var(--fs-lg); font-weight: 600; color: var(--text-main); margin-bottom: var(--sp-2); }
+.confirmMessage { font-size: var(--fs-sm); color: var(--text-muted); line-height: var(--lh-base); white-space: pre-line; }
+.confirmActions { display: flex; justify-content: flex-end; gap: var(--sp-2); margin-top: var(--sp-6); }
+
+.btnCancel { composes: btnSecondary from '../../styles/ui.module.css'; }
+.btnConfirm { composes: btnPrimary from '../../styles/ui.module.css'; }
+.btnDanger { composes: btn from '../../styles/ui.module.css'; background: var(--status-danger); color: #fff; box-shadow: 0 6px 18px -6px rgba(239, 68, 68, 0.55); }
+.btnDanger:hover { background: #f05252; }
+
+@media (max-width: 480px) {
+  .confirmActions { flex-direction: column-reverse; }
+  .confirmActions > button { width: 100%; height: var(--control-h-lg); }
+}
+
+@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes pop { from { opacity: 0; transform: translateY(8px) scale(0.97); } to { opacity: 1; transform: none; } }
