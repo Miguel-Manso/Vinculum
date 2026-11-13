@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import api from '../services/api';
 import styles from './Chatbot.module.css';
+import { confirmDialog } from './feedback/feedback';
 
 const MENSAGEM_BOAS_VINDAS = {
   id: 'intro',
@@ -254,8 +255,8 @@ export default function Chatbot() {
     }
   }
 
-  function limparHistorico() {
-    if (window.confirm('Deseja limpar o histórico da conversa nesta sessão?')) {
+  async function limparHistorico() {
+    if (await confirmDialog({ title: 'Limpar a conversa?', message: 'O histórico desta sessão com o assistente será apagado.', confirmLabel: 'Limpar' })) {
       const reset = [MENSAGEM_BOAS_VINDAS];
       setMensagens(reset);
       sessionStorage.removeItem('vinculum_chat_historico');

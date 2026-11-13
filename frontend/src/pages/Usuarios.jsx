@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { useSetor } from '../context/SetorContext';
 import api from '../services/api';
 import styles from './Usuarios.module.css';
+import { toast, confirmDialog } from '../components/feedback/feedback';
 
 export default function Usuarios() {
   const { usuario } = useAuth();
@@ -150,16 +151,16 @@ export default function Usuarios() {
 
   async function handleExcluirUsuario(u) {
     if (u.id === usuario?.id) {
-      alert('Você não pode excluir sua própria conta.');
+      toast.warning('Você não pode excluir sua própria conta.');
       return;
     }
 
     if (u.email === 'admin@vinculum.com') {
-      alert('O administrador principal do sistema não pode ser removido.');
+      toast.warning('O administrador principal do sistema não pode ser removido.');
       return;
     }
 
-    if (!window.confirm(`Tem certeza que deseja remover o acesso de "${u.nome}"?`)) {
+    if (!await confirmDialog({ title: `Remover o acesso de "${u.nome}"?`, message: 'A pessoa não conseguirá mais entrar no Vinculum.', confirmLabel: 'Remover acesso', tone: 'danger' })) {
       return;
     }
 
@@ -167,7 +168,7 @@ export default function Usuarios() {
       await api.delete(`/usuarios/${u.id}`);
       await Promise.all([carregarUsuarios(), recarregarSetores()]);
     } catch (err) {
-      alert(err.response?.data?.error || 'Erro ao excluir usuário.');
+      toast.error(err.response?.data?.error || 'Erro ao excluir usuário.');
     }
   }
 

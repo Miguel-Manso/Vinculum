@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useSetor } from '../context/SetorContext';
 import api from '../services/api';
 import styles from './ModalGerenciarSetores.module.css';
+import { toast, confirmDialog } from './feedback/feedback';
 
 const PALETA_CORES = [
   '#2fd9f4', // Cyan Stitch
@@ -99,7 +100,7 @@ export default function ModalGerenciarSetores({ isOpen, onClose }) {
   }
 
   async function handleExcluir(setor) {
-    if (!window.confirm(`Tem certeza que deseja excluir o setor "${setor.nome}"?\nOs processos pertencentes a ele ficarão desvinculados.`)) {
+    if (!await confirmDialog({ title: `Excluir o setor "${setor.nome}"?`, message: 'Os processos pertencentes a ele ficarão desvinculados.', confirmLabel: 'Excluir setor', tone: 'danger' })) {
       return;
     }
 
@@ -110,7 +111,7 @@ export default function ModalGerenciarSetores({ isOpen, onClose }) {
       }
       await recarregarSetores();
     } catch (err) {
-      alert(err.response?.data?.error || 'Erro ao excluir setor.');
+      toast.error(err.response?.data?.error || 'Erro ao excluir setor.');
     }
   }
 
