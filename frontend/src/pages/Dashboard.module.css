@@ -3,7 +3,7 @@
    ========================================================================== */
 
 .layout { composes: layout from '../styles/ui.module.css'; }
-.main { composes: main from '../styles/ui.module.css'; overflow-x: hidden; max-width: 1440px; }
+.main { composes: main from '../styles/ui.module.css'; overflow-x: hidden; }
 
 /* ------------------------------ Cabeçalho ------------------------------- */
 .topHeader {
@@ -76,7 +76,12 @@ a.kpiCell:hover, .kpiCellButton:hover { background: var(--hover-subtle); }
   padding: var(--sp-4) var(--sp-5) 0;
 }
 .panelTitleRow { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3); min-height: 30px; }
-.sectionTitle { font-family: var(--font-display); font-size: var(--fs-md); font-weight: 600; color: var(--text-main); letter-spacing: -0.01em; }
+.sectionTitle { font-family: var(--font-display); font-size: var(--fs-md); font-weight: 700; color: var(--text-main); letter-spacing: -0.01em; }
+.sectionTitle::before {
+  content: ''; display: inline-block; width: 4px; height: 0.95em;
+  margin-right: 10px; vertical-align: -0.1em;
+  border-radius: 2px; background: var(--primary);
+}
 
 .panelFooter {
   display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3);
@@ -127,7 +132,8 @@ a.kpiCell:hover, .kpiCellButton:hover { background: var(--hover-subtle); }
 .tabBtnActive { color: var(--text-main); }
 .tabBtnActive::after {
   content: ''; position: absolute; left: 0; right: 0; bottom: -1px; height: 2px;
-  background: var(--text-main); border-radius: 2px 2px 0 0;
+  background: var(--primary); border-radius: 2px 2px 0 0;
+  box-shadow: 0 0 10px rgba(69, 196, 214, 0.7);
 }
 .tabCount { font-size: var(--fs-xs); color: var(--text-faint); font-variant-numeric: tabular-nums; }
 .tabCountDanger { color: var(--danger-text); }
@@ -205,14 +211,39 @@ a.kpiCell:hover, .kpiCellButton:hover { background: var(--hover-subtle); }
 .emptySubtitle { font-size: var(--fs-sm); color: var(--text-subtle); }
 .emptyResetBtn { composes: btnSecondary btnSm from '../styles/ui.module.css'; margin-top: var(--sp-3); }
 
+/* ------------------------------ Marinho & índigo ------------------------ */
+/* KPIs viram cards separados que sobem por cima da onda do cabeçalho */
+.kpiGrid {
+  position: relative; z-index: 1;
+  gap: var(--sp-3);
+  margin-top: calc(-1 * var(--sp-8));
+  background: transparent; border: none; border-radius: 0; overflow: visible;
+}
+.kpiCell, .kpiCell:first-child {
+  border: 1px solid var(--border-default);
+  border-radius: var(--r-lg);
+  background: var(--gradient-glass), rgba(12, 22, 40, 0.82);
+  backdrop-filter: blur(16px) saturate(180%); -webkit-backdrop-filter: blur(16px) saturate(180%);
+  box-shadow: var(--shadow-glass);
+  animation: vcRise 0.45s var(--ease-out) both;
+}
+.kpiCell:nth-child(2) { animation-delay: 60ms; }
+.kpiCell:nth-child(3) { animation-delay: 120ms; }
+.kpiCell:nth-child(4) { animation-delay: 180ms; }
+a.kpiCell:hover, .kpiCellButton:hover { background: var(--gradient-glass), rgba(20, 42, 72, 0.9); border-color: var(--primary-border); }
+.kpiValue { font-family: var(--font-mono); font-size: 30px; font-weight: 600; letter-spacing: -0.03em; }
+.kpiProgressFill { background: linear-gradient(90deg, var(--success-text), #2dbc4e); }
+.panel { border-color: var(--border-default); }
+.dueWarning { color: var(--accent-text); }
+
+@keyframes vcRise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+
 /* ------------------------------ Responsivo ------------------------------ */
 @media (max-width: 1180px) {
   .columns { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 900px) {
   .kpiGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .kpiCell:nth-child(3) { border-left: none; }
-  .kpiCell:nth-child(n+3) { border-top: 1px solid var(--border-subtle); }
 }
 @media (max-width: 768px) {
   .topHeader { align-items: flex-start; }
@@ -225,3 +256,12 @@ a.kpiCell:hover, .kpiCellButton:hover { background: var(--hover-subtle); }
   .kpiCell { padding: var(--sp-3) var(--sp-4); }
   .kpiValue { font-size: 24px; }
 }
+
+/* ===== Detalhes marinho/ciano ===== */
+.panel { background: var(--gradient-surface), var(--surface-container); border-top-color: var(--border-navy); }
+.assigneeAvatar { background: linear-gradient(135deg, var(--navy), #14466e); color: var(--primary-light); }
+.kpiCell::after {
+  content: ''; position: absolute; left: 18px; right: 18px; top: -1px; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(69, 196, 214, 0.7), transparent);
+}
+.kpiCell { position: relative; }

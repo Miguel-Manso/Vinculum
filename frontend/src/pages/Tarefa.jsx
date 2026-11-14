@@ -186,7 +186,7 @@ export default function Tarefa() {
       <Sidebar />
 
       <main className={styles.main}>
-        <div className={styles.pageHeader}>
+        <div className={`${styles.pageHeader} page-hero`}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <SidebarTrigger />
             <button className={styles.btnBack} onClick={() => navigate(-1)}>

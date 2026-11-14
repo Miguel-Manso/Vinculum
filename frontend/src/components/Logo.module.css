@@ -3,10 +3,31 @@
 .vertical { flex-direction: column; text-align: center; gap: 14px; }
 .iconOnly { justify-content: center; }
 
-.image {
-  object-fit: contain;
+.mark {
   display: block;
-  transition: transform var(--dur-slow) var(--ease-out), filter var(--dur-slow) var(--ease-out);
+  flex-shrink: 0;
+  overflow: visible;
+  filter: drop-shadow(0 0 10px rgba(69, 196, 214, 0.3));
+}
+
+/* Cada anel gira em torno do próprio centro.
+   --vc-clock (App.jsx) mantém a rotação contínua entre trocas de tela. */
+.ringLeft, .ringRight {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.markSpin .ringLeft {
+  animation: ringCw 24s linear infinite;
+  animation-delay: var(--vc-clock, 0s);
+}
+.markSpin .ringRight {
+  animation: ringCcw 24s linear infinite;
+  animation-delay: var(--vc-clock, 0s);
+}
+@keyframes ringCw  { to { transform: rotate(360deg); } }
+@keyframes ringCcw { to { transform: rotate(-360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .markSpin .ringLeft, .markSpin .ringRight { animation: none; }
 }
 
 

@@ -55,7 +55,7 @@
 }
 
 .tag {
-  background: rgba(93, 193, 185, 0.16);
+  background: rgba(69, 196, 214, 0.16);
   color: var(--turquesa-200);
   border: 1px solid var(--turquesa-600);
   font-size: 13px;
@@ -165,7 +165,7 @@
 .historicoIcon {
   width: 32px;
   height: 32px;
-  background: rgba(93, 193, 185, 0.16);
+  background: rgba(69, 196, 214, 0.16);
   border-radius: 8px;
   display: flex;
   align-items: center;
@@ -334,3 +334,6 @@
 .infoLabel { font-size: var(--fs-sm); color: var(--text-subtle); flex-shrink: 0; }
 .infoValor { font-size: var(--fs-sm); font-weight: 500; color: var(--text-body); text-align: right; }
 .loading { color: var(--text-subtle); font-size: var(--fs-sm); }
+
+/* ===== Detalhes marinho/ciano ===== */
+.card { background: var(--gradient-surface), var(--surface-container); border-top-color: var(--border-navy); }

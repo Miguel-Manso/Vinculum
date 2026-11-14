@@ -10,9 +10,13 @@
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  background: var(--surface-lowest);
+  background:
+    radial-gradient(120% 35% at 0% 0%, rgba(69, 196, 214, 0.12), transparent 70%),
+    radial-gradient(140% 40% at 100% 100%, rgba(16, 60, 120, 0.26), transparent 70%),
+    var(--surface-lowest);
   border-right: 1px solid var(--border-subtle);
   overflow: hidden;
+  isolation: isolate; /* estrelas (z-index: -1) ficam atrás do conteúdo, acima do fundo */
   z-index: var(--z-sidebar);
   transition: width var(--dur-slow) var(--ease-in-out), transform var(--dur-slow) var(--ease-out);
 }
@@ -67,8 +71,10 @@
   position: absolute; top: calc(100% + 2px); left: var(--sp-3); right: var(--sp-3);
   z-index: var(--z-dropdown);
   display: flex; flex-direction: column; padding: 6px;
-  background: var(--surface-high); border: 1px solid var(--border-default);
-  border-radius: var(--r-lg); box-shadow: var(--shadow-lg);
+  background: var(--gradient-glass), rgba(12, 22, 40, 0.92);
+  backdrop-filter: blur(16px) saturate(180%); -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--r-lg); box-shadow: var(--shadow-glass);
   animation: popIn var(--dur) var(--ease-out) both; transform-origin: top center;
 }
 /* Sidebar recolhida: popover flutua ao lado, fora da área recortada */
@@ -121,7 +127,7 @@
 .navLink, .navLinkButton {
   position: relative; width: 100%;
   display: flex; align-items: center; gap: var(--sp-3);
-  height: 32px; padding: 0 10px; border-radius: var(--r-sm); border: none;
+  height: 36px; padding: 0 10px; border-radius: var(--r-md); border: none;
   background: transparent; color: var(--text-muted);
   font-size: var(--fs-sm); font-weight: 500; text-decoration: none; text-align: left; white-space: nowrap;
   cursor: pointer;
@@ -132,12 +138,20 @@
 .navLink:active svg, .navLinkButton:active svg { transform: scale(0.92); }
 .navLink:focus-visible, .navLinkButton:focus-visible { outline: none; box-shadow: var(--focus-ring); }
 
-.navLinkActive { background: var(--surface-highest); color: var(--text-main); font-weight: 500; }
-.navLinkActive:hover { background: var(--surface-highest); }
-.navLinkActive svg { color: var(--text-main); }
-.navLinkActive::before {
-  content: none;
+.navLinkActive {
+  background: var(--gradient-navy-cyan);
+  color: #fff; font-weight: 600;
+  box-shadow: inset 0 0 0 1px rgba(69, 196, 214, 0.28);
 }
+.navLinkActive:hover { background: linear-gradient(90deg, rgba(69, 196, 214, 0.32), rgba(11, 35, 71, 0.40)); }
+.navLinkActive svg { color: var(--primary-light); }
+.navLinkActive::before {
+  content: ''; position: absolute; left: -12px; top: 50%;
+  width: 4px; height: 20px; margin-top: -10px;
+  border-radius: 0 2px 2px 0; background: var(--primary);
+  box-shadow: 0 0 12px rgba(69, 196, 214, 0.8);
+}
+.navLinkCollapsed.navLinkActive::before { left: -14px; }
 .navLinkCollapsed { justify-content: center; width: 36px; height: 36px; padding: 0; margin: 0 auto; }
 
 /* -------------------------- Rodapé (usuário) ---------------------------- */
@@ -147,7 +161,8 @@
 .userAvatar {
   display: inline-flex; align-items: center; justify-content: center;
   width: 28px; height: 28px; border-radius: var(--r-full);
-  background: var(--surface-highest); color: var(--text-body);
+  background: linear-gradient(135deg, var(--navy), #14466e); color: var(--primary-light);
+  box-shadow: 0 0 0 1px rgba(69, 196, 214, 0.35);
   font-size: var(--fs-xs); font-weight: 600; flex-shrink: 0;
 }
 .userText { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
@@ -160,6 +175,55 @@
 }
 .userEmail { font-size: var(--fs-2xs); color: var(--text-subtle); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .btnLogout { composes: btnIconDanger from '../styles/ui.module.css'; }
+
+/* -------------------------- Estrelas caindo ----------------------------- */
+.starfield {
+  position: absolute; inset: 0; z-index: -1;
+  pointer-events: none; overflow: hidden;
+}
+/* pontinhos parados que piscam */
+.starfield::before {
+  content: ''; position: absolute; inset: 0;
+  background-image:
+    radial-gradient(circle at 22% 18%, rgba(190, 240, 245, 0.55) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 70% 42%, rgba(190, 240, 245, 0.40) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 40% 76%, rgba(160, 210, 255, 0.45) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 85% 63%, rgba(220, 250, 255, 0.60) 0 1.2px, transparent 1.8px);
+  /* tamanhos "primos" entre si para o padrão não parecer uma grade */
+  background-size: 137px 211px, 199px 163px, 173px 293px, 241px 347px;
+  background-position: 0 0, 37px 59px, 91px 13px, 11px 127px;
+  animation: starTwinkle 5s ease-in-out infinite alternate;
+  animation-delay: var(--vc-clock, 0s);
+}
+.fallingStar {
+  position: absolute; top: calc(-1 * var(--tail) - 8px);
+  width: var(--size); height: var(--tail);
+  border-radius: 9999px;
+  background: linear-gradient(to bottom, rgba(69, 196, 214, 0), rgba(120, 220, 238, 0.55) 70%, rgba(220, 250, 255, 0.95));
+  opacity: 0;
+  animation: starFall var(--dur) linear infinite;
+  /* --vc-clock (App.jsx) mantém a queda contínua quando a sidebar é remontada */
+  animation-delay: calc(var(--vc-clock, 0s) + var(--delay));
+  will-change: transform, opacity;
+}
+/* cabeça brilhante da estrela */
+.fallingStar::after {
+  content: ''; position: absolute; left: 50%; bottom: -1px;
+  width: calc(var(--size) + 2px); height: calc(var(--size) + 2px);
+  transform: translateX(-50%); border-radius: 9999px;
+  background: #e8fbff;
+  box-shadow: 0 0 6px 1px rgba(69, 196, 214, 0.9), 0 0 14px 2px rgba(30, 100, 180, 0.6);
+}
+@keyframes starFall {
+  0%   { transform: translate3d(0, 0, 0) rotate(8deg); opacity: 0; }
+  8%   { opacity: var(--peak); }
+  80%  { opacity: var(--peak); }
+  100% { transform: translate3d(-150px, calc(100dvh + 120px), 0) rotate(8deg); opacity: 0; }
+}
+@keyframes starTwinkle { from { opacity: 0.35; } to { opacity: 0.85; } }
+@media (prefers-reduced-motion: reduce) {
+  .fallingStar { display: none; }
+}
 
 @keyframes popIn { from { opacity: 0; transform: translateY(-4px) scale(0.98); } to { opacity: 1; transform: none; } }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -180,7 +244,7 @@
     display: flex; align-items: center; justify-content: space-between;
     position: fixed; top: 0; left: 0; right: 0;
     height: var(--mobile-header-h); padding: 0 var(--sp-2) 0 var(--sp-4);
-    background: rgba(10, 10, 11, 0.88);
+    background: rgba(9, 17, 31, 0.88);
     backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--border-subtle);
     z-index: var(--z-mobile-header);

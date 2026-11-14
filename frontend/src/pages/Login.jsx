@@ -42,14 +42,16 @@ export default function Login() {
       <main className={styles.card}>
         <Logo
           variant="vertical"
-          size={40}
+          size={72}
           showSubtitle
           subtitleText="Gestão Visual de Processos"
           className={styles.logoHeader}
+          titleClassName={styles.brandTitle}
+          subtitleClassName={styles.brandSubtitle}
         />
 
         <div className={styles.intro}>
-          <h1 className={styles.title}>Bem-vindo de volta</h1>
+          <h1 className={styles.title}>Bem-vindo de volta.</h1>
           <p className={styles.subtitle}>Entre com sua conta para acessar seus processos.</p>
         </div>
 

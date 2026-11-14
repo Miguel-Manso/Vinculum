@@ -9,6 +9,30 @@ import { useSetor } from '../context/SetorContext';
 import api from '../services/api';
 import styles from './Processos.module.css';
 import { toast, confirmDialog } from '../components/feedback/feedback';
+import {
+  FilterToggle, FilterPanel, FilterField, FilterSelect, FilterSegment, ActiveFilters,
+} from '../components/FilterPanel';
+
+const FILTROS_INICIAIS = { icone: '', volume: '', etapas: '', ordenar: 'nome' };
+
+const OPCOES_VOLUME = [
+  { value: '', label: 'Todos' },
+  { value: 'com', label: 'Com tarefas' },
+  { value: 'sem', label: 'Vazios' },
+];
+const OPCOES_ETAPAS = [
+  { value: '', label: 'Todas' },
+  { value: '1-3', label: '1–3' },
+  { value: '4-6', label: '4–6' },
+  { value: '7+', label: '7+' },
+];
+const OPCOES_ORDENAR = [
+  { value: 'nome', label: 'Nome (A–Z)' },
+  { value: 'nome-desc', label: 'Nome (Z–A)' },
+  { value: 'tarefas', label: 'Mais tarefas' },
+  { value: 'etapas', label: 'Mais etapas' },
+  { value: 'recentes', label: 'Mais recentes' },
+];
 
 export default function Processos() {
   const navigate = useNavigate();
@@ -54,16 +78,36 @@ export default function Processos() {
     carregarProcessos();
   }, []);
 
-  // Filtra processos por busca e por setor selecionado
+  // Painel de filtros avançados
+  const [filtrosAbertos, setFiltrosAbertos] = useState(false);
+  const [filtros, setFiltros] = useState(FILTROS_INICIAIS);
+  const setFiltro = (chave, valor) => setFiltros(f => ({ ...f, [chave]: valor }));
+
+  // Filtra processos por busca, setor e filtros avançados; depois ordena
   const processosFiltrados = useMemo(() => {
-    return processos.filter(p => {
+    const termo = busca.toLowerCase().trim();
+
+    const lista = processos.filter(p => {
       // Filtro por setor
       if (setorFiltroId !== 'todos') {
         if (String(p.setor_id) !== String(setorFiltroId)) return false;
       }
 
+      // Tipo (ícone)
+      if (filtros.icone && (p.icone || getProcessIconKey(p)) !== filtros.icone) return false;
+
+      // Volume de tarefas
+      const nTarefas = parseInt(p.tarefas, 10) || 0;
+      if (filtros.volume === 'com' && nTarefas === 0) return false;
+      if (filtros.volume === 'sem' && nTarefas > 0) return false;
+
+      // Quantidade de etapas
+      const nEtapas = parseInt(p.etapas, 10) || 0;
+      if (filtros.etapas === '1-3' && (nEtapas < 1 || nEtapas > 3)) return false;
+      if (filtros.etapas === '4-6' && (nEtapas < 4 || nEtapas > 6)) return false;
+      if (filtros.etapas === '7+' && nEtapas < 7) return false;
+
       // Filtro por termo de busca
-      const termo = busca.toLowerCase().trim();
       if (!termo) return true;
 
       return (
@@ -72,7 +116,38 @@ export default function Processos() {
         (p.setor_nome && p.setor_nome.toLowerCase().includes(termo))
       );
     });
-  }, [processos, setorFiltroId, busca]);
+
+    const num = v => parseInt(v, 10) || 0;
+    const porNome = (a, b) => (a.nome || '').localeCompare(b.nome || '', 'pt-BR');
+    switch (filtros.ordenar) {
+      case 'nome-desc': return lista.sort((a, b) => porNome(b, a));
+      case 'tarefas':   return lista.sort((a, b) => num(b.tarefas) - num(a.tarefas) || porNome(a, b));
+      case 'etapas':    return lista.sort((a, b) => num(b.etapas) - num(a.etapas) || porNome(a, b));
+      case 'recentes':  return lista.sort((a, b) => num(b.id) - num(a.id));
+      default:          return lista.sort(porNome);
+    }
+  }, [processos, setorFiltroId, busca, filtros]);
+
+  function limparFiltros() {
+    setBusca('');
+    setFiltros(FILTROS_INICIAIS);
+    handleSelecionarAba('todos');
+  }
+
+  // Chips dos filtros aplicados (ordenação não conta como filtro)
+  const chipsAtivos = [];
+  if (busca.trim()) chipsAtivos.push({ id: 'busca', label: `Busca: "${busca.trim()}"`, onRemove: () => setBusca('') });
+  if (setorFiltroId !== 'todos') {
+    const s = setoresDisponiveis.find(x => String(x.id) === String(setorFiltroId));
+    chipsAtivos.push({ id: 'setor', label: `Setor: ${s?.nome || '—'}`, onRemove: () => handleSelecionarAba('todos') });
+  }
+  if (filtros.icone) {
+    const op = OPCOES_ICONES.find(o => o.id === filtros.icone);
+    chipsAtivos.push({ id: 'icone', label: `Tipo: ${op?.rotulo || filtros.icone}`, onRemove: () => setFiltro('icone', '') });
+  }
+  if (filtros.volume) chipsAtivos.push({ id: 'volume', label: filtros.volume === 'com' ? 'Com tarefas' : 'Sem tarefas', onRemove: () => setFiltro('volume', '') });
+  if (filtros.etapas) chipsAtivos.push({ id: 'etapas', label: `Etapas: ${filtros.etapas}`, onRemove: () => setFiltro('etapas', '') });
+  const totalFiltrosAtivos = chipsAtivos.length;
 
   function abrirModalCriar() {
     setEditandoProcesso(null);
@@ -177,10 +252,10 @@ export default function Processos() {
 
       <main className={styles.main}>
         {/* Cabeçalho Minimalista com Ribbon */}
-        <header className={styles.minimalHeader}>
+        <header className={`${styles.minimalHeader} page-hero`}>
           <div className={styles.headerLeft}>
             <SidebarTrigger />
-            <h1 className={styles.pageTitle}>Processos</h1>
+            <h1 className={styles.pageTitle}>Processos.</h1>
             <div className={styles.headerMetricsRibbon}>
               <span className={styles.ribbonItem}>
                 <strong>{processos.length}</strong> {processos.length === 1 ? 'processo' : 'processos'}
@@ -209,6 +284,7 @@ export default function Processos() {
 
         {/* Barra de Filtros Minimalista */}
         <div className={styles.cleanToolbar}>
+          <div className={styles.searchRow}>
           {/* Pesquisa */}
           <div className={styles.searchWrap}>
             <svg className={styles.searchIcon} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -227,6 +303,13 @@ export default function Processos() {
                 ×
               </button>
             )}
+          </div>
+
+          <FilterToggle
+            open={filtrosAbertos}
+            onClick={() => setFiltrosAbertos(v => !v)}
+            count={totalFiltrosAtivos}
+          />
           </div>
 
           {/* Abas Rápidas de Setor */}
@@ -258,6 +341,53 @@ export default function Processos() {
           </div>
         </div>
 
+        <FilterPanel
+          open={filtrosAbertos}
+          onClose={() => setFiltrosAbertos(false)}
+          subtitle="Refine a lista por setor, tipo, volume de trabalho e ordene como preferir."
+          activeCount={totalFiltrosAtivos}
+          resultCount={processosFiltrados.length}
+          totalCount={processos.length}
+          resultNoun={['processo', 'processos']}
+          onClear={limparFiltros}
+        >
+          <FilterField label="Setor">
+            <FilterSelect
+              value={setorFiltroId === 'todos' ? '' : setorFiltroId}
+              onChange={v => handleSelecionarAba(v || 'todos')}
+              placeholder="Todos os setores"
+              options={setoresDisponiveis.map(s => ({ value: String(s.id), label: s.nome }))}
+              ariaLabel="Filtrar por setor"
+            />
+          </FilterField>
+          <FilterField label="Tipo de processo">
+            <FilterSelect
+              value={filtros.icone}
+              onChange={v => setFiltro('icone', v)}
+              placeholder="Todos os tipos"
+              options={OPCOES_ICONES.map(o => ({ value: o.id, label: o.rotulo }))}
+              ariaLabel="Filtrar por tipo"
+            />
+          </FilterField>
+          <FilterField label="Volume de tarefas">
+            <FilterSegment value={filtros.volume} onChange={v => setFiltro('volume', v)} options={OPCOES_VOLUME} ariaLabel="Volume de tarefas" />
+          </FilterField>
+          <FilterField label="Quantidade de etapas">
+            <FilterSegment value={filtros.etapas} onChange={v => setFiltro('etapas', v)} options={OPCOES_ETAPAS} ariaLabel="Quantidade de etapas" />
+          </FilterField>
+          <FilterField label="Ordenar por">
+            <FilterSelect
+              value={filtros.ordenar}
+              onChange={v => setFiltro('ordenar', v)}
+              placeholder={null}
+              options={OPCOES_ORDENAR}
+              ariaLabel="Ordenar processos"
+            />
+          </FilterField>
+        </FilterPanel>
+
+        <ActiveFilters chips={chipsAtivos} onClearAll={limparFiltros} />
+
         {/* Grid de Cards dos Processos */}
         {loading ? (
           <div className={styles.loadingBox}>Carregando processos...</div>
@@ -278,10 +408,7 @@ export default function Processos() {
             <button
               type="button"
               className={styles.btnLimparBusca}
-              onClick={() => {
-                setBusca('');
-                handleSelecionarAba('todos');
-              }}
+              onClick={limparFiltros}
             >
               Limpar filtros
             </button>

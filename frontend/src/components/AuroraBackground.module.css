@@ -22,12 +22,13 @@
 .blobA { top: -25%; left: -15%; width: 55%; height: 55%; background: #45c4d6; opacity: 0.16; }
 /* teal, no canto inferior direito */
 .blobB { bottom: -25%; right: -15%; width: 55%; height: 55%; background: #2f9e8f; opacity: 0.14; }
-/* azul petróleo, no meio */
-.blobC { top: 30%; left: 30%; width: 38%; height: 38%; background: #1e4f6e; opacity: 0.22; }
+/* azul-marinho, no meio */
+.blobC { top: 30%; left: 30%; width: 38%; height: 38%; background: #0b3a7a; opacity: 0.45; }
 
 .star {
   position: absolute; width: 2px; height: 2px;
   border-radius: 9999px; background: #e6f6f8;
+  box-shadow: 0 0 6px rgba(190, 240, 245, 0.7);
 }
 
 .vignette {

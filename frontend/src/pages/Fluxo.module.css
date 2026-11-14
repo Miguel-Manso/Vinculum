@@ -86,9 +86,9 @@
 }
 
 .columnDropTarget {
-  background: rgba(93, 193, 185, 0.18) !important;
+  background: rgba(69, 196, 214, 0.18) !important;
   border: 2px dashed var(--turquesa-400) !important;
-  box-shadow: 0 4px 16px rgba(93, 193, 185, 0.35);
+  box-shadow: 0 4px 16px rgba(69, 196, 214, 0.35);
 }
 
 .columnFinalizado {
@@ -235,7 +235,7 @@
   font-size: 11px;
   font-weight: 700;
   color: var(--turquesa-200);
-  background: rgba(93, 193, 185, 0.18);
+  background: rgba(69, 196, 214, 0.18);
   padding: 2px 6px;
   border-radius: 4px;
   border: 1px solid var(--turquesa-600);
@@ -355,7 +355,7 @@
 
 .columnDragOverTarget {
   border: 2px solid var(--turquesa-400) !important;
-  box-shadow: 0 0 16px rgba(93, 193, 185, 0.35) !important;
+  box-shadow: 0 0 16px rgba(69, 196, 214, 0.35) !important;
 }
 
 /* Chips de Campos Customizados nos Cards */
@@ -433,7 +433,7 @@
   font-size: 11px;
   padding: 2px 7px;
   border-radius: 6px;
-  background: rgba(93, 193, 185, 0.15);
+  background: rgba(69, 196, 214, 0.15);
   color: var(--turquesa-200);
   border: 1px solid var(--turquesa-600);
   font-weight: 600;
@@ -676,3 +676,35 @@
 .taskCardTop { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--sp-2); }
 [data-kanban-card]:hover .btnEditCard { opacity: 1; }
 .columnHeaderDraggable { margin: 0; padding: 2px 2px 0; }
+
+/* ===== Marinho & índigo ===== */
+.kanban { min-height: calc(100dvh - 260px); }
+.column { background: var(--surface-low); border-color: var(--border-default); border-radius: var(--r-lg); }
+.columnTitle { font-family: var(--font-display); font-weight: 700; }
+.columnTitle::before {
+  content: ''; display: inline-block; width: 4px; height: 0.95em;
+  margin-right: 8px; vertical-align: -0.1em;
+  border-radius: 2px; background: var(--primary);
+}
+.columnCount {
+  min-width: 22px; padding: 1px 7px; border-radius: var(--r-full);
+  background: var(--primary-soft-2); color: var(--primary-light); text-align: center;
+}
+.taskCard { background: var(--surface-high); border-color: var(--border-subtle); border-radius: var(--r-md); }
+.taskCard:hover { background: var(--surface-highest); border-color: var(--primary-border); }
+.columnDropTarget { background: var(--primary-soft) !important; border: 1px dashed var(--primary) !important; box-shadow: inset 0 0 24px rgba(69, 196, 214, 0.18) !important; }
+.columnDragOverTarget { border-color: var(--primary) !important; }
+.taskCardDragging { border: 1px dashed var(--primary-border); }
+
+/* ===== Barra de busca + filtros do quadro ===== */
+.boardToolbar { display: flex; align-items: center; flex-wrap: wrap; gap: var(--sp-2) var(--sp-3); }
+.boardSearch { flex: 1 1 280px; max-width: 420px; }
+.boardCount { margin-left: auto; font-size: var(--fs-xs); color: var(--text-subtle); }
+.boardCount strong { font-family: var(--font-mono); color: var(--text-main); font-weight: 600; }
+@media (max-width: 640px) {
+  .boardSearch { max-width: none; flex-basis: 100%; }
+  .boardCount { margin-left: 0; }
+}
+
+/* ===== Detalhes marinho/ciano ===== */
+.column { background: var(--gradient-surface), var(--surface-low); border-top-color: var(--border-navy); }

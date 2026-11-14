@@ -9,6 +9,46 @@ import useEscapeKey from '../hooks/useEscapeKey';
 import ModalGerenciarSetores from './ModalGerenciarSetores';
 import styles from './Sidebar.module.css';
 
+/* Estrelas caindo no fundo da sidebar.
+   Valores pseudo-aleatórios estáveis (não mudam a cada render) e delays
+   negativos para que já existam estrelas em queda quando a página abre. */
+function seeded(i) {
+  const x = Math.sin(i * 9301 + 49297) * 233280;
+  return x - Math.floor(x);
+}
+const FALLING_STARS = Array.from({ length: 16 }, (_, i) => {
+  const duration = 7 + seeded(i + 11) * 9;              // 7s – 16s
+  return {
+    left: `${4 + seeded(i + 1) * 92}%`,
+    duration: `${duration.toFixed(2)}s`,
+    delay: `${(-seeded(i + 21) * duration).toFixed(2)}s`,
+    tail: `${Math.round(28 + seeded(i + 31) * 56)}px`,    // 28px – 84px
+    size: `${seeded(i + 41) > 0.7 ? 2 : 1}px`,
+    peak: (0.35 + seeded(i + 51) * 0.55).toFixed(2),
+  };
+});
+
+function Starfall() {
+  return (
+    <div className={styles.starfield} aria-hidden="true">
+      {FALLING_STARS.map((s, i) => (
+        <span
+          key={i}
+          className={styles.fallingStar}
+          style={{
+            left: s.left,
+            '--dur': s.duration,
+            '--delay': s.delay,
+            '--tail': s.tail,
+            '--size': s.size,
+            '--peak': s.peak,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
 export default function Sidebar() {
   const { usuario, encerrarSessao } = useAuth();
   const {
@@ -124,6 +164,8 @@ export default function Sidebar() {
         }`}
         aria-label="Navegação Vinculum"
       >
+        <Starfall />
+
         {/* Cabeçalho da Sidebar (Logo posicionada exatamente como antes) */}
         <div className={styles.asideLogo}>
           {collapsed ? (

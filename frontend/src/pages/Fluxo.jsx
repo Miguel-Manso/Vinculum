@@ -8,6 +8,50 @@ import KanbanBoard from '../components/KanbanBoard';
 import api from '../services/api';
 import styles from './Fluxo.module.css';
 import { toast, confirmDialog } from '../components/feedback/feedback';
+import {
+  FilterToggle, FilterPanel, FilterField, FilterSelect, FilterSegment, FilterDateRange, ActiveFilters,
+} from '../components/FilterPanel';
+import ui from '../styles/ui.module.css';
+
+const FILTROS_KANBAN_INICIAIS = {
+  responsavel: '', prazo: '', urgencia: '', status: '', criadoDe: '', criadoAte: '', campos: {},
+};
+const OPCOES_PRAZO = [
+  { value: 'atrasadas', label: 'Atrasadas' },
+  { value: 'hoje', label: 'Vencem hoje' },
+  { value: '7dias', label: 'Próximos 7 dias' },
+  { value: '30dias', label: 'Próximos 30 dias' },
+  { value: 'sem', label: 'Sem prazo' },
+];
+const ROTULO_PRAZO = Object.fromEntries(OPCOES_PRAZO.map(o => [o.value, o.label]));
+const OPCOES_URGENCIA = [
+  { value: '', label: 'Todas' },
+  { value: 'urgente', label: 'Urgentes', tone: 'danger' },
+  { value: 'normal', label: 'Normais' },
+];
+const OPCOES_STATUS = [
+  { value: '', label: 'Todas' },
+  { value: 'abertas', label: 'Em aberto' },
+  { value: 'concluidas', label: 'Concluídas' },
+];
+
+function lerValoresCampos(tarefa) {
+  if (!tarefa.campos_personalizados) return {};
+  try {
+    return typeof tarefa.campos_personalizados === 'string'
+      ? JSON.parse(tarefa.campos_personalizados)
+      : tarefa.campos_personalizados;
+  } catch {
+    return {};
+  }
+}
+
+/** Data (sem hora) em ms; aceita 'YYYY-MM-DD' ou ISO. */
+function diaEmMs(valor) {
+  if (!valor) return null;
+  const d = new Date(`${String(valor).split('T')[0]}T00:00:00`);
+  return isNaN(d.getTime()) ? null : d.getTime();
+}
 
 export default function Fluxo() {
   const { id } = useParams();
@@ -369,14 +413,140 @@ export default function Fluxo() {
     }
   }
 
-  // Etapas e tarefas no formato do KanbanBoard
+  // ---------------- Filtros do quadro ----------------
+  const [buscaKanban, setBuscaKanban] = useState('');
+  const [filtrosAbertos, setFiltrosAbertos] = useState(false);
+  const [filtros, setFiltros] = useState(FILTROS_KANBAN_INICIAIS);
+  const setFiltro = (chave, valor) => setFiltros(f => ({ ...f, [chave]: valor }));
+  const setFiltroCampo = (campoId, valor) =>
+    setFiltros(f => {
+      const campos = { ...f.campos };
+      if (valor) campos[campoId] = valor; else delete campos[campoId];
+      return { ...f, campos };
+    });
+
+  // Campos do tipo lista viram filtros
+  const camposFiltraveis = useMemo(() => campos
+    .filter(c => c.tipo === 'select')
+    .map(c => ({
+      ...c,
+      lista: (c.opcoes || '').split(',').map(o => o.trim()).filter(Boolean),
+    }))
+    .filter(c => c.lista.length > 0), [campos]);
+
+  // Responsáveis que aparecem nas tarefas (mais quem pode ser atribuído)
+  const opcoesResponsavel = useMemo(() => {
+    const mapa = new Map();
+    usuariosPermitidos.forEach(u => mapa.set(String(u.id), u.nome));
+    tarefas.forEach(t => {
+      if (t.responsavel_id) mapa.set(String(t.responsavel_id), t.responsavel_nome || mapa.get(String(t.responsavel_id)) || `#${t.responsavel_id}`);
+    });
+    return [
+      { value: 'nenhum', label: 'Sem responsável' },
+      ...[...mapa.entries()]
+        .sort((a, b) => (a[1] || '').localeCompare(b[1] || '', 'pt-BR'))
+        .map(([value, label]) => ({ value, label })),
+    ];
+  }, [usuariosPermitidos, tarefas]);
+
+  const etapasFinais = useMemo(
+    () => new Set(etapas.filter(e => isEtapaFinal(e.nome)).map(e => Number(e.id))),
+    [etapas]
+  );
+
+  const tarefaPassaNosFiltros = useMemo(() => {
+    const termo = buscaKanban.toLowerCase().trim().replace(/^#/, '');
+    const hoje = new Date(); hoje.setHours(0, 0, 0, 0);
+    const hojeMs = hoje.getTime();
+    const DIA = 86400000;
+    const de = diaEmMs(filtros.criadoDe);
+    const ate = diaEmMs(filtros.criadoAte);
+
+    return (t) => {
+      const concluida = etapasFinais.has(Number(t.etapa_id));
+
+      if (termo) {
+        const alvo = [t.titulo, t.descricao, t.responsavel_nome, String(t.id)].filter(Boolean).join(' ').toLowerCase();
+        if (!alvo.includes(termo)) return false;
+      }
+
+      if (filtros.responsavel === 'nenhum' && t.responsavel_id) return false;
+      if (filtros.responsavel && filtros.responsavel !== 'nenhum' && String(t.responsavel_id) !== filtros.responsavel) return false;
+
+      const urgente = t.urgente === 1 || t.urgente === true;
+      if (filtros.urgencia === 'urgente' && !urgente) return false;
+      if (filtros.urgencia === 'normal' && urgente) return false;
+
+      if (filtros.status === 'abertas' && concluida) return false;
+      if (filtros.status === 'concluidas' && !concluida) return false;
+
+      if (filtros.prazo) {
+        const prazo = diaEmMs(t.prazo);
+        if (filtros.prazo === 'sem') { if (prazo !== null) return false; }
+        else {
+          if (prazo === null || concluida) return false;
+          if (filtros.prazo === 'atrasadas' && !(prazo < hojeMs)) return false;
+          if (filtros.prazo === 'hoje' && prazo !== hojeMs) return false;
+          if (filtros.prazo === '7dias' && !(prazo >= hojeMs && prazo <= hojeMs + 7 * DIA)) return false;
+          if (filtros.prazo === '30dias' && !(prazo >= hojeMs && prazo <= hojeMs + 30 * DIA)) return false;
+        }
+      }
+
+      if (de !== null || ate !== null) {
+        const criado = diaEmMs(t.criado_em);
+        if (criado === null) return false;
+        if (de !== null && criado < de) return false;
+        if (ate !== null && criado > ate) return false;
+      }
+
+      const camposAtivos = Object.entries(filtros.campos);
+      if (camposAtivos.length) {
+        const valores = lerValoresCampos(t);
+        for (const [campoId, esperado] of camposAtivos) {
+          if (String(valores[campoId] ?? '').trim() !== esperado) return false;
+        }
+      }
+      return true;
+    };
+  }, [buscaKanban, filtros, etapasFinais]);
+
+  const tarefasVisiveis = useMemo(() => tarefas.filter(tarefaPassaNosFiltros), [tarefas, tarefaPassaNosFiltros]);
+
+  function limparFiltrosKanban() {
+    setBuscaKanban('');
+    setFiltros(FILTROS_KANBAN_INICIAIS);
+  }
+
+  const chipsKanban = [];
+  if (buscaKanban.trim()) chipsKanban.push({ id: 'busca', label: `Busca: "${buscaKanban.trim()}"`, onRemove: () => setBuscaKanban('') });
+  if (filtros.responsavel) {
+    const r = opcoesResponsavel.find(o => o.value === filtros.responsavel);
+    chipsKanban.push({ id: 'resp', label: `Responsável: ${r?.label || '—'}`, onRemove: () => setFiltro('responsavel', '') });
+  }
+  if (filtros.prazo) chipsKanban.push({ id: 'prazo', label: `Prazo: ${ROTULO_PRAZO[filtros.prazo]}`, onRemove: () => setFiltro('prazo', '') });
+  if (filtros.urgencia) chipsKanban.push({ id: 'urg', label: filtros.urgencia === 'urgente' ? 'Somente urgentes' : 'Somente normais', onRemove: () => setFiltro('urgencia', '') });
+  if (filtros.status) chipsKanban.push({ id: 'status', label: filtros.status === 'abertas' ? 'Em aberto' : 'Concluídas', onRemove: () => setFiltro('status', '') });
+  if (filtros.criadoDe || filtros.criadoAte) {
+    const fmt = v => (v ? new Date(`${v}T00:00:00`).toLocaleDateString('pt-BR') : '…');
+    chipsKanban.push({
+      id: 'criado',
+      label: `Criadas: ${fmt(filtros.criadoDe)} a ${fmt(filtros.criadoAte)}`,
+      onRemove: () => setFiltros(f => ({ ...f, criadoDe: '', criadoAte: '' })),
+    });
+  }
+  Object.entries(filtros.campos).forEach(([campoId, valor]) => {
+    const c = campos.find(x => String(x.id) === String(campoId));
+    chipsKanban.push({ id: `campo-${campoId}`, label: `${c?.nome || 'Campo'}: ${valor}`, onRemove: () => setFiltroCampo(campoId, '') });
+  });
+
+  // Etapas e tarefas no formato do KanbanBoard (já filtradas)
   const colunasKanban = useMemo(() => etapas.map(etapa => ({
     id: etapa.id,
     name: etapa.nome,
     etapa,
     final: isEtapaFinal(etapa.nome),
-    tasks: tarefas.filter(t => Number(t.etapa_id) === Number(etapa.id)),
-  })), [etapas, tarefas]);
+    tasks: tarefasVisiveis.filter(t => Number(t.etapa_id) === Number(etapa.id)),
+  })), [etapas, tarefasVisiveis]);
 
   // --- Handlers de Drag and Drop de Coluna (Etapas) ---
   function handleColumnDragStart(e, etapa) {
@@ -646,7 +816,7 @@ export default function Fluxo() {
 
       <main className={styles.main}>
         {/* Cabeçalho da Página */}
-        <div className={styles.pageHeader}>
+        <div className={`${styles.pageHeader} page-hero`}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <SidebarTrigger />
             <button className={styles.btnBack} onClick={() => navigate('/processos')}>
@@ -722,6 +892,97 @@ export default function Fluxo() {
             </div>
           </div>
         </div>
+
+        {/* Barra de busca + filtros do quadro */}
+        {etapas.length > 0 && (
+          <div className={styles.boardToolbar}>
+            <div className={`${ui.searchWrap} ${styles.boardSearch}`}>
+              <svg className={ui.searchIcon} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="11" cy="11" r="8" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+              </svg>
+              <input
+                className={ui.searchInput}
+                type="text"
+                placeholder="Buscar tarefa, #id ou responsável"
+                value={buscaKanban}
+                onChange={e => setBuscaKanban(e.target.value)}
+                aria-label="Buscar tarefas no quadro"
+              />
+              {buscaKanban && (
+                <button type="button" className={ui.searchClear} onClick={() => setBuscaKanban('')} aria-label="Limpar busca">×</button>
+              )}
+            </div>
+
+            <FilterToggle
+              open={filtrosAbertos}
+              onClick={() => setFiltrosAbertos(v => !v)}
+              count={chipsKanban.filter(c => c.id !== 'busca').length}
+            />
+
+            <span className={styles.boardCount}>
+              <strong>{tarefasVisiveis.length}</strong>
+              {tarefasVisiveis.length !== tarefas.length && <> de <strong>{tarefas.length}</strong></>}
+              {' '}{tarefas.length === 1 ? 'tarefa' : 'tarefas'}
+            </span>
+          </div>
+        )}
+
+        <FilterPanel
+          open={filtrosAbertos && etapas.length > 0}
+          onClose={() => setFiltrosAbertos(false)}
+          subtitle="Combine responsável, prazo, urgência e campos do processo para focar no que importa."
+          activeCount={chipsKanban.length}
+          resultCount={tarefasVisiveis.length}
+          totalCount={tarefas.length}
+          resultNoun={['tarefa', 'tarefas']}
+          onClear={limparFiltrosKanban}
+        >
+          <FilterField label="Responsável">
+            <FilterSelect
+              value={filtros.responsavel}
+              onChange={v => setFiltro('responsavel', v)}
+              placeholder="Todos os responsáveis"
+              options={opcoesResponsavel}
+              ariaLabel="Filtrar por responsável"
+            />
+          </FilterField>
+          <FilterField label="Prazo">
+            <FilterSelect
+              value={filtros.prazo}
+              onChange={v => setFiltro('prazo', v)}
+              placeholder="Qualquer prazo"
+              options={OPCOES_PRAZO}
+              ariaLabel="Filtrar por prazo"
+            />
+          </FilterField>
+          <FilterField label="Urgência">
+            <FilterSegment value={filtros.urgencia} onChange={v => setFiltro('urgencia', v)} options={OPCOES_URGENCIA} ariaLabel="Urgência" />
+          </FilterField>
+          <FilterField label="Situação">
+            <FilterSegment value={filtros.status} onChange={v => setFiltro('status', v)} options={OPCOES_STATUS} ariaLabel="Situação" />
+          </FilterField>
+          <FilterField label="Criadas entre" wide>
+            <FilterDateRange
+              from={filtros.criadoDe}
+              to={filtros.criadoAte}
+              onChange={(de, ate) => setFiltros(f => ({ ...f, criadoDe: de, criadoAte: ate }))}
+            />
+          </FilterField>
+          {camposFiltraveis.map(c => (
+            <FilterField key={c.id} label={c.nome}>
+              <FilterSelect
+                value={filtros.campos[c.id] || ''}
+                onChange={v => setFiltroCampo(c.id, v)}
+                placeholder="Qualquer valor"
+                options={c.lista.map(op => ({ value: op, label: op }))}
+                ariaLabel={`Filtrar por ${c.nome}`}
+              />
+            </FilterField>
+          ))}
+        </FilterPanel>
+
+        <ActiveFilters chips={chipsKanban} onClearAll={limparFiltrosKanban} />
 
         {/* Quadro Kanban com Drag and Drop de Tarefas e Colunas */}
         {etapas.length === 0 ? (

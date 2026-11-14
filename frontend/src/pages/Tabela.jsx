@@ -831,10 +831,10 @@ export default function Tabela() {
 
       <main className={styles.main}>
         {/* Cabeçalho Minimalista e Clean */}
-        <header className={styles.minimalHeader}>
+        <header className={`${styles.minimalHeader} page-hero`}>
           <div className={styles.headerLeft}>
             <SidebarTrigger />
-            <h1 className={styles.pageTitle}>Tarefas</h1>
+            <h1 className={styles.pageTitle}>Tarefas.</h1>
             <div className={styles.headerMetricsRibbon}>
               <span className={styles.ribbonItem}>
                 <strong>{resumoMinimalista.total}</strong> total

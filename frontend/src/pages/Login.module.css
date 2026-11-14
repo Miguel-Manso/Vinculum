@@ -145,12 +145,24 @@
 .btn { height: 40px; font-size: var(--fs-sm); }
 .erro { border: none; }
 
-/* ===== Aurora ===== */
+/* ===== Aurora + vidro fosco escuro ===== */
 .card {
   z-index: 1;
-  background: rgba(22, 22, 24, 0.72);
-  border-color: var(--border-default);
+  /* caixa escura (grafite), com só um reflexo ciano bem leve no topo */
+  background:
+    linear-gradient(180deg, rgba(69, 196, 214, 0.05) 0%, rgba(69, 196, 214, 0) 35%),
+    rgba(12, 13, 16, 0.86);
+  border-color: rgba(255, 255, 255, 0.10);
+  border-radius: var(--r-lg);
   backdrop-filter: blur(16px) saturate(120%); -webkit-backdrop-filter: blur(16px) saturate(120%);
-  box-shadow: var(--shadow-xl);
+  box-shadow: var(--shadow-glass), 0 0 70px -24px rgba(69, 196, 214, 0.30);
+  max-width: 420px;
 }
-.footer { z-index: 1; }
+.logoHeader { margin-bottom: var(--sp-6); gap: var(--sp-4); }
+.brandTitle { font-size: 32px; font-weight: 800; letter-spacing: -0.025em; }
+.brandSubtitle { font-size: var(--fs-md); color: var(--text-muted); margin-top: 6px; }
+.title { font-size: var(--fs-xl); font-weight: 800; }
+.input { background: rgba(10, 10, 11, 0.7); }
+.btn { height: 42px; box-shadow: var(--shadow-glow); }
+.spinner { border-color: rgba(0, 50, 58, 0.25); border-top-color: currentColor; }
+.footer { z-index: 1; color: var(--text-subtle); }

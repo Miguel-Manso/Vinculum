@@ -232,13 +232,13 @@ export default function Dashboard() {
 
       <main className={styles.main}>
         {/* Cabeçalho */}
-        <header className={styles.topHeader}>
+        <header className={`${styles.topHeader} page-hero`}>
           <div className={styles.headerLeft}>
             <SidebarTrigger />
             <div className={styles.headerTitleWrap}>
               <span className={styles.dateLabel}>{dataHojeFormatada}</span>
               <h1 className={styles.pageTitle}>
-                Olá, {usuario?.nome ? usuario.nome.split(' ')[0] : 'Gestor'}
+                Olá, {usuario?.nome ? usuario.nome.split(' ')[0] : 'Gestor'}.
               </h1>
               <p className={styles.pageSubtitle}>
                 {setorAtivo ? (

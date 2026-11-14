@@ -607,7 +607,7 @@
 .searchInput { height: 34px; background: transparent; border-radius: var(--r-md); font-size: var(--fs-sm); }
 .searchInput:focus { border-color: var(--primary-border); background: transparent; box-shadow: var(--focus-ring); }
 .pillBtn { height: 30px; padding: 0 10px; font-size: var(--fs-sm); border-radius: var(--r-md); }
-.pillBtnActive { background: var(--surface-highest) !important; color: var(--text-main) !important; border-color: var(--border-default) !important; font-weight: 500; }
+.pillBtnActive { background: var(--primary-soft-2) !important; color: #fff !important; border-color: var(--primary-border) !important; font-weight: 600; }
 .grid { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; }
 .card { background: var(--surface-container); border-color: var(--border-subtle); border-radius: var(--r-lg); padding: 16px; }
 .card:hover { border-color: var(--border-default); background: var(--surface-high); transform: none; }
@@ -634,3 +634,12 @@
 .onboarding { display: flex; flex-direction: column; align-items: center; gap: var(--sp-8); padding: var(--sp-10) 0 var(--sp-6); }
 .onboardingHeader { display: flex; flex-direction: column; align-items: center; gap: var(--sp-3); text-align: center; }
 .onboardingTitle { font-size: var(--fs-xl); font-weight: 600; color: var(--text-main); letter-spacing: -0.015em; }
+
+/* busca + botão Filtros lado a lado */
+.searchRow { display: flex; align-items: center; gap: var(--sp-2); flex-wrap: wrap; }
+.searchRow .searchWrap { flex: 1 1 260px; }
+
+/* ===== Detalhes marinho/ciano ===== */
+.card { background: var(--gradient-surface), var(--surface-container); border-top-color: var(--border-navy); }
+.card:hover { background: var(--gradient-surface), var(--surface-high); border-color: var(--primary-border); box-shadow: 0 12px 32px -12px rgba(10, 60, 110, 0.55); }
+.cardIconBox { background: linear-gradient(135deg, var(--navy), rgba(69, 196, 214, 0.28)); color: var(--primary-light); }

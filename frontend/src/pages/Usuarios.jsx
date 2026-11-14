@@ -8,6 +8,28 @@ import { useSetor } from '../context/SetorContext';
 import api from '../services/api';
 import styles from './Usuarios.module.css';
 import { toast, confirmDialog } from '../components/feedback/feedback';
+import {
+  FilterToggle, FilterPanel, FilterField, FilterSelect, FilterSegment, FilterDateRange, ActiveFilters,
+} from '../components/FilterPanel';
+
+const FILTROS_EQUIPE_INICIAIS = { setor: '', cadastroDe: '', cadastroAte: '', ordenar: 'nome' };
+const OPCOES_PERFIL = [
+  { value: 'todos', label: 'Todos' },
+  { value: 'admin', label: 'Admins' },
+  { value: 'usuario', label: 'Membros' },
+];
+const OPCOES_ORDENAR_EQUIPE = [
+  { value: 'nome', label: 'Nome (A–Z)' },
+  { value: 'recentes', label: 'Cadastro mais recente' },
+  { value: 'antigos', label: 'Cadastro mais antigo' },
+  { value: 'setores', label: 'Mais setores de acesso' },
+];
+
+function diaEmMs(valor) {
+  if (!valor) return null;
+  const d = new Date(`${String(valor).split('T')[0]}T00:00:00`);
+  return isNaN(d.getTime()) ? null : d.getTime();
+}
 
 export default function Usuarios() {
   const { usuario } = useAuth();
@@ -64,10 +86,29 @@ export default function Usuarios() {
     return usuarios.length - adminsCount;
   }, [usuarios, adminsCount]);
 
-  // Filtro de busca e perfil
+  // Painel de filtros avançados
+  const [filtrosAbertos, setFiltrosAbertos] = useState(false);
+  const [filtros, setFiltros] = useState(FILTROS_EQUIPE_INICIAIS);
+  const setFiltro = (chave, valor) => setFiltros(f => ({ ...f, [chave]: valor }));
+
+  // Filtro de busca, perfil, setor e período; depois ordenação
   const usuariosFiltrados = useMemo(() => {
-    return usuarios.filter(u => {
+    const de = diaEmMs(filtros.cadastroDe);
+    const ate = diaEmMs(filtros.cadastroAte);
+
+    const lista = usuarios.filter(u => {
       if (filtroPerfil !== 'todos' && u.perfil !== filtroPerfil) return false;
+
+      const setoresU = u.setores || [];
+      if (filtros.setor === 'nenhum' && setoresU.length > 0) return false;
+      if (filtros.setor && filtros.setor !== 'nenhum' && !setoresU.some(s => String(s.id) === filtros.setor)) return false;
+
+      if (de !== null || ate !== null) {
+        const cad = diaEmMs(u.criado_em);
+        if (cad === null) return false;
+        if (de !== null && cad < de) return false;
+        if (ate !== null && cad > ate) return false;
+      }
 
       if (busca.trim()) {
         const q = busca.toLowerCase().trim();
@@ -78,7 +119,38 @@ export default function Usuarios() {
 
       return true;
     });
-  }, [usuarios, filtroPerfil, busca]);
+
+    const data = u => new Date(u.criado_em || 0).getTime() || 0;
+    const porNome = (a, b) => (a.nome || '').localeCompare(b.nome || '', 'pt-BR');
+    switch (filtros.ordenar) {
+      case 'recentes': return lista.sort((a, b) => data(b) - data(a));
+      case 'antigos':  return lista.sort((a, b) => data(a) - data(b));
+      case 'setores':  return lista.sort((a, b) => (b.setores || []).length - (a.setores || []).length || porNome(a, b));
+      default:         return lista.sort(porNome);
+    }
+  }, [usuarios, filtroPerfil, busca, filtros]);
+
+  function limparFiltrosEquipe() {
+    setBusca('');
+    setFiltroPerfil('todos');
+    setFiltros(FILTROS_EQUIPE_INICIAIS);
+  }
+
+  const chipsEquipe = [];
+  if (busca.trim()) chipsEquipe.push({ id: 'busca', label: `Busca: "${busca.trim()}"`, onRemove: () => setBusca('') });
+  if (filtroPerfil !== 'todos') chipsEquipe.push({ id: 'perfil', label: filtroPerfil === 'admin' ? 'Administradores' : 'Colaboradores', onRemove: () => setFiltroPerfil('todos') });
+  if (filtros.setor) {
+    const s = setoresDisponiveis.find(x => String(x.id) === filtros.setor);
+    chipsEquipe.push({ id: 'setor', label: filtros.setor === 'nenhum' ? 'Sem setor' : `Setor: ${s?.nome || '—'}`, onRemove: () => setFiltro('setor', '') });
+  }
+  if (filtros.cadastroDe || filtros.cadastroAte) {
+    const fmt = v => (v ? new Date(`${v}T00:00:00`).toLocaleDateString('pt-BR') : '…');
+    chipsEquipe.push({
+      id: 'cadastro',
+      label: `Cadastro: ${fmt(filtros.cadastroDe)} a ${fmt(filtros.cadastroAte)}`,
+      onRemove: () => setFiltros(f => ({ ...f, cadastroDe: '', cadastroAte: '' })),
+    });
+  }
 
   function abrirModalCriar() {
     setUsuarioEditando(null);
@@ -186,10 +258,10 @@ export default function Usuarios() {
 
       <main className={styles.main}>
         {/* Cabeçalho Minimalista com Ribbon */}
-        <header className={styles.minimalHeader}>
+        <header className={`${styles.minimalHeader} page-hero`}>
           <div className={styles.headerLeft}>
             <SidebarTrigger />
-            <h1 className={styles.pageTitle}>Equipe e Acessos</h1>
+            <h1 className={styles.pageTitle}>Equipe e Acessos.</h1>
             <div className={styles.headerMetricsRibbon}>
               <span className={styles.ribbonItem}>
                 <strong>{usuarios.length}</strong> {usuarios.length === 1 ? 'membro' : 'membros'}
@@ -219,6 +291,7 @@ export default function Usuarios() {
 
         {/* Barra de Filtros Minimalista */}
         <div className={styles.cleanToolbar}>
+          <div className={styles.searchRow}>
           {/* Pesquisa */}
           <div className={styles.searchWrap}>
             <svg className={styles.searchIcon} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -237,6 +310,13 @@ export default function Usuarios() {
                 ×
               </button>
             )}
+          </div>
+
+          <FilterToggle
+            open={filtrosAbertos}
+            onClick={() => setFiltrosAbertos(v => !v)}
+            count={chipsEquipe.filter(c => c.id !== 'busca').length}
+          />
           </div>
 
           {/* Abas Rápidas de Perfil */}
@@ -264,6 +344,51 @@ export default function Usuarios() {
             </button>
           </div>
         </div>
+
+        <FilterPanel
+          open={filtrosAbertos}
+          onClose={() => setFiltrosAbertos(false)}
+          subtitle="Encontre colaboradores por perfil, setor de acesso e data de cadastro."
+          activeCount={chipsEquipe.length}
+          resultCount={usuariosFiltrados.length}
+          totalCount={usuarios.length}
+          resultNoun={['colaborador', 'colaboradores']}
+          onClear={limparFiltrosEquipe}
+        >
+          <FilterField label="Perfil">
+            <FilterSegment value={filtroPerfil} onChange={setFiltroPerfil} options={OPCOES_PERFIL} ariaLabel="Perfil" />
+          </FilterField>
+          <FilterField label="Setor de acesso">
+            <FilterSelect
+              value={filtros.setor}
+              onChange={v => setFiltro('setor', v)}
+              placeholder="Todos os setores"
+              options={[
+                { value: 'nenhum', label: 'Sem setor vinculado' },
+                ...setoresDisponiveis.map(s => ({ value: String(s.id), label: s.nome })),
+              ]}
+              ariaLabel="Filtrar por setor"
+            />
+          </FilterField>
+          <FilterField label="Cadastrados entre" wide>
+            <FilterDateRange
+              from={filtros.cadastroDe}
+              to={filtros.cadastroAte}
+              onChange={(de, ate) => setFiltros(f => ({ ...f, cadastroDe: de, cadastroAte: ate }))}
+            />
+          </FilterField>
+          <FilterField label="Ordenar por">
+            <FilterSelect
+              value={filtros.ordenar}
+              onChange={v => setFiltro('ordenar', v)}
+              placeholder={null}
+              options={OPCOES_ORDENAR_EQUIPE}
+              ariaLabel="Ordenar colaboradores"
+            />
+          </FilterField>
+        </FilterPanel>
+
+        <ActiveFilters chips={chipsEquipe} onClearAll={limparFiltrosEquipe} />
 
         {/* Tabela Minimalista (Padrão Tabela Geral) */}
         <section className={styles.tableCard}>

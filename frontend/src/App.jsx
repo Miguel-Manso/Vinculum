@@ -1,4 +1,5 @@
-import { Routes, Route, Navigate, Outlet } from 'react-router-dom';
+import { useLayoutEffect } from 'react';
+import { Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import Login     from './pages/Login';
 import Dashboard from './pages/Dashboard';
@@ -9,8 +10,24 @@ import Tabela    from './pages/Tabela';
 import Usuarios  from './pages/Usuarios';
 import Chatbot   from './components/Chatbot';
 
+/* Relógio das animações decorativas (estrelas da sidebar, onda do cabeçalho).
+   Cada página remonta a Sidebar e o cabeçalho; sem isso as animações
+   recomeçariam do zero a cada troca de tela. Gravamos o tempo decorrido
+   como atraso negativo antes da pintura, e o CSS usa
+   animation-delay: calc(var(--vc-clock) + ...) para continuar de onde estava. */
+function useAnimationClock() {
+  const { pathname } = useLocation();
+  useLayoutEffect(() => {
+    document.documentElement.style.setProperty(
+      '--vc-clock',
+      `${(-performance.now() / 1000).toFixed(3)}s`
+    );
+  }, [pathname]);
+}
+
 function LayoutAutenticado() {
   const { token } = useAuth();
+  useAnimationClock();
   if (!token) return <Navigate to="/login" replace />;
 
   return (

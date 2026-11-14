@@ -545,7 +545,7 @@
 .searchInput { height: 34px; background: transparent; border-radius: var(--r-md); font-size: var(--fs-sm); }
 .searchInput:focus { border-color: var(--primary-border); background: transparent; box-shadow: var(--focus-ring); }
 .pillBtn { height: 30px; padding: 0 10px; font-size: var(--fs-sm); border-radius: var(--r-md); }
-.pillBtnActive { background: var(--surface-highest) !important; color: var(--text-main) !important; border-color: var(--border-default) !important; font-weight: 500; }
+.pillBtnActive { background: var(--primary-soft-2) !important; color: #fff !important; border-color: var(--primary-border) !important; font-weight: 600; }
 .tableCard { background: var(--surface-container); border-color: var(--border-subtle); border-radius: var(--r-lg); }
 .table thead th { background: var(--surface-container); font-size: var(--fs-xs); text-transform: none; letter-spacing: 0; font-weight: 500; color: var(--text-subtle); border-bottom-color: var(--border-subtle); }
 .tr { border-bottom-color: var(--border-subtle); }
@@ -557,3 +557,10 @@
 .badgeUsuario { background: transparent; border: none; padding: 0; color: var(--text-subtle); font-size: var(--fs-sm); }
 .setorTagAdmin, .setorTag { background: transparent; border: none; padding: 0 8px 0 0; color: var(--text-muted); font-size: var(--fs-xs); }
 .setorTagAdmin { color: var(--text-body); }
+
+/* busca + botão Filtros lado a lado */
+.searchRow { display: flex; align-items: center; gap: var(--sp-2); flex-wrap: wrap; flex: 1 1 320px; }
+.searchRow .searchWrap { flex: 1 1 240px; }
+
+/* ===== Detalhes marinho/ciano ===== */
+.tableCard { background: var(--gradient-surface), var(--surface-container); border-top-color: var(--border-navy); }

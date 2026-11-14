@@ -1098,7 +1098,7 @@
 .searchInput { height: 34px; background: transparent; border-radius: var(--r-md); font-size: var(--fs-sm); }
 .searchInput:focus { border-color: var(--primary-border); background: transparent; box-shadow: var(--focus-ring); }
 .pillBtn { height: 30px; padding: 0 10px; font-size: var(--fs-sm); border-radius: var(--r-md); }
-.pillBtnActive { background: var(--surface-highest) !important; color: var(--text-main) !important; border-color: var(--border-default) !important; font-weight: 500; }
+.pillBtnActive { background: var(--primary-soft-2) !important; color: #fff !important; border-color: var(--primary-border) !important; font-weight: 600; }
 .pillBtnActiveDanger { background: var(--danger-soft) !important; color: var(--danger-text) !important; border-color: transparent !important; font-weight: 500; }
 .filterTriggerBtn { height: 30px; background: transparent; border-style: dashed; font-size: var(--fs-xs); border-radius: var(--r-md); }
 .filterTriggerBtnActive { border-style: solid; border-color: var(--border-prominent) !important; color: var(--text-main) !important; background: var(--hover) !important; }
@@ -1123,3 +1123,6 @@
 .badgeUrgente { border: none; border-radius: var(--r-xs); font-weight: 500; }
 .processoText { color: var(--text-body); }
 .avatarMini { background: var(--surface-highest); color: var(--text-body); }
+
+/* ===== Detalhes marinho/ciano ===== */
+.tableCard { background: var(--gradient-surface), var(--surface-container); border-top-color: var(--border-navy); }

@@ -1,5 +1,5 @@
 /* ==========================================================================
-   VINCULUM DESIGN SYSTEM — "Obsidian & Electric Cyan"
+   VINCULUM DESIGN SYSTEM — "Grafite & Ciano"
    Fonte única de verdade para cores, tipografia, espaçamento, raios,
    sombras e movimento. Veja DESIGN.md na raiz do repositório.
    ========================================================================== */
@@ -8,32 +8,52 @@
   /* ---------- Superfícies (do mais profundo ao mais elevado) ---------- */
   --surface-lowest:    #0a0a0b;
   --surface-canvas:    #0e0e10;   /* fundo da página */
-  --surface-low:       #121214;   /* sidebar, toolbars, cabeçalhos de tabela */
+  --surface-low:       #121214;   /* colunas do kanban, toolbars */
   --surface-container: #161618;   /* cards e blocos */
-  --surface-high:      #1d1d20;   /* inputs e elementos elevados */
+  --surface-high:      #1d1d20;   /* elementos elevados */
   --surface-highest:   #26262a;   /* hover / ativo */
   --surface-bright:    #333338;
-  --surface-overlay:   rgba(6, 7, 9, 0.72);
+  --surface-sidebar:   #09111f;   /* grafite azulado (marinho bem escuro) */
+  --surface-overlay:   rgba(4, 9, 18, 0.74);
+
+  /* ---------- Azul-marinho (detalhes) ---------- */
+  --navy:              #0b2347;
+  --navy-deep:         #071530;
+  --navy-glow:         rgba(20, 70, 130, 0.30);
 
   /* ---------- Bordas ---------- */
   --border-subtle:     rgba(255, 255, 255, 0.06);
   --border-default:    rgba(255, 255, 255, 0.09);
   --border-prominent:  rgba(255, 255, 255, 0.15);
+  --border-glass:      rgba(140, 220, 235, 0.16);
+  --border-navy:       rgba(80, 150, 210, 0.22);
   --border-focus:      #45c4d6;
 
-  /* ---------- Marca: Cyan elétrico / Mint / Teal ---------- */
+  /* ---------- Marca: Ciano / Mint / Teal ---------- */
   --primary:           #45c4d6;
+  --primary-strong:    #45c4d6;   /* fundo de botões cheios (texto --on-primary) */
   --primary-hover:     #62d0e0;
   --primary-press:     #36b3c5;
+  --primary-light:     #8aebff;
+  --primary-violet:    #14b8a6;
   --primary-mint:      #5fd3c3;
   --primary-container: #14b8a6;
-  --primary-light:     #8aebff;
   --primary-dim:       #2dd4bf;
   --on-primary:        #04262c;
   --primary-soft:      rgba(69, 196, 214, 0.08);
   --primary-soft-2:    rgba(69, 196, 214, 0.12);
   --primary-border:    rgba(69, 196, 214, 0.28);
-  --gradient-brand:    #45c4d6;
+  --gradient-brand:    linear-gradient(135deg, #45c4d6 0%, #14b8a6 100%);
+  --gradient-hero:     linear-gradient(-135deg, rgba(0, 18, 59, 0.82) 25%, rgba(0, 150, 185, 0.55) 100%);
+  --gradient-glass:    linear-gradient(0deg, rgba(14, 52, 92, 0.12) 10%, rgba(24, 96, 140, 0.36) 100%);
+  --gradient-surface:  linear-gradient(180deg, rgba(18, 56, 100, 0.22) 0%, rgba(18, 56, 100, 0) 160px);
+  --gradient-navy-cyan: linear-gradient(90deg, rgba(69, 196, 214, 0.26), rgba(11, 35, 71, 0.30));
+  --gradient-divider:  linear-gradient(to right, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0));
+
+  --accent:            #f59e0b;   /* âmbar: destaques pontuais (vence em breve) */
+  --accent-text:       #e8b04a;
+  --accent-soft:       rgba(245, 158, 11, 0.12);
+  --accent-border:     rgba(245, 158, 11, 0.32);
 
   /* ---------- Texto (contraste AA sobre --surface-canvas) ---------- */
   --text-main:         #ededef;
@@ -65,9 +85,9 @@
   --active:            rgba(255, 255, 255, 0.09);
 
   /* ---------- Tipografia ---------- */
-  --font-sans:    'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-display: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --font-mono:    'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-sans:    'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono:    'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 
   --fs-2xs: 11px;
   --fs-xs:  12px;
@@ -99,9 +119,9 @@
   /* ---------- Raios ---------- */
   --r-xs: 4px;
   --r-sm: 6px;
-  --r-md: 8px;
-  --r-lg: 10px;
-  --r-xl: 14px;
+  --r-md: 10px;
+  --r-lg: 16px;
+  --r-xl: 18px;
   --r-full: 9999px;
 
   /* ---------- Controles ---------- */
@@ -115,10 +135,12 @@
   --shadow-md: 0 6px 18px -4px rgba(0, 0, 0, 0.5), 0 2px 6px rgba(0, 0, 0, 0.25);
   --shadow-lg: 0 16px 40px -8px rgba(0, 0, 0, 0.6), 0 4px 12px rgba(0, 0, 0, 0.3);
   --shadow-xl: 0 28px 64px -12px rgba(0, 0, 0, 0.7), 0 8px 20px rgba(0, 0, 0, 0.35);
-  --shadow-glow: none;
-  --focus-ring: 0 0 0 3px rgba(69, 196, 214, 0.25);
+  --shadow-glow: 0 0 48px rgba(69, 196, 214, 0.45);
+  --shadow-glass: inset 0 0 0 1px rgba(255, 255, 255, 0.10), 0 24px 60px -16px rgba(0, 0, 0, 0.65);
+  --focus-ring: 0 0 0 3px rgba(69, 196, 214, 0.38);
 
   /* ---------- Movimento ---------- */
+  --ease-fill:   cubic-bezier(0.16, 1, 0.3, 1);
   --ease-out:    cubic-bezier(0.2, 0.8, 0.2, 1);
   --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
   --dur-fast: 120ms;
@@ -215,8 +237,8 @@ h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-display);
   color: var(--text-main);
   line-height: var(--lh-tight);
-  letter-spacing: -0.015em;
-  font-weight: 600;
+  letter-spacing: -0.02em;
+  font-weight: 700;
 }
 
 p { text-wrap: pretty; }
@@ -238,7 +260,7 @@ input[type='checkbox'] {
 
 select option { background: var(--surface-container); color: var(--text-main); }
 
-::selection { background: rgba(69, 196, 214, 0.3); color: var(--text-main); }
+::selection { background: rgba(69, 196, 214, 0.4); color: #fff; }
 
 :focus { outline: none; }
 :focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
@@ -249,6 +271,109 @@ input:focus-visible, select:focus-visible, textarea:focus-visible { outline: non
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--surface-highest); border-radius: var(--r-full); border: 2px solid transparent; background-clip: padding-box; }
 ::-webkit-scrollbar-thumb:hover { background: var(--surface-bright); background-clip: padding-box; }
+
+/* ==========================================================================
+   Faixa de cabeçalho das páginas (.page-hero)
+   Gradiente marinho → ciano, estrelas sutis e onda animada na base.
+   Aplicada junto da classe local do header:
+   <header className={`${styles.minimalHeader} page-hero`}>.
+   Classe dobrada para vencer a especificidade dos CSS Modules.
+
+   A onda NÃO é pintada com uma cor: ela é uma máscara que recorta o
+   gradiente (::before). Abaixo da onda fica transparente e aparece o fundo
+   real da página — por isso se funde com qualquer cor/brilho do layout.
+
+   --vc-clock (definido em App.jsx a cada troca de rota) é o tempo decorrido
+   desde o carregamento, negativo. Usado como animation-delay, faz a onda e
+   as estrelas continuarem de onde estavam quando a página é remontada.
+   ========================================================================== */
+.page-hero.page-hero {
+  position: relative;
+  isolation: isolate;
+  margin: calc(-1 * var(--page-py)) calc(-1 * var(--page-px)) calc(-1 * var(--sp-2));
+  padding: calc(var(--page-py) + var(--sp-2)) var(--page-px) calc(var(--sp-12) + var(--sp-2));
+  background: transparent;
+  --wave-h: 48px;
+
+  /* tokens reescritos para leitura sobre o gradiente */
+  --text-main:      #ffffff;
+  --text-body:      rgba(240, 241, 255, 0.92);
+  --text-muted:     rgba(235, 237, 255, 0.80);
+  --text-subtle:    rgba(235, 237, 255, 0.72);
+  --text-faint:     rgba(235, 237, 255, 0.55);
+  --border-default: rgba(255, 255, 255, 0.24);
+  --border-prominent: rgba(255, 255, 255, 0.40);
+  --border-subtle:  rgba(255, 255, 255, 0.14);
+  --hover:          rgba(255, 255, 255, 0.12);
+  --hover-subtle:   rgba(255, 255, 255, 0.06);
+  --active:         rgba(255, 255, 255, 0.18);
+  --surface-highest: rgba(255, 255, 255, 0.16);
+}
+
+/* gradiente recortado pela onda (máscara) */
+.page-hero.page-hero::before {
+  content: '';
+  position: absolute; inset: 0; z-index: -1;
+  pointer-events: none;
+  background: var(--gradient-hero), var(--surface-canvas);
+  /* camadas da máscara:
+     1) bloco sólido até o início da onda
+     2) onda da frente (opaca)
+     3) onda de trás (50%) — entre as duas curvas o gradiente fica translúcido */
+  -webkit-mask-image:
+    linear-gradient(#000, #000),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='48' viewBox='0 0 1200 48' preserveAspectRatio='none'%3E%3Cpath fill='black' d='M0 0 H1200 V22 C1050 -2 850 46 600 22 C350 -2 150 46 0 22 Z'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='48' viewBox='0 0 1200 48' preserveAspectRatio='none'%3E%3Cpath fill='black' fill-opacity='0.5' d='M0 0 H1200 V32 C1000 12 800 52 600 32 C400 12 200 52 0 32 Z'/%3E%3C/svg%3E");
+          mask-image:
+    linear-gradient(#000, #000),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='48' viewBox='0 0 1200 48' preserveAspectRatio='none'%3E%3Cpath fill='black' d='M0 0 H1200 V22 C1050 -2 850 46 600 22 C350 -2 150 46 0 22 Z'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='48' viewBox='0 0 1200 48' preserveAspectRatio='none'%3E%3Cpath fill='black' fill-opacity='0.5' d='M0 0 H1200 V32 C1000 12 800 52 600 32 C400 12 200 52 0 32 Z'/%3E%3C/svg%3E");
+  -webkit-mask-size: 100% calc(100% - var(--wave-h) + 1px), 1200px var(--wave-h), 1200px var(--wave-h);
+          mask-size: 100% calc(100% - var(--wave-h) + 1px), 1200px var(--wave-h), 1200px var(--wave-h);
+  -webkit-mask-repeat: no-repeat, repeat-x, repeat-x;
+          mask-repeat: no-repeat, repeat-x, repeat-x;
+  -webkit-mask-position: 0 0, 0 100%, 0 100%;
+          mask-position: 0 0, 0 100%, 0 100%;
+  animation: vc-wave 22s linear infinite;
+  animation-delay: var(--vc-clock, 0s);
+}
+
+/* estrelas */
+.page-hero.page-hero::after {
+  content: '';
+  position: absolute; inset: 0; z-index: -1;
+  pointer-events: none;
+  background-image:
+    radial-gradient(circle at 18% 28%, rgba(255, 255, 255, 0.75) 0 1px, transparent 1.6px),
+    radial-gradient(circle at 63% 72%, rgba(255, 255, 255, 0.55) 0 1px, transparent 1.6px),
+    radial-gradient(circle at 82% 18%, rgba(255, 255, 255, 0.65) 0 1.2px, transparent 1.8px),
+    radial-gradient(circle at 40% 55%, rgba(190, 240, 245, 0.55) 0 1px, transparent 1.6px);
+  background-size: 260px 140px, 340px 160px, 420px 120px, 190px 110px;
+  -webkit-mask-image: linear-gradient(to bottom, #000 30%, transparent 80%);
+          mask-image: linear-gradient(to bottom, #000 30%, transparent 80%);
+  animation: vc-twinkle 6s ease-in-out infinite alternate;
+  animation-delay: var(--vc-clock, 0s);
+}
+
+.page-hero h1 { color: #fff; text-shadow: 0 2px 18px rgba(0, 20, 60, 0.45); }
+
+@media (max-width: 768px) {
+  .page-hero.page-hero {
+    margin-top: calc(-1 * var(--sp-5));
+    padding-top: var(--sp-5);
+    padding-bottom: var(--sp-10);
+    --wave-h: 36px;
+  }
+}
+
+@keyframes vc-wave {
+  from { -webkit-mask-position: 0 0, 0 100%, 0 100%;           mask-position: 0 0, 0 100%, 0 100%; }
+  to   { -webkit-mask-position: 0 0, 1200px 100%, -1200px 100%; mask-position: 0 0, 1200px 100%, -1200px 100%; }
+}
+@keyframes vc-twinkle {
+  from { opacity: 0.55; }
+  to   { opacity: 1; }
+}
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
