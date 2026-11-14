@@ -83,7 +83,7 @@ export default function Sidebar() {
       {/* Header superior fixo exclusivo para dispositivos móveis com Menu Hambúrguer */}
       <header className={styles.mobileHeader}>
         <div className={styles.mobileLogo}>
-          <Logo variant="horizontal" size={24} showImage={true} showSubtitle={false} />
+          <Logo variant="horizontal" size={20} showImage={true} showSubtitle={false} />
         </div>
         <button
           type="button"
@@ -127,9 +127,9 @@ export default function Sidebar() {
         {/* Cabeçalho da Sidebar (Logo posicionada exatamente como antes) */}
         <div className={styles.asideLogo}>
           {collapsed ? (
-            <Logo variant="icon" size={26} showImage={true} showSubtitle={false} />
+            <Logo variant="icon" size={20} showImage={true} showSubtitle={false} />
           ) : (
-            <Logo variant="horizontal" size={26} showImage={true} showSubtitle={false} />
+            <Logo variant="horizontal" size={20} showImage={true} showSubtitle={false} />
           )}
 
           {/* Botão fechar apenas no mobile */}
@@ -167,8 +167,7 @@ export default function Sidebar() {
                   <span
                     className={styles.sectorColorBadge}
                     style={{
-                      backgroundColor: setorAtivo.cor || '#2fd9f4',
-                      boxShadow: `0 0 10px ${setorAtivo.cor || '#2fd9f4'}55`
+                      backgroundColor: setorAtivo.cor || '#45c4d6'
                     }}
                   >
                     {setorAtivo.nome.charAt(0).toUpperCase()}
@@ -228,7 +227,7 @@ export default function Sidebar() {
                 }`}
               >
                 <div className={styles.dropdownHeaderLabel}>
-                  <span>ALTERNAR SETOR</span>
+                  <span>Alternar setor</span>
                 </div>
 
                 {/* Opção Todos os Setores */}
@@ -275,9 +274,8 @@ export default function Sidebar() {
                           <span
                             className={styles.dropdownSectorBadge}
                             style={{
-                              backgroundColor: `${setor.cor || '#2fd9f4'}22`,
-                              color: setor.cor || '#2fd9f4',
-                              borderColor: `${setor.cor || '#2fd9f4'}55`,
+                              backgroundColor: setor.cor || '#45c4d6',
+                              color: '#0a0a0b',
                             }}
                           >
                             {setor.nome.charAt(0).toUpperCase()}
@@ -328,7 +326,7 @@ export default function Sidebar() {
           {/* ======================================================== */}
           <div className={styles.navGroup}>
             {!collapsed ? (
-              <span className={styles.navGroupLabel}>OPERACIONAL</span>
+              <span className={styles.navGroupLabel}>Operacional</span>
             ) : (
               <div className={styles.navGroupDivider} />
             )}
@@ -396,7 +394,7 @@ export default function Sidebar() {
           {isAdmin && (
             <div className={styles.navGroup}>
               {!collapsed ? (
-                <span className={styles.navGroupLabel}>GESTÃO & CONTROLE</span>
+                <span className={styles.navGroupLabel}>Gestão</span>
               ) : (
                 <div className={styles.navGroupDivider} />
               )}

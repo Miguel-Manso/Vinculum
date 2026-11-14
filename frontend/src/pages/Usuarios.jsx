@@ -331,7 +331,7 @@ export default function Usuarios() {
                                 <span key={s.id} className={styles.setorTag}>
                                   <span
                                     className={styles.setorDot}
-                                    style={{ backgroundColor: s.cor || '#2fd9f4' }}
+                                    style={{ backgroundColor: s.cor || '#45c4d6' }}
                                   />
                                   {s.nome}
                                 </span>
@@ -488,11 +488,11 @@ export default function Usuarios() {
                                     : [...prev, s.id]
                                 );
                               }}
-                              style={{ accentColor: s.cor || '#2fd9f4', cursor: 'pointer' }}
+                              style={{ accentColor: s.cor || '#45c4d6', cursor: 'pointer' }}
                             />
                             <span
                               className={styles.setorDot}
-                              style={{ backgroundColor: s.cor || '#2fd9f4' }}
+                              style={{ backgroundColor: s.cor || '#45c4d6' }}
                             />
                             <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                               {s.nome}

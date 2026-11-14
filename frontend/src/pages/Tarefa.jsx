@@ -202,25 +202,12 @@ export default function Tarefa() {
               <h1 className={styles.pageTitle}>{tarefa.titulo}</h1>
               <div className={styles.headerTags}>
                 <span className={styles.tag}>{tarefa.processo_nome}</span>
-                <span className={styles.tagId}>ID: #{tarefa.id}</span>
+                <span className={styles.tagId}>#{tarefa.id}</span>
                 {(tarefa.urgente === 1 || tarefa.urgente === true) && (
-                  <span style={{
-                    background: 'rgba(239, 68, 68, 0.15)',
-                    color: '#f87171',
-                    border: '1px solid rgba(239, 68, 68, 0.35)',
-                    borderRadius: '4px',
-                    padding: '2px 8px',
-                    fontSize: '11px',
-                    fontWeight: 700,
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '4px'
-                  }}>
-                    ⚑ Urgente
-                  </span>
+                  <span className={styles.tagUrgent}>Urgente</span>
                 )}
                 {sucessoMsg && (
-                  <span style={{ color: 'var(--turquesa-200)', fontSize: '13px', fontWeight: 600, marginLeft: '8px' }}>
+                  <span className={styles.successMsg}>
                     ✓ {sucessoMsg}
                   </span>
                 )}
@@ -234,7 +221,7 @@ export default function Tarefa() {
                   <polyline points="17 21 17 13 7 13 7 21" />
                   <polyline points="7 3 7 8 15 8" />
                 </svg>
-                {salvando ? 'Salvando...' : 'Salvar Alterações'}
+                {salvando ? 'Salvando…' : 'Salvar'}
               </button>
 
               <button className={styles.btnDanger} onClick={handleExcluir}>
@@ -243,7 +230,7 @@ export default function Tarefa() {
                   <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
                   <path d="M10 11v6M14 11v6M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
                 </svg>
-                Excluir Tarefa
+                Excluir
               </button>
             </div>
           </div>
@@ -253,14 +240,11 @@ export default function Tarefa() {
           <div className={styles.colLeft}>
             {/* Card de Dados Editáveis da Tarefa */}
             <div className={styles.card}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <span className={styles.cardTitle}>Dados da Tarefa</span>
-                <span style={{ fontSize: '12px', color: 'var(--gray-text-muted)' }}>Você pode editar e salvar os campos a qualquer momento</span>
-              </div>
+              <span className={styles.cardTitle}>Detalhes</span>
 
               <div className={styles.fields}>
                 <div className={styles.field}>
-                  <label className={styles.fieldLabel}>Título da Tarefa *</label>
+                  <label className={styles.fieldLabel}>Título</label>
                   <input
                     className={styles.fieldInput}
                     type="text"
@@ -280,16 +264,13 @@ export default function Tarefa() {
                 </div>
 
                 <div className={styles.field}>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13.5px', color: 'var(--gray-text-main)', marginTop: '2px' }}>
+                  <label className={styles.urgentLabel}>
                     <input
                       type="checkbox"
                       checked={urgente}
                       onChange={e => setUrgente(e.target.checked)}
-                      style={{ width: '16px', height: '16px', accentColor: '#ef4444', cursor: 'pointer' }}
                     />
-                    <span style={{ fontWeight: 600, color: urgente ? '#f87171' : 'var(--text-main, #f8fafc)' }}>
-                      ⚑ Marcar como Tarefa Urgente
-                    </span>
+                    <span className={urgente ? styles.urgentOn : undefined}>Marcar como urgente</span>
                   </label>
                 </div>
 
@@ -319,12 +300,8 @@ export default function Tarefa() {
 
                 {/* Campos Personalizados do Processo (Totalmente Editáveis) */}
                 {campos.length > 0 && (
-                  <div style={{ marginTop: '16px', borderTop: '1px solid var(--color-border)', paddingTop: '16px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <span style={{ fontSize: '12.5px', fontWeight: 700, color: 'var(--turquesa-400)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                        Campos Personalizados do Processo
-                      </span>
-                    </div>
+                  <div className={styles.customSection}>
+                    <span className={styles.customSectionTitle}>Campos do processo</span>
 
                     {campos.map(c => {
                       const val = valoresCampos[c.id] ?? '';
@@ -432,7 +409,7 @@ export default function Tarefa() {
 
             {/* Histórico */}
             <div className={styles.card}>
-              <span className={styles.cardTitle}>Histórico de Movimentação</span>
+              <span className={styles.cardTitle}>Histórico</span>
               <div className={styles.historico}>
                 {historico.length === 0 ? (
                   <p className={styles.semHistorico}>Nenhuma movimentação registrada.</p>
@@ -460,7 +437,7 @@ export default function Tarefa() {
 
           <div className={styles.colRight}>
             <div className={styles.card}>
-              <span className={styles.cardTitle}>Mover para Etapa</span>
+              <span className={styles.cardTitle}>Mover para etapa</span>
               <div className={styles.moverWrap}>
                 <select
                   className={styles.select}
@@ -472,7 +449,7 @@ export default function Tarefa() {
                   ))}
                 </select>
                 <button className={styles.btnMover} onClick={handleMover}>
-                  Confirmar Movimentação
+                  Mover
                 </button>
                 <span className={styles.etapaAtual}>Etapa atual: {tarefa.etapa_nome}</span>
               </div>

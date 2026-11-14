@@ -606,3 +606,67 @@
   .headerActions > * { flex: 1 1 calc(50% - var(--sp-2)); }
   .column { min-width: 82vw; width: 82vw; }
 }
+
+/* ===== Visual sóbrio — overrides ===== */
+.main { gap: var(--sp-5); }
+.pageHeader { gap: var(--sp-3); }
+.btnBack { height: 30px; padding: 0 10px; font-size: var(--fs-xs); color: var(--text-muted); border-color: transparent; }
+.btnBack:hover { color: var(--text-main); }
+.titleIcon {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; border-radius: var(--r-md); flex-shrink: 0;
+  background: var(--surface-highest); color: var(--text-muted);
+}
+.pageTitle { font-size: var(--fs-2xl); font-weight: 600; letter-spacing: -0.02em; color: var(--text-main); }
+.pageSubtitle { color: var(--text-subtle); }
+.btnCount { font-size: var(--fs-xs); color: var(--text-subtle); font-variant-numeric: tabular-nums; }
+
+.kanban { gap: var(--sp-3); align-items: flex-start; }
+.column {
+  min-width: 280px; width: 280px; min-height: 0; padding: var(--sp-3);
+  gap: var(--sp-3); background: var(--surface-low); border: 1px solid var(--border-subtle);
+  border-radius: var(--r-lg); box-shadow: none;
+}
+.columnFinalizado { border-top: 1px solid var(--border-subtle); }
+.columnHeader { gap: 0; padding: 2px 2px 0; }
+.columnTitle { font-size: var(--fs-sm); font-weight: 500; color: var(--text-main); }
+.columnCount { font-size: var(--fs-xs); font-weight: 500; color: var(--text-subtle); font-variant-numeric: tabular-nums; }
+.columnMeta { display: none; }
+.btnEditEtapa { width: 22px; height: 22px; border: none; background: transparent; color: var(--text-faint); opacity: 0; }
+.columnHeader:hover .btnEditEtapa { opacity: 1; }
+.btnEditEtapa:hover { background: var(--hover); color: var(--text-main); border-color: transparent; }
+@media (hover: none) { .btnEditEtapa { opacity: 1; } }
+.columnCards { min-height: 48px; gap: 6px; }
+.taskCard {
+  padding: 10px 12px; gap: 6px; border-radius: var(--r-md);
+  background: var(--surface-container); border: 1px solid var(--border-subtle); box-shadow: none;
+}
+.taskCard:hover { border-color: var(--border-default); background: var(--surface-high); box-shadow: none; transform: none; }
+.taskCardDragging { border: 1px dashed var(--border-prominent); }
+.taskTitulo { font-family: var(--font-sans); font-size: var(--fs-sm); font-weight: 500; }
+.taskMeta { gap: var(--sp-2); justify-content: flex-start; font-size: var(--fs-xs); color: var(--text-subtle); font-variant-numeric: tabular-nums; }
+.taskDate { margin-left: auto; }
+.urgentTag { font-size: var(--fs-2xs); font-weight: 500; color: var(--danger-text); background: var(--danger-soft); padding: 1px 6px; border-radius: var(--r-xs); }
+.badgeConcluida { font-size: var(--fs-2xs); font-weight: 500; color: var(--success-text); background: var(--success-soft); border: none; }
+.emptyCard { height: 48px; border: 1px dashed var(--border-subtle); background: transparent; font-size: var(--fs-xs); color: var(--text-faint); }
+.columnDropTarget { background: var(--primary-soft) !important; border: 1px dashed var(--primary-border) !important; box-shadow: none; }
+.columnDragOverTarget { box-shadow: none !important; border-color: var(--primary-border) !important; }
+.columnHeaderDraggable:hover { background: transparent; }
+.customChip { background: var(--hover); border-color: transparent; }
+.modalCard { border-color: var(--border-default); }
+.emptyBoard {
+  display: flex; flex-direction: column; align-items: center; gap: var(--sp-3);
+  padding: var(--sp-12) var(--sp-6); text-align: center;
+  border: 1px dashed var(--border-default); border-radius: var(--r-lg);
+  color: var(--text-subtle); font-size: var(--fs-sm);
+}
+@media (max-width: 768px) { .column { min-width: 82vw; width: 82vw; } }
+.columnDragging { border: 1px dashed var(--border-prominent) !important; }
+.customChipStrong { color: var(--text-main); font-weight: 500; }
+
+.kanban { align-items: stretch; min-height: calc(100dvh - 220px); }
+.columnCards { flex: 1; }
+.campoTipoBadge { background: var(--hover); color: var(--text-muted); border: none; font-weight: 500; }
+.btnEditCard:hover { background: var(--hover); color: var(--text-main); border-color: transparent; }
+.btnEditCard { border-color: transparent; background: transparent; }
+@media (max-width: 768px) { .kanban { min-height: 0; } .column { min-height: 240px; } }

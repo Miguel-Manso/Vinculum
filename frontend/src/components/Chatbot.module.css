@@ -8,7 +8,7 @@
   background: linear-gradient(135deg, var(--primary-container, var(--primary-container)) 0%, var(--primary, var(--primary)) 100%);
   color: var(--on-primary);
   border: none;
-  box-shadow: 0 0 24px rgba(47, 217, 244, 0.45);
+  box-shadow: 0 0 24px rgba(69, 196, 214, 0.45);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -19,7 +19,7 @@
 
 .floatingBtn:hover {
   transform: translateY(-2px) scale(1.06);
-  box-shadow: 0 0 32px rgba(47, 217, 244, 0.7);
+  box-shadow: 0 0 32px rgba(69, 196, 214, 0.7);
 }
 
 .floatingBtn:active {
@@ -106,7 +106,7 @@
   font-family: var(--font-display);
   font-size: 14px;
   font-weight: 700;
-  color: var(--text-main, #FFFFFF);
+  color: var(--text-main, var(--text-main));
 }
 
 .chatSubtitle {
@@ -147,7 +147,7 @@
 
 .btnHeaderAction:hover {
   background: var(--border-default);
-  color: #FFFFFF;
+  color: var(--text-main);
 }
 
 .messagesContainer {
@@ -186,7 +186,7 @@
 
 .bubbleUser {
   background: var(--surface-high, var(--surface-high));
-  color: var(--text-main, #FFFFFF);
+  color: var(--text-main, var(--text-main));
   border: 1px solid var(--border-default);
   border-bottom-right-radius: 4px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
@@ -208,12 +208,12 @@
 }
 
 .userText {
-  color: #FFFFFF;
+  color: var(--text-main);
   line-height: 1.5;
 }
 
 .inlineStrong {
-  color: #FFFFFF;
+  color: var(--text-main);
   font-weight: 600;
 }
 
@@ -257,7 +257,7 @@
 .sectionHeader {
   font-size: 14px;
   font-weight: 700;
-  color: #FFFFFF;
+  color: var(--text-main);
   margin-bottom: 2px;
   display: flex;
   align-items: center;
@@ -282,7 +282,7 @@
   height: 20px;
   border-radius: 50%;
   background: linear-gradient(135deg, #155DFC 0%, #0040C1 100%);
-  color: #FFFFFF;
+  color: var(--text-main);
   font-size: 11px;
   font-weight: 700;
   display: flex;
@@ -408,7 +408,7 @@
 .quickChip:hover {
   background: var(--surface-high, var(--surface-high));
   border-color: var(--primary, var(--primary));
-  color: var(--text-main, #FFFFFF);
+  color: var(--text-main, var(--text-main));
 }
 
 .chatInputArea {
@@ -426,7 +426,7 @@
   border: 1px solid var(--border-subtle, var(--border-default));
   border-radius: 8px;
   padding: 8px 12px;
-  color: var(--text-main, #FFFFFF);
+  color: var(--text-main, var(--text-main));
   font-size: 13px;
   font-family: inherit;
   resize: none;
@@ -439,7 +439,7 @@
 
 .chatTextarea:focus {
   border-color: var(--primary, var(--primary));
-  box-shadow: 0 0 0 2px rgba(47, 217, 244, 0.25);
+  box-shadow: 0 0 0 2px rgba(69, 196, 214, 0.25);
 }
 
 .btnEnviar {
@@ -455,12 +455,12 @@
   cursor: pointer;
   flex-shrink: 0;
   transition: all 0.15s ease;
-  box-shadow: 0 0 10px rgba(47, 217, 244, 0.25);
+  box-shadow: 0 0 10px rgba(69, 196, 214, 0.25);
 }
 
 .btnEnviar:hover:not(:disabled) {
   background: var(--primary-mint, var(--primary-mint));
-  box-shadow: 0 0 16px rgba(47, 217, 244, 0.45);
+  box-shadow: 0 0 16px rgba(69, 196, 214, 0.45);
 }
 
 .btnEnviar:disabled {
@@ -476,3 +476,27 @@
     height: 480px;
   }
 }
+
+/* ===== Visual sóbrio — overrides ===== */
+.floatingBtn {
+  width: 44px; height: 44px; bottom: 20px; right: 20px;
+  background: var(--surface-high); color: var(--text-main);
+  border: 1px solid var(--border-default); box-shadow: var(--shadow-md);
+}
+.floatingBtn:hover { transform: none; background: var(--surface-highest); box-shadow: var(--shadow-md); }
+.floatingBadge { width: 8px; height: 8px; top: 2px; right: 2px; border-width: 2px; box-shadow: none; }
+.chatWindow { background: var(--surface-container); border-color: var(--border-default); border-radius: var(--r-xl); box-shadow: var(--shadow-xl); bottom: 76px; right: 20px; }
+.chatHeader { background: transparent; }
+.avatarIcon { background: var(--surface-highest); color: var(--text-main); box-shadow: none; border-radius: var(--r-md); }
+.chatTitle { font-size: var(--fs-sm); font-weight: 600; }
+.onlineDot { box-shadow: none; }
+.tipCard { background: var(--hover); border-color: var(--border-subtle); }
+.sectionHeader { color: var(--text-main); font-weight: 600; }
+.stepBadge { background: var(--surface-highest); color: var(--text-main); box-shadow: none; font-weight: 600; }
+.chatTextarea:focus { border-color: var(--primary-border); box-shadow: var(--focus-ring); }
+.btnEnviar { box-shadow: none; }
+.btnEnviar:hover:not(:disabled) { background: var(--primary-hover); box-shadow: none; }
+.messagesContainer { background: transparent; }
+.bubbleUser { box-shadow: none; border-color: transparent; background: var(--surface-highest); }
+.bubbleIA { box-shadow: none; background: transparent; border-color: var(--border-subtle); }
+.userText, .inlineStrong { color: var(--text-main); }

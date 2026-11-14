@@ -160,7 +160,7 @@
 .pillBtnActive {
   background: var(--primary-soft) !important;
   color: var(--primary, var(--primary)) !important;
-  border-color: rgba(47, 217, 244, 0.25) !important;
+  border-color: rgba(69, 196, 214, 0.25) !important;
   font-weight: 600;
 }
 
@@ -198,7 +198,7 @@
 }
 
 .card:hover {
-  border-color: rgba(47, 217, 244, 0.25);
+  border-color: rgba(69, 196, 214, 0.25);
   background: var(--surface-container);
   transform: translateY(-2px);
 }
@@ -468,7 +468,7 @@
 
 
 .formSelect option {
-  background: #0f1623;
+  background: var(--surface-container);
   color: var(--text-main);
 }
 
@@ -598,3 +598,35 @@
   .sectorPills::-webkit-scrollbar { display: none; }
   .sectorPills > * { flex-shrink: 0; }
 }
+
+/* ===== Visual sóbrio — overrides ===== */
+.pageTitle { font-size: var(--fs-2xl); font-weight: 600; }
+.headerMetricsRibbon { font-size: var(--fs-sm); color: var(--text-subtle); }
+.ribbonItem strong { font-weight: 500; color: var(--text-body); }
+.cleanToolbar { background: transparent; border: none; padding: 0; }
+.searchInput { height: 34px; background: transparent; border-radius: var(--r-md); font-size: var(--fs-sm); }
+.searchInput:focus { border-color: var(--primary-border); background: transparent; box-shadow: var(--focus-ring); }
+.pillBtn { height: 30px; padding: 0 10px; font-size: var(--fs-sm); border-radius: var(--r-md); }
+.pillBtnActive { background: var(--surface-highest) !important; color: var(--text-main) !important; border-color: var(--border-default) !important; font-weight: 500; }
+.grid { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; }
+.card { background: var(--surface-container); border-color: var(--border-subtle); border-radius: var(--r-lg); padding: 16px; }
+.card:hover { border-color: var(--border-default); background: var(--surface-high); transform: none; }
+.cardIconBox { width: 30px; height: 30px; border-radius: var(--r-md); background: var(--surface-highest); color: var(--text-muted); }
+.card:hover .cardIconBox { transform: none; }
+.cardDeptName { font-size: var(--fs-xs); text-transform: none; letter-spacing: 0; font-weight: 400; color: var(--text-subtle); }
+.cardNome { font-size: var(--fs-md); font-weight: 500; }
+.cardDesc { font-size: var(--fs-sm); color: var(--text-subtle); }
+.metricItem { font-size: var(--fs-xs); color: var(--text-subtle); }
+.btnAbrirFluxo { font-size: var(--fs-xs); font-weight: 500; color: var(--text-subtle); }
+.card:hover .btnAbrirFluxo { color: var(--text-main); }
+.cardQuickActions { opacity: 0; transition: opacity var(--dur) var(--ease-out); }
+.card:hover .cardQuickActions, .card:focus-within .cardQuickActions { opacity: 1; }
+@media (hover: none) { .cardQuickActions { opacity: 1; } }
+.emptyStateBox { background: transparent; border: 1px dashed var(--border-default); }
+.iconOptionBtnActive { background: var(--surface-highest) !important; border-color: var(--border-prominent) !important; color: var(--text-main) !important; font-weight: 500; }
+.sectorTabActive { background: var(--surface-highest) !important; border-color: var(--border-default) !important; color: var(--text-main) !important; box-shadow: none; }
+.formSelect option { background: var(--surface-container); }
+
+.pillCount { color: var(--text-faint); font-variant-numeric: tabular-nums; font-size: var(--fs-xs); }
+.pillBtnActive .pillCount { color: var(--text-subtle); }
+.cleanToolbar { flex-direction: column; align-items: stretch; }

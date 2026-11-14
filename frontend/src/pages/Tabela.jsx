@@ -405,7 +405,7 @@ export default function Tabela() {
       value: s,
       label: s,
       count: contadores[s],
-      color: cores[s] || '#2fd9f4'
+      color: cores[s] || '#45c4d6'
     }));
   }, [tarefas]);
 
@@ -1173,7 +1173,7 @@ export default function Tabela() {
                           <span className={styles.setorTag}>
                             <span
                               className={styles.setorDot}
-                              style={{ backgroundColor: t.setor_cor || '#2fd9f4' }}
+                              style={{ backgroundColor: t.setor_cor || '#45c4d6' }}
                             />
                             {t.setor_nome || 'Geral'}
                           </span>

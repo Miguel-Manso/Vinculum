@@ -219,7 +219,7 @@
 .pillBtnActive {
   background: var(--primary-soft) !important;
   color: var(--primary, var(--primary)) !important;
-  border-color: rgba(47, 217, 244, 0.25) !important;
+  border-color: rgba(69, 196, 214, 0.25) !important;
   font-weight: 600;
 }
 
@@ -286,7 +286,7 @@
 .filterTriggerBtnActive {
   border-color: var(--primary, var(--primary)) !important;
   color: var(--primary, var(--primary)) !important;
-  background: rgba(47, 217, 244, 0.06) !important;
+  background: rgba(69, 196, 214, 0.06) !important;
 }
 
 .filterTriggerBadge {
@@ -315,7 +315,7 @@
   left: 0;
   width: 250px;
   background: var(--surface-low);
-  border: 1px solid rgba(47, 217, 244, 0.25);
+  border: 1px solid rgba(69, 196, 214, 0.25);
   border-radius: 8px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
   padding: 10px;
@@ -426,7 +426,7 @@
 }
 
 .popoverItemActive {
-  background: rgba(47, 217, 244, 0.08);
+  background: rgba(69, 196, 214, 0.08);
 }
 
 .popoverCheckbox {
@@ -597,8 +597,8 @@
   align-items: center;
   gap: 4px;
   padding: 2px 8px;
-  background: rgba(47, 217, 244, 0.06);
-  border: 1px solid rgba(47, 217, 244, 0.2);
+  background: rgba(69, 196, 214, 0.06);
+  border: 1px solid rgba(69, 196, 214, 0.2);
   border-radius: 4px;
   font-size: 11px;
   color: var(--primary, var(--primary));
@@ -1067,7 +1067,7 @@
 .btnEmptyReset {
   margin-top: 8px;
   background: var(--primary-soft);
-  border: 1px solid rgba(47, 217, 244, 0.25);
+  border: 1px solid rgba(69, 196, 214, 0.25);
   color: var(--primary, var(--primary));
   padding: 4px 10px;
   border-radius: 4px;
@@ -1089,3 +1089,37 @@
   .quickPills::-webkit-scrollbar, .dropdownsCluster::-webkit-scrollbar { display: none; }
   .quickPills > *, .dropdownsCluster > * { flex-shrink: 0; }
 }
+
+/* ===== Visual sóbrio — overrides ===== */
+.pageTitle { font-size: var(--fs-2xl); font-weight: 600; }
+.headerMetricsRibbon { background: transparent; border: none; padding: 0; font-size: var(--fs-sm); color: var(--text-subtle); }
+.ribbonItem strong { font-weight: 500; color: var(--text-body); }
+.cleanToolbar { background: transparent; border: none; padding: 0; }
+.searchInput { height: 34px; background: transparent; border-radius: var(--r-md); font-size: var(--fs-sm); }
+.searchInput:focus { border-color: var(--primary-border); background: transparent; box-shadow: var(--focus-ring); }
+.pillBtn { height: 30px; padding: 0 10px; font-size: var(--fs-sm); border-radius: var(--r-md); }
+.pillBtnActive { background: var(--surface-highest) !important; color: var(--text-main) !important; border-color: var(--border-default) !important; font-weight: 500; }
+.pillBtnActiveDanger { background: var(--danger-soft) !important; color: var(--danger-text) !important; border-color: transparent !important; font-weight: 500; }
+.filterTriggerBtn { height: 30px; background: transparent; border-style: dashed; font-size: var(--fs-xs); border-radius: var(--r-md); }
+.filterTriggerBtnActive { border-style: solid; border-color: var(--border-prominent) !important; color: var(--text-main) !important; background: var(--hover) !important; }
+.filterTriggerBadge { background: var(--surface-bright); color: var(--text-main); font-weight: 600; }
+.popoverDropdown { background: var(--surface-high); border-color: var(--border-default); border-radius: var(--r-lg); box-shadow: var(--shadow-lg); }
+.popoverLinkBtn { color: var(--text-muted); }
+.popoverLinkBtn:hover { color: var(--text-main); }
+.popoverItemActive { background: var(--hover); }
+.popoverDoneBtn { background: var(--surface-highest); border-color: var(--border-default); color: var(--text-main); }
+.popoverDoneBtn:hover { background: var(--surface-bright); color: var(--text-main); }
+.prazoPresetBtnActive { background: var(--surface-highest) !important; border-color: var(--border-prominent) !important; color: var(--text-main) !important; }
+.prazoPresetBtn:hover { border-color: var(--border-prominent); color: var(--text-main); }
+.activeTagBadge { background: var(--hover); border-color: transparent; color: var(--text-body); border-radius: var(--r-sm); }
+.tableCard { background: var(--surface-container); border-color: var(--border-subtle); border-radius: var(--r-lg); }
+.table thead th { background: var(--surface-container); font-size: var(--fs-xs); text-transform: none; letter-spacing: 0; font-weight: 500; color: var(--text-subtle); border-bottom-color: var(--border-subtle); }
+.sortIconActive { color: var(--text-main); }
+.tr { border-bottom-color: var(--border-subtle); }
+.trAtrasada { background: transparent; }
+.trAtrasada:hover { background: var(--hover-subtle); }
+.taskIdBadge { background: transparent; border: none; padding: 0; color: var(--text-faint); font-family: var(--font-mono); }
+.taskTitle { font-weight: 500; }
+.badgeUrgente { border: none; border-radius: var(--r-xs); font-weight: 500; }
+.processoText { color: var(--text-body); }
+.avatarMini { background: var(--surface-highest); color: var(--text-body); }

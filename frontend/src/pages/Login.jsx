@@ -41,7 +41,7 @@ export default function Login() {
       <main className={styles.card}>
         <Logo
           variant="vertical"
-          size={60}
+          size={40}
           showSubtitle
           subtitleText="Gestão Visual de Processos"
           className={styles.logoHeader}

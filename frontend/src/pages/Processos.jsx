@@ -200,7 +200,7 @@ export default function Processos() {
                 <line x1="12" y1="5" x2="12" y2="19" />
                 <line x1="5" y1="12" x2="19" y2="12" />
               </svg>
-              <span>Novo Processo</span>
+              <span>Novo processo</span>
             </button>
           </div>
         </header>
@@ -216,7 +216,7 @@ export default function Processos() {
             <input
               className={styles.searchInput}
               type="text"
-              placeholder="Pesquisar processos..."
+              placeholder="Buscar processos"
               value={busca}
               onChange={e => setBusca(e.target.value)}
             />
@@ -234,8 +234,8 @@ export default function Processos() {
               className={`${styles.pillBtn} ${setorFiltroId === 'todos' ? styles.pillBtnActive : ''}`}
               onClick={() => handleSelecionarAba('todos')}
             >
-              <ProcessIcon iconKey="kanban" size={13} />
-              <span>Todos ({processos.length})</span>
+              <span>Todos</span>
+              <span className={styles.pillCount}>{processos.length}</span>
             </button>
 
             {setoresDisponiveis.map(setor => {
@@ -247,13 +247,9 @@ export default function Processos() {
                   className={`${styles.pillBtn} ${setorFiltroId === String(setor.id) ? styles.pillBtnActive : ''}`}
                   onClick={() => handleSelecionarAba(String(setor.id))}
                 >
-                  <span
-                    className={styles.pillIconWrap}
-                    style={{ color: setor.cor || '#2fd9f4' }}
-                  >
-                    <ProcessIcon iconKey={setor.icone} name={setor.nome} size={13} />
-                  </span>
-                  <span>{setor.nome} ({count})</span>
+                  <span className={styles.pillDot} style={{ backgroundColor: setor.cor || '#45c4d6' }} />
+                  <span>{setor.nome}</span>
+                  <span className={styles.pillCount}>{count}</span>
                 </button>
               );
             })}
@@ -297,11 +293,6 @@ export default function Processos() {
                   <div className={styles.cardHeaderLeft}>
                     <div
                       className={styles.cardIconBox}
-                      style={{
-                        backgroundColor: `${p.setor_cor || '#2fd9f4'}16`,
-                        color: p.setor_cor || '#2fd9f4',
-                        border: `1px solid ${p.setor_cor || '#2fd9f4'}30`,
-                      }}
                       title={`Processo: ${p.nome}`}
                     >
                       <ProcessIcon processo={p} size={18} />
@@ -310,9 +301,9 @@ export default function Processos() {
                     <div className={styles.cardDeptRow}>
                       <span
                         className={styles.deptDot}
-                        style={{ backgroundColor: p.setor_cor || '#2fd9f4' }}
+                        style={{ backgroundColor: p.setor_cor || '#45c4d6' }}
                       />
-                      <span className={styles.cardDeptName} style={{ color: p.setor_cor || '#2fd9f4' }}>
+                      <span className={styles.cardDeptName}>
                         {p.setor_nome || 'Geral'}
                       </span>
                     </div>
@@ -369,7 +360,7 @@ export default function Processos() {
                   </div>
 
                   <span className={styles.btnAbrirFluxo}>
-                    <span>Abrir Fluxo</span>
+                    <span>Abrir</span>
                     <svg className={styles.arrowIcon} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <line x1="5" y1="12" x2="19" y2="12" />
                       <polyline points="12 5 19 12 12 19" />

@@ -9,7 +9,7 @@
   gap: var(--sp-6);
   padding: var(--sp-6) var(--sp-4);
   background:
-    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(47, 217, 244, 0.10), transparent 60%),
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(69, 196, 214, 0.10), transparent 60%),
     var(--surface-canvas);
   position: relative;
   overflow: hidden;
@@ -131,3 +131,16 @@
 
 @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* ===== Visual sóbrio — overrides ===== */
+.page { background: var(--surface-canvas); }
+.glow { display: none; }
+.card { max-width: 380px; padding: var(--sp-8); background: var(--surface-container); border-color: var(--border-subtle); border-radius: var(--r-xl); box-shadow: none; }
+.logoHeader { margin-bottom: var(--sp-5); }
+.intro { margin-bottom: var(--sp-5); }
+.title { font-size: var(--fs-lg); }
+.subtitle { color: var(--text-subtle); }
+.input { height: 40px; font-size: var(--fs-base); }
+.input:focus { border-color: var(--primary-border); }
+.btn { height: 40px; font-size: var(--fs-sm); }
+.erro { border: none; }

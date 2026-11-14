@@ -6,51 +6,51 @@
 
 :root {
   /* ---------- Superfícies (do mais profundo ao mais elevado) ---------- */
-  --surface-lowest:    #0b0c0f;
-  --surface-canvas:    #111215;   /* fundo da página */
-  --surface-low:       #16171b;   /* sidebar, toolbars, cabeçalhos de tabela */
-  --surface-container: #1b1c21;   /* cards e blocos */
-  --surface-high:      #23242a;   /* inputs e elementos elevados */
-  --surface-highest:   #2d2e35;   /* hover / ativo */
-  --surface-bright:    #383a42;
+  --surface-lowest:    #0a0a0b;
+  --surface-canvas:    #0e0e10;   /* fundo da página */
+  --surface-low:       #121214;   /* sidebar, toolbars, cabeçalhos de tabela */
+  --surface-container: #161618;   /* cards e blocos */
+  --surface-high:      #1d1d20;   /* inputs e elementos elevados */
+  --surface-highest:   #26262a;   /* hover / ativo */
+  --surface-bright:    #333338;
   --surface-overlay:   rgba(6, 7, 9, 0.72);
 
   /* ---------- Bordas ---------- */
-  --border-subtle:     rgba(255, 255, 255, 0.07);
-  --border-default:    rgba(255, 255, 255, 0.11);
-  --border-prominent:  rgba(255, 255, 255, 0.17);
-  --border-focus:      #2fd9f4;
+  --border-subtle:     rgba(255, 255, 255, 0.06);
+  --border-default:    rgba(255, 255, 255, 0.09);
+  --border-prominent:  rgba(255, 255, 255, 0.15);
+  --border-focus:      #45c4d6;
 
   /* ---------- Marca: Cyan elétrico / Mint / Teal ---------- */
-  --primary:           #2fd9f4;
-  --primary-hover:     #62e4f8;
-  --primary-press:     #1cc2dc;
-  --primary-mint:      #57f1db;
+  --primary:           #45c4d6;
+  --primary-hover:     #62d0e0;
+  --primary-press:     #36b3c5;
+  --primary-mint:      #5fd3c3;
   --primary-container: #14b8a6;
   --primary-light:     #8aebff;
   --primary-dim:       #2dd4bf;
-  --on-primary:        #00323a;
-  --primary-soft:      rgba(47, 217, 244, 0.10);
-  --primary-soft-2:    rgba(47, 217, 244, 0.16);
-  --primary-border:    rgba(47, 217, 244, 0.32);
-  --gradient-brand:    linear-gradient(135deg, #2fd9f4 0%, #14b8a6 100%);
+  --on-primary:        #04262c;
+  --primary-soft:      rgba(69, 196, 214, 0.08);
+  --primary-soft-2:    rgba(69, 196, 214, 0.12);
+  --primary-border:    rgba(69, 196, 214, 0.28);
+  --gradient-brand:    #45c4d6;
 
   /* ---------- Texto (contraste AA sobre --surface-canvas) ---------- */
-  --text-main:         #f4f6fa;
-  --text-body:         #d9dce3;
-  --text-muted:        #9ea7b7;
-  --text-subtle:       #7f899b;
-  --text-faint:        #5b6474;
+  --text-main:         #ededef;
+  --text-body:         #c9cacf;
+  --text-muted:        #9a9ba3;
+  --text-subtle:       #7c7d86;
+  --text-faint:        #5a5b63;
 
   /* ---------- Semânticas ---------- */
   --status-success:    #10b981;
   --status-warning:    #f59e0b;
   --status-danger:     #ef4444;
   --status-info:       #38bdf8;
-  --success-text:      #4ade9b;
-  --warning-text:      #fbbf24;
-  --danger-text:       #f87171;
-  --info-text:         #7dd3fc;
+  --success-text:      #5fcf98;
+  --warning-text:      #e8b04a;
+  --danger-text:       #f07a7a;
+  --info-text:         #8cc8ee;
   --success-soft:      rgba(16, 185, 129, 0.12);
   --warning-soft:      rgba(245, 158, 11, 0.12);
   --danger-soft:       rgba(239, 68, 68, 0.12);
@@ -60,13 +60,13 @@
   --danger-border:     rgba(239, 68, 68, 0.34);
   --info-border:       rgba(56, 189, 248, 0.32);
 
-  --hover-subtle:      rgba(255, 255, 255, 0.035);
-  --hover:             rgba(255, 255, 255, 0.06);
+  --hover-subtle:      rgba(255, 255, 255, 0.025);
+  --hover:             rgba(255, 255, 255, 0.05);
   --active:            rgba(255, 255, 255, 0.09);
 
   /* ---------- Tipografia ---------- */
   --font-sans:    'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-display: 'Outfit', 'Geist', -apple-system, sans-serif;
+  --font-display: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-mono:    'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 
   --fs-2xs: 11px;
@@ -76,7 +76,7 @@
   --fs-md:  15px;
   --fs-lg:  17px;
   --fs-xl:  20px;
-  --fs-2xl: 26px;
+  --fs-2xl: 24px;
   --fs-3xl: 32px;
 
   --lh-tight: 1.2;
@@ -99,9 +99,9 @@
   /* ---------- Raios ---------- */
   --r-xs: 4px;
   --r-sm: 6px;
-  --r-md: 10px;
-  --r-lg: 14px;
-  --r-xl: 18px;
+  --r-md: 8px;
+  --r-lg: 10px;
+  --r-xl: 14px;
   --r-full: 9999px;
 
   /* ---------- Controles ---------- */
@@ -115,8 +115,8 @@
   --shadow-md: 0 6px 18px -4px rgba(0, 0, 0, 0.5), 0 2px 6px rgba(0, 0, 0, 0.25);
   --shadow-lg: 0 16px 40px -8px rgba(0, 0, 0, 0.6), 0 4px 12px rgba(0, 0, 0, 0.3);
   --shadow-xl: 0 28px 64px -12px rgba(0, 0, 0, 0.7), 0 8px 20px rgba(0, 0, 0, 0.35);
-  --shadow-glow: 0 0 0 1px rgba(47, 217, 244, 0.25), 0 8px 24px -6px rgba(47, 217, 244, 0.35);
-  --focus-ring: 0 0 0 3px rgba(47, 217, 244, 0.28);
+  --shadow-glow: none;
+  --focus-ring: 0 0 0 3px rgba(69, 196, 214, 0.25);
 
   /* ---------- Movimento ---------- */
   --ease-out:    cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -126,8 +126,8 @@
   --dur-slow: 280ms;
 
   /* ---------- Layout ---------- */
-  --sidebar-w: 264px;
-  --sidebar-w-collapsed: 76px;
+  --sidebar-w: 240px;
+  --sidebar-w-collapsed: 64px;
   --mobile-header-h: 60px;
   --page-px: var(--sp-8);
   --page-py: var(--sp-8);
@@ -215,7 +215,7 @@ h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-display);
   color: var(--text-main);
   line-height: var(--lh-tight);
-  letter-spacing: -0.02em;
+  letter-spacing: -0.015em;
   font-weight: 600;
 }
 
@@ -238,7 +238,7 @@ input[type='checkbox'] {
 
 select option { background: var(--surface-container); color: var(--text-main); }
 
-::selection { background: rgba(47, 217, 244, 0.3); color: var(--text-main); }
+::selection { background: rgba(69, 196, 214, 0.3); color: var(--text-main); }
 
 :focus { outline: none; }
 :focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }

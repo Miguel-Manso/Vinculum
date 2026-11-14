@@ -21,7 +21,7 @@ export default function ModalGerenciarSetores({ isOpen, onClose }) {
   const [editando, setEditando] = useState(null); // null = listagem/novo
   const [nome, setNome] = useState('');
   const [descricao, setDescricao] = useState('');
-  const [cor, setCor] = useState('#2fd9f4');
+  const [cor, setCor] = useState('#45c4d6');
   const [icone, setIcone] = useState('folder');
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState('');
@@ -33,7 +33,7 @@ export default function ModalGerenciarSetores({ isOpen, onClose }) {
     setEditando('novo');
     setNome('');
     setDescricao('');
-    setCor('#2fd9f4');
+    setCor('#45c4d6');
     setIcone('folder');
     setErro('');
     setSucesso('');
@@ -43,7 +43,7 @@ export default function ModalGerenciarSetores({ isOpen, onClose }) {
     setEditando(setor);
     setNome(setor.nome || '');
     setDescricao(setor.descricao || '');
-    setCor(setor.cor || '#2fd9f4');
+    setCor(setor.cor || '#45c4d6');
     setIcone(setor.icone || 'folder');
     setErro('');
     setSucesso('');
@@ -236,21 +236,21 @@ export default function ModalGerenciarSetores({ isOpen, onClose }) {
               <div className={styles.sectorCardsList}>
                 {setoresDisponiveis.map(setor => (
                   <div key={setor.id} className={styles.sectorCard}>
-                    <div className={styles.sectorColorStripe} style={{ backgroundColor: setor.cor || '#2fd9f4' }} />
+                    <div className={styles.sectorColorStripe} style={{ backgroundColor: setor.cor || '#45c4d6' }} />
                     <div className={styles.sectorCardContent}>
                       <div className={styles.sectorCardTop}>
                         <div className={styles.sectorTitleArea}>
                           <span
                             className={styles.sectorBadgePill}
                             style={{
-                              borderColor: `${setor.cor || '#2fd9f4'}55`,
-                              color: setor.cor || '#2fd9f4',
-                              backgroundColor: `${setor.cor || '#2fd9f4'}15`
+                              borderColor: `${setor.cor || '#45c4d6'}55`,
+                              color: setor.cor || '#45c4d6',
+                              backgroundColor: `${setor.cor || '#45c4d6'}15`
                             }}
                           >
                             <span
                               className={styles.sectorBadgeDot}
-                              style={{ backgroundColor: setor.cor || '#2fd9f4' }}
+                              style={{ backgroundColor: setor.cor || '#45c4d6' }}
                             />
                             {setor.nome}
                           </span>

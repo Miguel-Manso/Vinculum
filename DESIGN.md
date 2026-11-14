@@ -1,16 +1,16 @@
 ---
 version: alpha
-name: Vinculum — Obsidian & Electric Cyan
-description: Interface escura, densa e calma para gestão visual de processos, etapas e tarefas por setor.
+name: Vinculum — Grafite & Ciano sóbrio
+description: Interface escura, neutra e silenciosa para gestão visual de processos, etapas e tarefas por setor.
 colors:
-  surface-lowest: "#0b0c0f"
-  surface-canvas: "#111215"
-  surface-low: "#16171b"
-  surface-container: "#1b1c21"
-  surface-high: "#23242a"
-  surface-highest: "#2d2e35"
-  primary: "#2fd9f4"
-  primary-hover: "#62e4f8"
+  surface-lowest: "#0a0a0b"
+  surface-canvas: "#0e0e10"
+  surface-low: "#121214"
+  surface-container: "#161618"
+  surface-high: "#1d1d20"
+  surface-highest: "#26262a"
+  primary: "#45c4d6"
+  primary-hover: "#62d0e0"
   primary-mint: "#57f1db"
   primary-container: "#14b8a6"
   on-primary: "#00323a"
@@ -25,13 +25,13 @@ colors:
   info: "#38bdf8"
 typography:
   display:
-    fontFamily: Outfit
+    fontFamily: Geist
     fontSize: 26px
     fontWeight: 600
     lineHeight: 1.2
     letterSpacing: -0.025em
   section:
-    fontFamily: Outfit
+    fontFamily: Geist
     fontSize: 17px
     fontWeight: 600
     lineHeight: 1.35
@@ -66,9 +66,9 @@ spacing:
 rounded:
   xs: 4px
   sm: 6px
-  md: 10px
-  lg: 14px
-  xl: 18px
+  md: 8px
+  lg: 10px
+  xl: 14px
   full: 9999px
 components:
   button-primary:
@@ -97,16 +97,17 @@ components:
 # Vinculum
 
 ## Overview
-Ferramenta de trabalho diário: densidade alta, leitura rápida e zero ruído. A identidade original (obsidiana + ciano elétrico) foi mantida; o rework padroniza tudo sobre tokens e componentes compartilhados.
+Ferramenta de trabalho diário: densidade alta, leitura rápida e zero ruído. O tema escuro foi mantido, mas a paleta virou grafite neutro e o ciano ficou reservado à ação principal de cada tela. Sem brilhos, gradientes ou caixas dentro de caixas.
 
 ## Colors
 - Superfícies escalonadas do mais profundo (`surface-lowest`) ao mais elevado (`surface-highest`); elevação é comunicada por superfície + borda, não por sombra pesada.
-- `primary` (ciano) é reservado a ações principais, estado ativo e foco. Mint/teal aparecem só em gradientes da marca.
+- `primary` (ciano) só no botão principal de cada tela e no anel de foco. Item ativo de navegação, filtros e abas usam superfície mais clara + texto branco, não ciano.
+- Cor de setor aparece apenas como ponto (7px) ou barra fina de progresso — nunca como fundo, borda ou texto colorido.
 - Estados semânticos sempre em trio: texto (`*-text`), fundo suave (`*-soft`) e borda (`*-border`).
 - Todo texto sobre `surface-canvas` atende contraste AA; `text-faint` só para placeholders e metadados não essenciais.
 
 ## Typography
-Outfit para títulos (display/section), Geist para interface e corpo, Geist Mono para IDs, contagens e datas. Títulos de página usam `display`; títulos de bloco usam `section`; rótulos de grupo usam `eyebrow` em caixa alta.
+Geist para tudo (títulos, interface e corpo) e Geist Mono para IDs. Títulos de página usam `display`; títulos de bloco usam `section`. Nada em caixa alta: rótulos, cabeçalhos de tabela e grupos da sidebar ficam em caixa normal, em cinza.
 
 ## Layout
 Grid de 4px. Padding de página 32/24/16px (desktop/tablet/mobile). Sidebar de 264px (76px recolhida); no mobile vira gaveta com cabeçalho fixo de 60px e o conteúdo começa abaixo dele. Alvos de toque com no mínimo 40–44px no mobile.
@@ -125,4 +126,4 @@ Raios: controles `md` (10px), cards `lg` (14px), modais `xl` (18px), pills e bad
 ## Do's and Don'ts
 - Faça: use tokens (`var(--...)`) para cor, espaço, raio e movimento; animações de 120–280ms com `ease-out`; respeite `prefers-reduced-motion`.
 - Faça: mantenha `transform` fora de containers que envolvem modais `position: fixed`.
-- Não faça: cores hex soltas em CSS de tela, roxo, fontes fora do trio definido, ou animações chamativas.
+- Não faça: cores hex soltas em CSS de tela, glow/box-shadow colorido, gradientes, texto em caixa alta, badges com borda, `translateY` no hover de cards, ou animações chamativas.

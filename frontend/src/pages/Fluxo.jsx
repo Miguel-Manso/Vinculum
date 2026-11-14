@@ -691,28 +691,13 @@ export default function Fluxo() {
           <div className={styles.headerRow}>
             <div className={styles.headerInfo}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <span
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    width: '32px',
-                    height: '32px',
-                    borderRadius: '8px',
-                    backgroundColor: `${processo.setor_cor || '#2fd9f4'}18`,
-                    color: processo.setor_cor || '#2fd9f4',
-                    border: `1px solid ${processo.setor_cor || '#2fd9f4'}30`,
-                    flexShrink: 0,
-                  }}
-                  title={`Setor: ${processo.setor_nome || 'Geral'}`}
-                >
-                  <ProcessIcon processo={processo} size={18} />
+                <span className={styles.titleIcon} title={`Setor: ${processo.setor_nome || 'Geral'}`}>
+                  <ProcessIcon processo={processo} size={16} />
                 </span>
                 <h1 className={styles.pageTitle}>{processo.nome}</h1>
               </div>
               <p className={styles.pageSubtitle}>
-                {processo.descricao ? `${processo.descricao} • ` : ''}
-                {tarefas.length} {tarefas.length === 1 ? 'tarefa' : 'tarefas'} em {etapas.length} {etapas.length === 1 ? 'etapa' : 'etapas'} • Arraste tarefas entre etapas ou cabeçalhos para reordenar
+                {processo.descricao || `${tarefas.length} ${tarefas.length === 1 ? 'tarefa' : 'tarefas'} em ${etapas.length} ${etapas.length === 1 ? 'etapa' : 'etapas'}`}
               </p>
             </div>
 
@@ -728,7 +713,7 @@ export default function Fluxo() {
                   <circle cx="12" cy="12" r="3" />
                   <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
                 </svg>
-                Campos da Tarefa {campos.length > 0 && `(${campos.length})`}
+                Campos {campos.length > 0 && <span className={styles.btnCount}>{campos.length}</span>}
               </button>
 
               <button
@@ -740,7 +725,7 @@ export default function Fluxo() {
                   <line x1="12" y1="5" x2="12" y2="19" />
                   <line x1="5" y1="12" x2="19" y2="12" />
                 </svg>
-                Nova Etapa
+                Etapa
               </button>
 
               <Link to="/tabela" className={styles.btnOutline} style={{ textDecoration: 'none' }}>
@@ -748,7 +733,7 @@ export default function Fluxo() {
                   <rect x="3" y="3" width="18" height="18" rx="2" />
                   <path d="M3 9h18M9 21V9" />
                 </svg>
-                Visualizar Tabela
+                Tabela
               </Link>
 
               <button
@@ -758,11 +743,11 @@ export default function Fluxo() {
                 disabled={etapas.length === 0}
                 title={etapas.length === 0 ? 'Crie ao menos uma etapa antes de adicionar tarefas' : ''}
               >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <line x1="12" y1="5" x2="12" y2="19" />
                   <line x1="5" y1="12" x2="19" y2="12" />
                 </svg>
-                Nova Tarefa
+                Nova tarefa
               </button>
             </div>
           </div>
@@ -770,18 +755,8 @@ export default function Fluxo() {
 
         {/* Quadro Kanban com Drag and Drop de Tarefas e Colunas */}
         {etapas.length === 0 ? (
-          <div style={{
-            background: 'var(--slate-800)',
-            borderRadius: '10px',
-            border: '1px solid var(--color-border)',
-            padding: '40px',
-            textAlign: 'center',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: '12px'
-          }}>
-            <p style={{ color: 'var(--slate-400)', margin: 0 }}>Este processo não possui etapas cadastradas.</p>
+          <div className={styles.emptyBoard}>
+            <p>Este processo não possui etapas cadastradas.</p>
             <button className={styles.btnPrimary} onClick={() => setModalEtapaAberto(true)}>
               Adicionar primeira etapa
             </button>
@@ -884,28 +859,15 @@ export default function Fluxo() {
                             <div className={styles.taskMeta}>
                               <span>#{tarefa.id}</span>
                               {(tarefa.urgente === 1 || tarefa.urgente === true) && (
-                                <span style={{
-                                  background: 'rgba(239, 68, 68, 0.15)',
-                                  color: '#f87171',
-                                  border: '1px solid rgba(239, 68, 68, 0.35)',
-                                  borderRadius: '4px',
-                                  padding: '1px 6px',
-                                  fontSize: '10.5px',
-                                  fontWeight: 700,
-                                  display: 'inline-flex',
-                                  alignItems: 'center',
-                                  gap: '3px'
-                                }}>
-                                  ⚑ Urgente
-                                </span>
+                                <span className={styles.urgentTag}>Urgente</span>
                               )}
                               {isFinal && (
                                 <span className={styles.badgeConcluida}>Concluída</span>
                               )}
                               {tarefa.prazo ? (
-                                <span>Prazo: {formatarData(tarefa.prazo)}</span>
+                                <span className={styles.taskDate}>{formatarData(tarefa.prazo)}</span>
                               ) : (
-                                <span>{formatarData(tarefa.criado_em)}</span>
+                                <span className={styles.taskDate}>{formatarData(tarefa.criado_em)}</span>
                               )}
                             </div>
                           </div>
@@ -988,7 +950,7 @@ export default function Fluxo() {
                         style={{ width: '16px', height: '16px', accentColor: '#ef4444', cursor: 'pointer' }}
                       />
                       <span style={{ fontSize: '13px', fontWeight: 600, color: urgenteTarefa ? '#f87171' : 'var(--gray-text-main)' }}>
-                        ⚑ Marcar como Tarefa Urgente
+                        Marcar como urgente
                       </span>
                     </label>
                   </div>
@@ -1014,8 +976,8 @@ export default function Fluxo() {
                       gap: '14px'
                     }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--turquesa-400)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                          Campos do Processo
+                        <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-main)' }}>
+                          Campos do processo
                         </span>
                         <span style={{ fontSize: '11px', color: 'var(--gray-text-muted)' }}>
                           * Indica campos obrigatórios na criação
@@ -1188,7 +1150,7 @@ export default function Fluxo() {
                         style={{ width: '16px', height: '16px', accentColor: '#ef4444', cursor: 'pointer' }}
                       />
                       <span style={{ fontSize: '13px', fontWeight: 600, color: urgenteTarefaEdicao ? '#f87171' : 'var(--gray-text-main)' }}>
-                        ⚑ Marcar como Tarefa Urgente
+                        Marcar como urgente
                       </span>
                     </label>
                   </div>
@@ -1211,7 +1173,7 @@ export default function Fluxo() {
                       flexDirection: 'column',
                       gap: '14px'
                     }}>
-                      <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--turquesa-400)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                      <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-main)' }}>
                         Campos Personalizados
                       </span>
 
