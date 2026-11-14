@@ -5,8 +5,8 @@ import styles from './FeatureCards.module.css';
    FeatureCards
    Três cartões que explicam o Vinculum, no estilo do bloco "features-2":
    ícone num quadrado sobre uma grade quadriculada que some nas bordas.
-   Usado no login (apresentação) e no estado vazio de Processos (primeiros
-   passos). `compact` diminui o enfeite para caber em áreas menores.
+   Usado no estado vazio de Processos (primeiros passos). `compact` diminui
+   o enfeite para caber em áreas menores.
    ========================================================================== */
 
 export const RECURSOS_VINCULUM = [

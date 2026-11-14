@@ -3,7 +3,6 @@ import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Logo from '../components/Logo';
 import AuroraBackground from '../components/AuroraBackground';
-import FeatureCards from '../components/FeatureCards';
 import api from '../services/api';
 import styles from './Login.module.css';
 
@@ -115,10 +114,6 @@ export default function Login() {
           </button>
         </form>
       </main>
-
-      <section className={styles.features} aria-label="O que dá para fazer no Vinculum">
-        <FeatureCards compact className={styles.featureGrid} />
-      </section>
 
       <p className={styles.footer}>Vinculum · Processos, etapas e tarefas por setor</p>
     </div>

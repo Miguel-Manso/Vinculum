@@ -122,7 +122,7 @@ Raios: controles `md` (10px), cards `lg` (14px), modais `xl` (18px), pills e bad
 - Primitivas em `frontend/src/styles/ui.module.css` (botões, campos, cards, modais, filtros, badges, estados, tabelas). As telas **compõem** essas classes via `composes` em vez de redefinir estilos.
 - Feedback global em `frontend/src/components/feedback/`: `toast.success|error|warning|info()` e `await confirmDialog({...})` substituem `alert`/`confirm` nativos. Ações destrutivas usam `tone: 'danger'`, título explícito e rótulo do verbo ("Excluir tarefa").
 - Modais usam `frontend/src/components/Modal.jsx`: diálogo centralizado no desktop e gaveta abaixo de 640px, com alça e fechamento arrastando para baixo. Portal, trava de rolagem, foco preso no modal e devolvido ao fechar; Esc fecha só o modal do topo. A confirmação (`confirmDialog`) usa o mesmo componente.
-- Login usa `AuroraBackground` (manchas em ciano/teal/azul petróleo, opacidade baixa, parado com reduced-motion) e `FeatureCards`, que também aparece no estado vazio de Processos. É o único lugar com brilho/fundo animado — não levar para as telas de trabalho.
+- Login usa `AuroraBackground` (manchas em ciano/teal/azul petróleo, opacidade baixa, parado com reduced-motion) ; `FeatureCards` aparece só no estado vazio de Processos. É o único lugar com brilho/fundo animado — não levar para as telas de trabalho.
 - Quadro Kanban em `frontend/src/components/KanbanBoard.jsx` (framer-motion): arrastar com mouse (após 5px), toque longo no celular ou teclado (Espaço pega, ← → troca de etapa, Espaço solta, Esc cancela, Enter abre). A página só fornece `columns`, `renderCard`, `renderColumnHeader` e `onMove`; regras de negócio (campos obrigatórios por etapa) ficam na página.
 
 ## Do's and Don'ts
