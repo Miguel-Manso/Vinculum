@@ -1,0 +1,103 @@
+/* ==========================================================================
+   KANBAN BOARD — quadro com arrastar e soltar (pointer events + teclado)
+   ========================================================================== */
+
+.board { position: relative; width: 100%; min-width: 0; display: flex; flex-direction: column; flex: 1; }
+.boardActive { user-select: none; -webkit-user-select: none; }
+
+.track {
+  display: flex; align-items: stretch; gap: var(--sp-3);
+  flex: 1; min-height: calc(100dvh - 240px);
+  overflow-x: auto; overflow-y: visible;
+  padding-bottom: 2px;
+  scrollbar-width: none;
+  scroll-padding-inline: var(--sp-2);
+}
+.track::-webkit-scrollbar { display: none; }
+
+/* ------------------------------ Coluna --------------------------------- */
+.column {
+  flex: 0 0 280px; width: 280px;
+  display: flex; flex-direction: column; gap: var(--sp-3);
+  padding: var(--sp-3);
+  background: var(--surface-low);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-lg);
+  transition: background-color var(--dur) var(--ease-out), border-color var(--dur) var(--ease-out);
+}
+.columnTarget { background: var(--surface-container); border-color: var(--border-default); }
+
+.columnHeader { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-2); padding: 2px 2px 0; }
+.columnTitle { font-size: var(--fs-sm); font-weight: 500; color: var(--text-main); }
+.columnCount { font-size: var(--fs-xs); color: var(--text-subtle); font-variant-numeric: tabular-nums; }
+
+.list { display: flex; flex-direction: column; gap: 6px; flex: 1; min-height: 48px; }
+
+/* ------------------------------ Card ----------------------------------- */
+.card {
+  position: relative;
+  cursor: grab;
+  border-radius: var(--r-md);
+  background: var(--surface-container);
+  border: 1px solid var(--border-subtle);
+  transition: border-color var(--dur) var(--ease-out), background-color var(--dur) var(--ease-out), box-shadow var(--dur) var(--ease-out);
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+}
+.card:hover { border-color: var(--border-default); background: var(--surface-high); }
+.card:active { cursor: grabbing; }
+.card:focus-visible { outline: none; box-shadow: var(--focus-ring); border-color: var(--primary-border); }
+
+.cardCarrying { border-color: var(--primary-border); box-shadow: var(--focus-ring); background: var(--surface-high); }
+
+.cardFloating {
+  cursor: grabbing;
+  background: var(--surface-high);
+  border-color: var(--border-prominent);
+  box-shadow: var(--shadow-lg);
+}
+
+.floating { position: fixed; left: 0; top: 0; z-index: var(--z-dropdown); pointer-events: none; transform-origin: top left; }
+
+/* ------------------------------ Placeholder / vazio --------------------- */
+.placeholder {
+  transform-origin: top;
+  border-radius: var(--r-md);
+  border: 1px dashed var(--border-prominent);
+  background: var(--hover-subtle);
+}
+
+.empty {
+  display: flex; align-items: center; justify-content: center;
+  height: 48px; border-radius: var(--r-md);
+  border: 1px dashed var(--border-subtle);
+  font-size: var(--fs-xs); color: var(--text-faint);
+}
+
+/* ------------------------------ Barra de rolagem ------------------------ */
+.rail {
+  margin-top: var(--sp-3); height: 6px; width: 100%;
+  border-radius: var(--r-full); background: var(--hover);
+  cursor: pointer; flex-shrink: 0;
+}
+.thumb {
+  height: 100%; border-radius: inherit;
+  background: var(--surface-bright);
+  transition: background-color var(--dur) var(--ease-out);
+}
+.thumb:hover { background: var(--text-faint); }
+.thumbHeld { background: var(--text-subtle); }
+
+.srOnly {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
+
+@media (max-width: 768px) {
+  .track { min-height: 0; scroll-snap-type: x proximity; }
+  .column { flex-basis: 82vw; width: 82vw; min-height: 240px; scroll-snap-align: start; }
+}
+
+@media (hover: none) {
+  .card { cursor: default; }
+}

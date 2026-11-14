@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import SidebarTrigger from '../components/SidebarTrigger';
 import ProcessIcon from '../components/ProcessIcon';
+import KanbanBoard from '../components/KanbanBoard';
 import api from '../services/api';
 import styles from './Fluxo.module.css';
 import { toast, confirmDialog } from '../components/feedback/feedback';
@@ -68,12 +69,9 @@ export default function Fluxo() {
   const [salvandoExigencia, setSalvandoExigencia] = useState(false);
 
   // Drag and Drop State (Tarefas e Colunas)
-  const [tarefaArrastada, setTarefaArrastada] = useState(null);
-  const [dropTargetEtapaId, setDropTargetEtapaId] = useState(null);
   const [etapaArrastada, setEtapaArrastada] = useState(null);
   const [colunaDragOverId, setColunaDragOverId] = useState(null);
 
-  const isDraggingTaskRef = useRef(false);
   const isDraggingColumnRef = useRef(false);
 
   const [usuarios, setUsuarios] = useState([]);
@@ -370,6 +368,15 @@ export default function Fluxo() {
     }
   }
 
+  // Etapas e tarefas no formato do KanbanBoard
+  const colunasKanban = useMemo(() => etapas.map(etapa => ({
+    id: etapa.id,
+    name: etapa.nome,
+    etapa,
+    final: isEtapaFinal(etapa.nome),
+    tasks: tarefas.filter(t => Number(t.etapa_id) === Number(etapa.id)),
+  })), [etapas, tarefas]);
+
   // --- Handlers de Drag and Drop de Coluna (Etapas) ---
   function handleColumnDragStart(e, etapa) {
     isDraggingColumnRef.current = true;
@@ -387,48 +394,20 @@ export default function Fluxo() {
     setColunaDragOverId(null);
   }
 
-  // --- Handlers de Drag and Drop de Tarefas ---
-  function handleTaskDragStart(e, tarefa) {
-    e.stopPropagation();
-    isDraggingTaskRef.current = true;
-    setTarefaArrastada(tarefa);
-    e.dataTransfer.setData('type', 'task');
-    e.dataTransfer.setData('text/plain', String(tarefa.id));
-    e.dataTransfer.effectAllowed = 'move';
-  }
-
-  function handleTaskDragEnd() {
-    setTimeout(() => {
-      isDraggingTaskRef.current = false;
-    }, 100);
-    setTarefaArrastada(null);
-    setDropTargetEtapaId(null);
-  }
-
   function handleGlobalDragOver(e, etapaId) {
+    if (!(isDraggingColumnRef.current || etapaArrastada)) return;
     e.preventDefault();
-    if (isDraggingColumnRef.current || etapaArrastada) {
-      e.dataTransfer.dropEffect = 'move';
-      if (colunaDragOverId !== etapaId) {
-        setColunaDragOverId(etapaId);
-      }
-    } else if (tarefaArrastada) {
-      e.dataTransfer.dropEffect = 'move';
-      if (dropTargetEtapaId !== etapaId) {
-        setDropTargetEtapaId(etapaId);
-      }
-    }
+    e.dataTransfer.dropEffect = 'move';
+    if (colunaDragOverId !== etapaId) setColunaDragOverId(etapaId);
   }
 
   function handleGlobalDragLeave(e, etapaId) {
     if (e.currentTarget.contains(e.relatedTarget)) return;
     if (colunaDragOverId === etapaId) setColunaDragOverId(null);
-    if (dropTargetEtapaId === etapaId) setDropTargetEtapaId(null);
   }
 
   async function handleGlobalDrop(e, etapaIdDestino) {
     e.preventDefault();
-    setDropTargetEtapaId(null);
     setColunaDragOverId(null);
 
     // 1. Reordenação de Coluna (Etapa)
@@ -465,67 +444,57 @@ export default function Fluxo() {
       return;
     }
 
-    // 2. Mover Tarefa entre Colunas
-    if (tarefaArrastada) {
-      const etapaOrigemId = Number(tarefaArrastada.etapa_id);
-      const etapaDestinoNum = Number(etapaIdDestino);
+  }
 
-      if (etapaOrigemId === etapaDestinoNum) {
-        setTarefaArrastada(null);
-        return;
-      }
+  // Move uma tarefa para outra etapa (chamado pelo KanbanBoard ao soltar)
+  async function moverTarefa(tarefa, etapaIdDestino) {
+    const etapaOrigemId = Number(tarefa.etapa_id);
+    const etapaDestinoNum = Number(etapaIdDestino);
+    if (etapaOrigemId === etapaDestinoNum) return;
 
-      const destinoEtapaObj = etapas.find(et => Number(et.id) === etapaDestinoNum);
+    const destinoEtapaObj = etapas.find(et => Number(et.id) === etapaDestinoNum);
 
-      // VERIFICAÇÃO DE CAMPOS EXIGIDOS PELA ETAPA DE DESTINO
-      let valoresAtuais = {};
-      if (tarefaArrastada.campos_personalizados) {
-        try {
-          valoresAtuais = typeof tarefaArrastada.campos_personalizados === 'string'
-            ? JSON.parse(tarefaArrastada.campos_personalizados)
-            : tarefaArrastada.campos_personalizados;
-        } catch {}
-      }
-
-      // Filtra campos obrigatórios configurados especificamente para esta etapa de destino
-      const exigidos = campos.filter(c =>
-        c.obrigatorio &&
-        Number(c.etapa_obrigatoria_id) === etapaDestinoNum &&
-        (valoresAtuais[c.id] === undefined || valoresAtuais[c.id] === null || String(valoresAtuais[c.id]).trim() === '')
-      );
-
-      if (exigidos.length > 0) {
-        // Abre modal para que o usuário preencha antes de concluir o avanço de etapa
-        setTarefaPendenteMover(tarefaArrastada);
-        setEtapaDestinoPendente(destinoEtapaObj);
-        setCamposExigidosEtapa(exigidos);
-
-        const initVals = { ...valoresAtuais };
-        exigidos.forEach(c => {
-          initVals[c.id] = c.tipo === 'checkbox' ? false : '';
-        });
-        setValoresExigidos(initVals);
-        setModalExigenciaEtapaAberto(true);
-        setTarefaArrastada(null);
-        return;
-      }
-
-      // Se não há pendências, move diretamente
-      const tarefaMovida = { ...tarefaArrastada, etapa_id: etapaDestinoNum };
-      setTarefas(prev => prev.map(t => (t.id === tarefaMovida.id ? tarefaMovida : t)));
-
+    // VERIFICAÇÃO DE CAMPOS EXIGIDOS PELA ETAPA DE DESTINO
+    let valoresAtuais = {};
+    if (tarefa.campos_personalizados) {
       try {
-        await api.patch(`/tarefas/${tarefaMovida.id}/mover`, {
-          etapa_id: etapaDestinoNum,
-        });
-        await carregarDados();
-      } catch (err) {
-        console.error('Erro ao mover tarefa:', err);
-        toast.error('Erro ao mover a tarefa.');
-        await carregarDados();
-      } finally {
-        setTarefaArrastada(null);
-      }
+        valoresAtuais = typeof tarefa.campos_personalizados === 'string'
+          ? JSON.parse(tarefa.campos_personalizados)
+          : tarefa.campos_personalizados;
+      } catch {}
+    }
+
+    const exigidos = campos.filter(c =>
+      c.obrigatorio &&
+      Number(c.etapa_obrigatoria_id) === etapaDestinoNum &&
+      (valoresAtuais[c.id] === undefined || valoresAtuais[c.id] === null || String(valoresAtuais[c.id]).trim() === '')
+    );
+
+    if (exigidos.length > 0) {
+      // Abre modal para que o usuário preencha antes de concluir o avanço de etapa
+      setTarefaPendenteMover(tarefa);
+      setEtapaDestinoPendente(destinoEtapaObj);
+      setCamposExigidosEtapa(exigidos);
+      const initVals = { ...valoresAtuais };
+      exigidos.forEach(c => {
+        initVals[c.id] = c.tipo === 'checkbox' ? false : '';
+      });
+      setValoresExigidos(initVals);
+      setModalExigenciaEtapaAberto(true);
+      return;
+    }
+
+    // Atualização otimista: o card já fica na etapa nova enquanto a API responde
+    const tarefaMovida = { ...tarefa, etapa_id: etapaDestinoNum, etapa_nome: destinoEtapaObj?.nome };
+    setTarefas(prev => prev.map(t => (t.id === tarefaMovida.id ? tarefaMovida : t)));
+
+    try {
+      await api.patch(`/tarefas/${tarefaMovida.id}/mover`, { etapa_id: etapaDestinoNum });
+      await carregarDados();
+    } catch (err) {
+      console.error('Erro ao mover tarefa:', err);
+      toast.error('Erro ao mover a tarefa.');
+      await carregarDados();
     }
   }
 
@@ -576,7 +545,7 @@ export default function Fluxo() {
   }
 
   function handleCardClick(tarefaId) {
-    if (isDraggingTaskRef.current || isDraggingColumnRef.current) return;
+    if (isDraggingColumnRef.current) return;
     navigate(`/tarefas/${tarefaId}`);
   }
 
@@ -762,123 +731,85 @@ export default function Fluxo() {
             </button>
           </div>
         ) : (
-          <div className={styles.kanban}>
-            {etapas.map(etapa => {
-              const tarefasEtapa = tarefas.filter(t => Number(t.etapa_id) === Number(etapa.id));
-              const porcentagem = tarefas.length > 0 ? (tarefasEtapa.length / tarefas.length) * 100 : 0;
-              const isFinal = isEtapaFinal(etapa.nome);
-              const isOver = dropTargetEtapaId === etapa.id;
-              const isDraggingThisColumn = etapaArrastada?.id === etapa.id;
-              const isDragOverThisColumn = colunaDragOverId === etapa.id;
-
-              return (
-                <div
-                  key={etapa.id}
-                  className={`${styles.column} ${isFinal ? styles.columnFinalizado : ''} ${isOver ? styles.columnDropTarget : ''} ${isDraggingThisColumn ? styles.columnDragging : ''} ${isDragOverThisColumn ? styles.columnDragOverTarget : ''}`}
-                  onDragOver={e => handleGlobalDragOver(e, etapa.id)}
-                  onDragLeave={e => handleGlobalDragLeave(e, etapa.id)}
-                  onDrop={e => handleGlobalDrop(e, etapa.id)}
-                >
-                  {/* Cabeçalho da Coluna: Arrastável para reordenar */}
-                  <div
-                    className={`${styles.columnHeader} ${styles.columnHeaderDraggable}`}
-                    draggable
-                    onDragStart={e => handleColumnDragStart(e, etapa)}
-                    onDragEnd={handleColumnDragEnd}
-                    title="Arraste pelo cabeçalho para reordenar a etapa horizontalmente"
-                  >
-                    <div className={styles.columnTitleRow}>
-                      <div className={styles.columnTitleGroup}>
-                        <span className={styles.columnTitle}>{etapa.nome}</span>
-                        <button
-                          type="button"
-                          className={styles.btnEditEtapa}
-                          onMouseDown={e => e.stopPropagation()}
-                          onClick={e => abrirModalEditarEtapa(etapa, e)}
-                          title="Editar etapa"
-                        >
-                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                          </svg>
-                        </button>
-                      </div>
-                      <span className={styles.columnCount}>
-                        {tarefasEtapa.length}
-                      </span>
-                    </div>
-
-                    <div className={styles.columnMeta}>
-                      <div className={styles.columnBar}>
-                        <div
-                          className={isFinal ? styles.columnBarFillGreen : styles.columnBarFill}
-                          style={{ width: `${porcentagem}%` }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Cards da Coluna */}
-                  <div className={styles.columnCards}>
-                    {tarefasEtapa.length === 0 ? (
-                      <div className={styles.emptyCard}>
-                        {isOver ? 'Solte aqui para mover' : 'Nenhuma tarefa'}
-                      </div>
-                    ) : (
-                      tarefasEtapa.map(tarefa => {
-                        const isThisDragging = tarefaArrastada?.id === tarefa.id;
-
-                        return (
-                          <div
-                            key={tarefa.id}
-                            draggable
-                            onDragStart={e => handleTaskDragStart(e, tarefa)}
-                            onDragEnd={handleTaskDragEnd}
-                            onClick={() => handleCardClick(tarefa.id)}
-                            className={`${styles.taskCard} ${isThisDragging ? styles.taskCardDragging : ''}`}
-                            title="Clique para ver detalhes ou arraste para outra etapa"
-                          >
-                            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '8px' }}>
-                              <span className={styles.taskTitulo}>{tarefa.titulo}</span>
-                              <button
-                                type="button"
-                                className={styles.btnEditCard}
-                                onClick={e => abrirModalEditarTarefa(tarefa, e)}
-                                title="Editar dados e campos da tarefa"
-                              >
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                                </svg>
-                              </button>
-                            </div>
-
-                            {/* Exibição dos chips de campos customizados */}
-                            {renderizarChipsCampos(tarefa)}
-
-                            <div className={styles.taskMeta}>
-                              <span>#{tarefa.id}</span>
-                              {(tarefa.urgente === 1 || tarefa.urgente === true) && (
-                                <span className={styles.urgentTag}>Urgente</span>
-                              )}
-                              {isFinal && (
-                                <span className={styles.badgeConcluida}>Concluída</span>
-                              )}
-                              {tarefa.prazo ? (
-                                <span className={styles.taskDate}>{formatarData(tarefa.prazo)}</span>
-                              ) : (
-                                <span className={styles.taskDate}>{formatarData(tarefa.criado_em)}</span>
-                              )}
-                            </div>
-                          </div>
-                        );
-                      })
-                    )}
-                  </div>
-                </div>
-              );
+          <KanbanBoard
+            label={`Etapas do processo ${processo.nome}`}
+            columns={colunasKanban}
+            onMove={(tarefa, _de, para) => moverTarefa(tarefa, para)}
+            onOpen={tarefa => handleCardClick(tarefa.id)}
+            getInsertIndex={(tarefa, lista) => {
+              // O backend ordena as tarefas da etapa por data de criação
+              const alvo = new Date(tarefa.criado_em).getTime();
+              const i = lista.findIndex(t => new Date(t.criado_em).getTime() > alvo);
+              return i === -1 ? lista.length : i;
+            }}
+            getColumnProps={coluna => ({
+              onDragOver: e => handleGlobalDragOver(e, coluna.etapa.id),
+              onDragLeave: e => handleGlobalDragLeave(e, coluna.etapa.id),
+              onDrop: e => handleGlobalDrop(e, coluna.etapa.id),
+              className: `${etapaArrastada?.id === coluna.etapa.id ? styles.columnDragging : ''} ${colunaDragOverId === coluna.etapa.id && etapaArrastada?.id !== coluna.etapa.id ? styles.columnDragOverTarget : ''}`,
             })}
-          </div>
+            renderColumnHeader={(coluna, count) => (
+              <div
+                className={`${styles.columnHeader} ${styles.columnHeaderDraggable}`}
+                draggable
+                onDragStart={e => handleColumnDragStart(e, coluna.etapa)}
+                onDragEnd={handleColumnDragEnd}
+                title="Arraste o cabeçalho para reordenar a etapa"
+              >
+                <div className={styles.columnTitleRow}>
+                  <div className={styles.columnTitleGroup}>
+                    <span className={styles.columnTitle}>{coluna.name}</span>
+                    <button
+                      type="button"
+                      className={styles.btnEditEtapa}
+                      onMouseDown={e => e.stopPropagation()}
+                      onClick={e => abrirModalEditarEtapa(coluna.etapa, e)}
+                      title="Editar etapa"
+                      aria-label={`Editar etapa ${coluna.name}`}
+                    >
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                      </svg>
+                    </button>
+                  </div>
+                  <span className={styles.columnCount}>{count}</span>
+                </div>
+              </div>
+            )}
+            renderCard={(tarefa, coluna) => (
+              <div className={styles.taskCardBody}>
+                <div className={styles.taskCardTop}>
+                  <span className={styles.taskTitulo}>{tarefa.titulo}</span>
+                  <button
+                    type="button"
+                    className={styles.btnEditCard}
+                    onClick={e => { e.stopPropagation(); abrirModalEditarTarefa(tarefa, e); }}
+                    title="Editar tarefa"
+                    aria-label={`Editar ${tarefa.titulo}`}
+                  >
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                    </svg>
+                  </button>
+                </div>
+
+                {renderizarChipsCampos(tarefa)}
+
+                <div className={styles.taskMeta}>
+                  <span>#{tarefa.id}</span>
+                  {(tarefa.urgente === 1 || tarefa.urgente === true) && (
+                    <span className={styles.urgentTag}>Urgente</span>
+                  )}
+                  {coluna?.final && <span className={styles.badgeConcluida}>Concluída</span>}
+                  <span className={styles.taskDate}>
+                    {formatarData(tarefa.prazo || tarefa.criado_em)}
+                  </span>
+                </div>
+              </div>
+            )}
+          />
         )}
 
         {/* Modal Nova Tarefa */}

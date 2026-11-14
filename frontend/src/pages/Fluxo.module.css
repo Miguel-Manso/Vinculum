@@ -670,3 +670,9 @@
 .btnEditCard:hover { background: var(--hover); color: var(--text-main); border-color: transparent; }
 .btnEditCard { border-color: transparent; background: transparent; }
 @media (max-width: 768px) { .kanban { min-height: 0; } .column { min-height: 240px; } }
+
+/* ===== KanbanBoard (componente compartilhado) ===== */
+.taskCardBody { display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; }
+.taskCardTop { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--sp-2); }
+[data-kanban-card]:hover .btnEditCard { opacity: 1; }
+.columnHeaderDraggable { margin: 0; padding: 2px 2px 0; }

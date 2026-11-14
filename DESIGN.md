@@ -122,6 +122,7 @@ Raios: controles `md` (10px), cards `lg` (14px), modais `xl` (18px), pills e bad
 - Primitivas em `frontend/src/styles/ui.module.css` (botões, campos, cards, modais, filtros, badges, estados, tabelas). As telas **compõem** essas classes via `composes` em vez de redefinir estilos.
 - Feedback global em `frontend/src/components/feedback/`: `toast.success|error|warning|info()` e `await confirmDialog({...})` substituem `alert`/`confirm` nativos. Ações destrutivas usam `tone: 'danger'`, título explícito e rótulo do verbo ("Excluir tarefa").
 - Modais viram bottom sheet abaixo de 600px; ESC fecha diálogos, seletor de setor e gaveta mobile.
+- Quadro Kanban em `frontend/src/components/KanbanBoard.jsx` (framer-motion): arrastar com mouse (após 5px), toque longo no celular ou teclado (Espaço pega, ← → troca de etapa, Espaço solta, Esc cancela, Enter abre). A página só fornece `columns`, `renderCard`, `renderColumnHeader` e `onMove`; regras de negócio (campos obrigatórios por etapa) ficam na página.
 
 ## Do's and Don'ts
 - Faça: use tokens (`var(--...)`) para cor, espaço, raio e movimento; animações de 120–280ms com `ease-out`; respeite `prefers-reduced-motion`.
