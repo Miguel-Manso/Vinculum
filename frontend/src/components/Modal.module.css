@@ -1,0 +1,56 @@
+/* MODAL RESPONSIVO — diálogo no desktop, gaveta arrastável no celular */
+
+.root {
+  position: fixed; inset: 0; z-index: var(--z-modal);
+  display: flex; align-items: center; justify-content: center;
+  padding: var(--sp-4);
+}
+.rootMobile { align-items: flex-end; padding: 0; }
+
+.overlay {
+  position: absolute; inset: 0;
+  background: var(--surface-overlay);
+  backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+}
+
+.panel {
+  position: relative;
+  width: 100%;
+  display: flex; flex-direction: column;
+  background: var(--surface-container);
+  border: 1px solid var(--border-default);
+  box-shadow: var(--shadow-xl);
+  overflow: hidden;
+  outline: none;
+}
+.panel > form { display: flex; flex-direction: column; min-height: 0; flex: 1 1 auto; }
+
+.dialog {
+  max-height: calc(100dvh - 2 * var(--sp-4));
+  border-radius: var(--r-xl);
+}
+
+.drawer {
+  max-height: 92dvh;
+  border-radius: var(--r-xl) var(--r-xl) 0 0;
+  border-bottom: none;
+  padding-bottom: env(safe-area-inset-bottom);
+  touch-action: pan-y;
+}
+/* evita ver o fundo quando a gaveta "estica" para cima */
+.drawer::after {
+  content: ''; position: absolute; left: 0; right: 0; top: 100%; height: 40vh;
+  background: var(--surface-container);
+}
+
+.handleArea {
+  display: flex; justify-content: center;
+  padding: 10px 0 2px; flex-shrink: 0;
+  cursor: grab; touch-action: none;
+}
+.handleArea:active { cursor: grabbing; }
+.handle { width: 36px; height: 4px; border-radius: var(--r-full); background: var(--surface-bright); }
+
+/* No celular o cabeçalho também serve de alça */
+.drawer [class*="modalHeader"],
+.drawer [class*="header"] { touch-action: none; }

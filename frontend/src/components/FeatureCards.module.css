@@ -1,0 +1,51 @@
+.grid {
+  list-style: none;
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--sp-3);
+  width: 100%;
+}
+
+.card {
+  display: flex; flex-direction: column; align-items: center; text-align: center;
+  padding: var(--sp-2) var(--sp-5) var(--sp-5);
+  background: var(--surface-container);
+  border-radius: var(--r-lg);
+}
+
+/* Enfeite: grade de 24px que some nas bordas, com o ícone num quadrado no centro */
+.decorator {
+  position: relative; width: 144px; height: 144px; flex-shrink: 0;
+  mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 70%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 70%, transparent 100%);
+}
+.decoratorGrid {
+  position: absolute; inset: 0; opacity: 0.1;
+  background-image:
+    linear-gradient(to right, #fff 1px, transparent 1px),
+    linear-gradient(to bottom, #fff 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+.decoratorBox {
+  position: absolute; inset: 0; margin: auto;
+  width: 48px; height: 48px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--surface-canvas);
+  border-top: 1px solid var(--border-prominent);
+  border-left: 1px solid var(--border-prominent);
+  color: var(--text-main);
+}
+.icon { width: 22px; height: 22px; }
+
+.title { margin-top: var(--sp-1); font-size: var(--fs-sm); font-weight: 600; color: var(--text-main); }
+.text { margin-top: 6px; font-size: var(--fs-sm); line-height: var(--lh-base); color: var(--text-muted); max-width: 32ch; }
+
+/* Versão compacta (login) */
+.compact .card { padding: 0 var(--sp-4) var(--sp-4); }
+.compact .decorator { width: 112px; height: 112px; }
+.compact .decoratorBox { width: 40px; height: 40px; }
+.compact .icon { width: 18px; height: 18px; }
+.compact .text { font-size: var(--fs-xs); }
+
+@media (max-width: 760px) {
+  .grid { grid-template-columns: minmax(0, 1fr); max-width: 380px; margin-inline: auto; }
+}

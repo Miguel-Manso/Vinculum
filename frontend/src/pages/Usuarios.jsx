@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
+import Modal from '../components/Modal';
 import SidebarTrigger from '../components/SidebarTrigger';
 import { useAuth } from '../context/AuthContext';
 import { useSetor } from '../context/SetorContext';
@@ -399,9 +400,9 @@ export default function Usuarios() {
         </section>
 
         {/* Modal de Criação / Edição de Usuário */}
-        {modalAberto && (
-          <div className={styles.modalOverlay} onClick={fecharModal}>
-            <div className={styles.modalCard} onClick={e => e.stopPropagation()}>
+        <Modal open={Boolean(modalAberto)} onClose={fecharModal} maxWidth={500}>
+          {modalAberto && (
+            <>
               <div className={styles.modalHeader}>
                 <h2 className={styles.modalTitle}>
                   {usuarioEditando ? 'Editar Colaborador' : 'Novo Colaborador'}
@@ -513,9 +514,9 @@ export default function Usuarios() {
                   </button>
                 </div>
               </form>
-            </div>
-          </div>
-        )}
+            </>
+          )}
+        </Modal>
       </main>
     </div>
   );

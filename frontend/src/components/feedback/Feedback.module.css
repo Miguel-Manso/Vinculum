@@ -89,3 +89,8 @@
 
 @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
 @keyframes pop { from { opacity: 0; transform: translateY(8px) scale(0.97); } to { opacity: 1; transform: none; } }
+
+/* Shell do diálogo vem do componente Modal */
+.confirmCard { max-width: none; border: none; border-radius: 0; box-shadow: none; animation: none; background: transparent; }
+.btnDanger { box-shadow: none; }
+.confirmIcon { background: var(--surface-highest); color: var(--text-muted); }

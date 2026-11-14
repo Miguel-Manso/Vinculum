@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
+import Modal from '../components/Modal';
 import SidebarTrigger from '../components/SidebarTrigger';
 import ProcessIcon from '../components/ProcessIcon';
 import KanbanBoard from '../components/KanbanBoard';
@@ -813,9 +814,9 @@ export default function Fluxo() {
         )}
 
         {/* Modal Nova Tarefa */}
-        {modalTarefaAberto && (
-          <div className={styles.modalOverlay} onClick={() => setModalTarefaAberto(false)}>
-            <div className={styles.modalCard} onClick={e => e.stopPropagation()} style={{ maxWidth: '520px' }}>
+        <Modal open={Boolean(modalTarefaAberto)} onClose={() => setModalTarefaAberto(false)} maxWidth={520}>
+          {modalTarefaAberto && (
+            <>
               <div className={styles.modalHeader}>
                 <h2 className={styles.modalTitle}>Nova Tarefa</h2>
               </div>
@@ -916,7 +917,7 @@ export default function Fluxo() {
                       </div>
 
                       {campos.map(campo => {
-                        const isObrigCriacao = campo.obrigatorio && !campo.etapa_obrigatoria_id;
+                        const isObrigCriacao = !!campo.obrigatorio && !campo.etapa_obrigatoria_id;
                         const etapaExigidaObj = campo.etapa_obrigatoria_id
                           ? etapas.find(et => Number(et.id) === Number(campo.etapa_obrigatoria_id))
                           : null;
@@ -1037,14 +1038,14 @@ export default function Fluxo() {
                   </button>
                 </div>
               </form>
-            </div>
-          </div>
-        )}
+            </>
+          )}
+        </Modal>
 
         {/* Modal Editar Tarefa Rápido */}
-        {modalEditarTarefaAberto && tarefaEmEdicao && (
-          <div className={styles.modalOverlay} onClick={() => setModalEditarTarefaAberto(false)}>
-            <div className={styles.modalCard} onClick={e => e.stopPropagation()} style={{ maxWidth: '520px' }}>
+        <Modal open={Boolean(modalEditarTarefaAberto && tarefaEmEdicao)} onClose={() => setModalEditarTarefaAberto(false)} maxWidth={520}>
+          {modalEditarTarefaAberto && tarefaEmEdicao && (
+            <>
               <div className={styles.modalHeader}>
                 <h2 className={styles.modalTitle}>Editar Tarefa #{tarefaEmEdicao.id}</h2>
               </div>
@@ -1191,14 +1192,14 @@ export default function Fluxo() {
                   </button>
                 </div>
               </form>
-            </div>
-          </div>
-        )}
+            </>
+          )}
+        </Modal>
 
         {/* Modal de Exigência da Etapa ao Mover */}
-        {modalExigenciaEtapaAberto && etapaDestinoPendente && (
-          <div className={styles.modalOverlay} onClick={() => setModalExigenciaEtapaAberto(false)}>
-            <div className={styles.modalCard} onClick={e => e.stopPropagation()} style={{ maxWidth: '520px' }}>
+        <Modal open={Boolean(modalExigenciaEtapaAberto && etapaDestinoPendente)} onClose={() => setModalExigenciaEtapaAberto(false)} maxWidth={520}>
+          {modalExigenciaEtapaAberto && etapaDestinoPendente && (
+            <>
               <div className={styles.modalHeader}>
                 <h2 className={styles.modalTitle}>Campos Obrigatórios para Avançar</h2>
               </div>
@@ -1304,14 +1305,14 @@ export default function Fluxo() {
                   </button>
                 </div>
               </form>
-            </div>
-          </div>
-        )}
+            </>
+          )}
+        </Modal>
 
         {/* Modal Nova Etapa */}
-        {modalEtapaAberto && (
-          <div className={styles.modalOverlay} onClick={() => setModalEtapaAberto(false)}>
-            <div className={styles.modalCard} onClick={e => e.stopPropagation()}>
+        <Modal open={Boolean(modalEtapaAberto)} onClose={() => setModalEtapaAberto(false)} maxWidth={500}>
+          {modalEtapaAberto && (
+            <>
               <div className={styles.modalHeader}>
                 <h2 className={styles.modalTitle}>Nova Etapa</h2>
               </div>
@@ -1344,14 +1345,14 @@ export default function Fluxo() {
                   </button>
                 </div>
               </form>
-            </div>
-          </div>
-        )}
+            </>
+          )}
+        </Modal>
 
         {/* Modal Editar Etapa */}
-        {modalEditarEtapaAberto && etapaEmEdicao && (
-          <div className={styles.modalOverlay} onClick={() => setModalEditarEtapaAberto(false)}>
-            <div className={styles.modalCard} onClick={e => e.stopPropagation()}>
+        <Modal open={Boolean(modalEditarEtapaAberto && etapaEmEdicao)} onClose={() => setModalEditarEtapaAberto(false)} maxWidth={500}>
+          {modalEditarEtapaAberto && etapaEmEdicao && (
+            <>
               <div className={styles.modalHeader}>
                 <h2 className={styles.modalTitle}>Editar Etapa</h2>
               </div>
@@ -1399,14 +1400,14 @@ export default function Fluxo() {
                   </div>
                 </div>
               </form>
-            </div>
-          </div>
-        )}
+            </>
+          )}
+        </Modal>
 
         {/* Modal de Configuração de Campos Personalizados do Processo */}
-        {modalCamposAberto && (
-          <div className={styles.modalOverlay} onClick={() => setModalCamposAberto(false)}>
-            <div className={styles.modalCard} onClick={e => e.stopPropagation()} style={{ maxWidth: '560px' }}>
+        <Modal open={Boolean(modalCamposAberto)} onClose={() => setModalCamposAberto(false)} maxWidth={560}>
+          {modalCamposAberto && (
+            <>
               <div className={styles.modalHeader}>
                 <h2 className={styles.modalTitle}>Campos Personalizados da Tarefa</h2>
               </div>
@@ -1444,11 +1445,11 @@ export default function Fluxo() {
                                 {campo.tipo === 'checkbox' && 'Sim/Não'}
                               </span>
 
-                              {campo.obrigatorio && !campo.etapa_obrigatoria_id && (
+                              {!!campo.obrigatorio && !campo.etapa_obrigatoria_id && (
                                 <span className={styles.campoObrigatorioBadge}>Obrigatório na Criação</span>
                               )}
 
-                              {campo.obrigatorio && etapaExigidaObj && (
+                              {!!campo.obrigatorio && etapaExigidaObj && (
                                 <span className={styles.campoEtapaBadge}>
                                   Obrigatório em: {etapaExigidaObj.nome}
                                 </span>
@@ -1565,9 +1566,9 @@ export default function Fluxo() {
                   Concluir
                 </button>
               </div>
-            </div>
-          </div>
-        )}
+            </>
+          )}
+        </Modal>
       </main>
     </div>
   );

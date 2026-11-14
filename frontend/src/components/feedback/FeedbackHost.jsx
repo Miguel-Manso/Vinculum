@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { subscribeFeedback } from './feedback';
 import styles from './Feedback.module.css';
+import Modal from '../Modal';
 
 const ICONS = {
   success: (
@@ -80,21 +81,6 @@ export default function FeedbackHost() {
     });
   }, []);
 
-  useEffect(() => {
-    if (!confirmAtual) return;
-    const foco = confirmAtual.tone === 'danger' ? btnCancelRef.current : btnConfirmRef.current;
-    foco?.focus();
-    function onKey(e) {
-      if (e.key === 'Escape') {
-        e.stopImmediatePropagation();
-        e.preventDefault();
-        responder(false);
-      }
-    }
-    window.addEventListener('keydown', onKey, true);
-    return () => window.removeEventListener('keydown', onKey, true);
-  }, [confirmAtual, responder]);
-
   const isDanger = confirmAtual?.tone === 'danger';
 
   return (
@@ -105,19 +91,19 @@ export default function FeedbackHost() {
         ))}
       </div>
 
-      {confirmAtual && (
-        <div className={styles.confirmOverlay} onMouseDown={() => responder(false)}>
-          <div
-            className={styles.confirmCard}
-            role="alertdialog"
-            aria-modal="true"
-            aria-labelledby="vn-confirm-title"
-            onMouseDown={e => e.stopPropagation()}
-          >
+      <Modal
+        open={Boolean(confirmAtual)}
+        onClose={() => responder(false)}
+        maxWidth={420}
+        role="alertdialog"
+        initialFocusRef={isDanger ? btnCancelRef : btnConfirmRef}
+      >
+        {confirmAtual && (
+          <div className={styles.confirmCard}>
             <div className={`${styles.confirmIcon} ${isDanger ? styles.confirmIconDanger : ''}`}>
               {isDanger ? ICONS.warning : ICONS.info}
             </div>
-            <h2 id="vn-confirm-title" className={styles.confirmTitle}>
+            <h2 className={styles.confirmTitle}>
               {confirmAtual.title || 'Confirmar ação'}
             </h2>
             {confirmAtual.message && <p className={styles.confirmMessage}>{confirmAtual.message}</p>}
@@ -135,8 +121,8 @@ export default function FeedbackHost() {
               </button>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </Modal>
     </>
   );
 }

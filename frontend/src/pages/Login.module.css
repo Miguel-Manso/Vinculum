@@ -144,3 +144,25 @@
 .input:focus { border-color: var(--primary-border); }
 .btn { height: 40px; font-size: var(--fs-sm); }
 .erro { border: none; }
+
+/* ===== Aurora + recursos ===== */
+.card {
+  z-index: 1;
+  background: rgba(22, 22, 24, 0.72);
+  border-color: var(--border-default);
+  backdrop-filter: blur(16px) saturate(120%); -webkit-backdrop-filter: blur(16px) saturate(120%);
+  box-shadow: var(--shadow-xl);
+}
+.features { position: relative; z-index: 1; width: 100%; max-width: 860px; }
+.featureGrid > li {
+  background: rgba(22, 22, 24, 0.55);
+  border: 1px solid var(--border-subtle);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+}
+.featureGrid [class*="decoratorBox"] { background: var(--surface-container); }
+.footer { z-index: 1; }
+
+/* Login rápido em telas pequenas ou baixas: os recursos saem de cena */
+@media (max-width: 720px), (max-height: 820px) {
+  .features { display: none; }
+}

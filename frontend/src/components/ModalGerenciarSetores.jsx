@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useSetor } from '../context/SetorContext';
 import api from '../services/api';
 import styles from './ModalGerenciarSetores.module.css';
+import Modal from './Modal';
 import { toast, confirmDialog } from './feedback/feedback';
 
 const PALETA_CORES = [
@@ -27,7 +28,6 @@ export default function ModalGerenciarSetores({ isOpen, onClose }) {
   const [erro, setErro] = useState('');
   const [sucesso, setSucesso] = useState('');
 
-  if (!isOpen) return null;
 
   function iniciarCriacao() {
     setEditando('novo');
@@ -116,8 +116,7 @@ export default function ModalGerenciarSetores({ isOpen, onClose }) {
   }
 
   return (
-    <div className={styles.overlay} onClick={onClose}>
-      <div className={styles.modal} onClick={e => e.stopPropagation()}>
+    <Modal open={isOpen} onClose={onClose} maxWidth={620}>
         <div className={styles.header}>
           <div className={styles.headerTitleRow}>
             <div className={styles.headerIconWrap}>
@@ -313,7 +312,6 @@ export default function ModalGerenciarSetores({ isOpen, onClose }) {
             </div>
           )}
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 }

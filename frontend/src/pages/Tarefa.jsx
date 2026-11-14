@@ -313,7 +313,7 @@ export default function Tarefa() {
                         return (
                           <div key={c.id} className={styles.field}>
                             <label className={styles.fieldLabel}>
-                              {c.nome} {c.obrigatorio && !c.etapa_obrigatoria_id && <span style={{ color: '#ef4444' }}>*</span>}
+                              {c.nome} {!!c.obrigatorio && !c.etapa_obrigatoria_id && <span style={{ color: '#ef4444' }}>*</span>}
                               {etapaExigidaObj && (
                                 <span style={{ fontSize: '11px', color: '#fbbf24', marginLeft: '6px' }}>
                                   (Exigido na etapa: {etapaExigidaObj.nome})
@@ -340,7 +340,7 @@ export default function Tarefa() {
                                 onChange={e => setValoresCampos(prev => ({ ...prev, [c.id]: e.target.checked }))}
                               />
                               <span>
-                                {c.nome} {c.obrigatorio && !c.etapa_obrigatoria_id && <span style={{ color: '#ef4444' }}>*</span>}
+                                {c.nome} {!!c.obrigatorio && !c.etapa_obrigatoria_id && <span style={{ color: '#ef4444' }}>*</span>}
                                 {etapaExigidaObj && (
                                   <span style={{ fontSize: '11px', color: '#fbbf24', marginLeft: '6px' }}>
                                     (Exigido na etapa: {etapaExigidaObj.nome})
@@ -361,7 +361,7 @@ export default function Tarefa() {
                         return (
                           <div key={c.id} className={styles.field}>
                             <label className={styles.fieldLabel}>
-                              {c.nome} {c.obrigatorio && !c.etapa_obrigatoria_id && <span style={{ color: '#ef4444' }}>*</span>}
+                              {c.nome} {!!c.obrigatorio && !c.etapa_obrigatoria_id && <span style={{ color: '#ef4444' }}>*</span>}
                               {etapaExigidaObj && (
                                 <span style={{ fontSize: '11px', color: '#fbbf24', marginLeft: '6px' }}>
                                   (Exigido na etapa: {etapaExigidaObj.nome})
@@ -385,7 +385,7 @@ export default function Tarefa() {
                       return (
                         <div key={c.id} className={styles.field}>
                           <label className={styles.fieldLabel}>
-                            {c.nome} {c.obrigatorio && !c.etapa_obrigatoria_id && <span style={{ color: '#ef4444' }}>*</span>}
+                            {c.nome} {!!c.obrigatorio && !c.etapa_obrigatoria_id && <span style={{ color: '#ef4444' }}>*</span>}
                             {etapaExigidaObj && (
                               <span style={{ fontSize: '11px', color: '#fbbf24', marginLeft: '6px' }}>
                                 (Exigido na etapa: {etapaExigidaObj.nome})

@@ -1,0 +1,45 @@
+.root {
+  position: absolute; inset: 0;
+  overflow: hidden; pointer-events: none;
+  background: var(--surface-canvas);
+  z-index: 0;
+}
+
+.pulse {
+  position: absolute; inset: 0;
+  opacity: 0.8;
+  animation: auroraPulse 10s ease-in-out infinite;
+}
+
+.blobs { position: absolute; inset: 0; mix-blend-mode: screen; }
+
+.blob {
+  position: absolute; border-radius: 9999px;
+  filter: blur(72px);
+  will-change: transform;
+}
+/* ciano da marca, no canto superior esquerdo */
+.blobA { top: -25%; left: -15%; width: 55%; height: 55%; background: #45c4d6; opacity: 0.16; }
+/* teal, no canto inferior direito */
+.blobB { bottom: -25%; right: -15%; width: 55%; height: 55%; background: #2f9e8f; opacity: 0.14; }
+/* azul petróleo, no meio */
+.blobC { top: 30%; left: 30%; width: 38%; height: 38%; background: #1e4f6e; opacity: 0.22; }
+
+.star {
+  position: absolute; width: 2px; height: 2px;
+  border-radius: 9999px; background: #e6f6f8;
+}
+
+.vignette {
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse 70% 60% at 50% 45%, transparent 40%, rgba(10, 10, 11, 0.65) 100%);
+}
+
+@keyframes auroraPulse {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 0.85; transform: scale(1.05); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pulse { animation: none; }
+}

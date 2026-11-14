@@ -1,6 +1,8 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
+import Modal from '../components/Modal';
+import FeatureCards from '../components/FeatureCards';
 import SidebarTrigger from '../components/SidebarTrigger';
 import ProcessIcon, { OPCOES_ICONES, getProcessIconKey } from '../components/ProcessIcon';
 import { useSetor } from '../context/SetorContext';
@@ -260,13 +262,16 @@ export default function Processos() {
         {loading ? (
           <div className={styles.loadingBox}>Carregando processos...</div>
         ) : processos.length === 0 ? (
-          <div className={styles.emptyStateBox}>
-            <p className={styles.emptyStateTitle}>Nenhum processo cadastrado.</p>
-            <p className={styles.emptyStateDesc}>Crie fluxos de trabalho visuais para padronizar as operações da sua equipe.</p>
-            <button className={styles.btnPrimary} onClick={abrirModalCriar}>
-              Criar primeiro processo
-            </button>
-          </div>
+          <section className={styles.onboarding}>
+            <div className={styles.onboardingHeader}>
+              <h2 className={styles.onboardingTitle}>Comece pelo primeiro processo</h2>
+              <p className={styles.emptyStateDesc}>Um processo é o caminho que um trabalho percorre na sua equipe, dividido em etapas.</p>
+              <button className={styles.btnPrimary} onClick={abrirModalCriar}>
+                Criar primeiro processo
+              </button>
+            </div>
+            <FeatureCards />
+          </section>
         ) : processosFiltrados.length === 0 ? (
           <div className={styles.emptyStateBox}>
             <p className={styles.emptyStateTitle}>Nenhum processo corresponde aos filtros selecionados.</p>
@@ -373,9 +378,9 @@ export default function Processos() {
         )}
 
         {/* Modal de Criação / Edição de Processo */}
-        {modalAberto && (
-          <div className={styles.modalOverlay} onClick={fecharModal}>
-            <div className={styles.modalCard} onClick={e => e.stopPropagation()}>
+        <Modal open={Boolean(modalAberto)} onClose={fecharModal} maxWidth={500}>
+          {modalAberto && (
+            <>
               <div className={styles.modalHeader}>
                 <h2 className={styles.modalTitle}>
                   {editandoProcesso ? 'Editar Processo' : 'Novo Processo'}
@@ -451,9 +456,9 @@ export default function Processos() {
                   </button>
                 </div>
               </form>
-            </div>
-          </div>
-        )}
+            </>
+          )}
+        </Modal>
       </main>
     </div>
   );
