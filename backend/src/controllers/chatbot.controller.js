@@ -1,5 +1,14 @@
 const { getPool, sql } = require('../config/db');
+const { gerarResposta } = require('../services/ia.service');
 const mssql = sql || require('mssql');
+
+// ============================================================================
+// Vinculum IA
+// - Com ANTHROPIC_API_KEY ou GEMINI_API_KEY no backend/.env: responde com um
+//   modelo de linguagem, usando os dados reais do usuário como contexto.
+// - Sem chave (ou se o provedor falhar): "modo básico", o motor de regras
+//   abaixo (seções 4–6), que entende só perguntas previstas.
+// ============================================================================
 
 // ============================================================================
 // 0. UTILITÁRIOS DE NORMALIZAÇÃO E SANITIZAÇÃO
@@ -30,7 +39,7 @@ function sanitizarRespostaMarkdown(texto) {
 const CONHECIMENTO_SISTEMA = {
   visaoGeral: `O **Vinculum** é uma plataforma visual de gestão de processos projetada para Pequenas e Médias Empresas (PMEs). Substitui o descontrole de planilhas avulsas e mensagens soltas de WhatsApp por fluxos de trabalho transparentes, auditáveis e com responsabilidade clara.`,
   dashboard: `O **Dashboard** é o painel de controle executivo do Vinculum. Apresenta indicadores em tempo real: processos ativos, tarefas pendentes, demandas concluídas, taxa de conclusão e alertas de tarefas atrasadas.`,
-  processos: `A aba **Processos** é a central onde os fluxos departamentais são criados e gerenciados. Por padrão, um novo processo é inicializado com 3 etapas essenciais: *A Fazer*, *Em Andamento* e *Concluído*.`,
+  processos: `A aba **Processos** é a central onde os fluxos departamentais são criados e gerenciados. Por padrão, um novo processo já vem com as etapas *Em Andamento* e *Finalização*.`,
   fluxo: `A tela de **Fluxo** é o quadro Kanban interativo do Vinculum com Drag & Drop de cartões, reordenação de colunas, criação de etapas e configuração de campos personalizados obrigatórios.`,
   tarefa: `O modal de **Detalhes da Tarefa** reúne edição em tempo real de título, responsável, prazo, campos personalizados e linha do tempo de auditoria.`,
   tabela: `A tela de **Tabela** fornece uma visão consolidada em planilha com busca global, filtros por Processo, Etapa, Situação e Prazo, ordenação por colunas e exportação CSV.`,
@@ -218,142 +227,340 @@ const BASE_NICHOS = {
 // 3. CONSULTA COMPLETA DE DADOS DO BANCO (SETORES, PROCESSOS, KPIS, RESPONSÁVEIS)
 // ============================================================================
 
+const FUSO_HORARIO = process.env.APP_TZ || 'America/Sao_Paulo';
+const DIA_MS = 86400000;
+
+/** Mesma regra das telas (Fluxo/Kanban): etapa final = "Finaliz…", "Conclu…", "Entregue", "Pronto". */
+function isEtapaFinal(nome) {
+  const n = normalizarTexto(nome);
+  return n.startsWith('finaliz') || n.startsWith('conclu') || n === 'entregue' || n === 'pronto' || n === 'done';
+}
+
+/** 'YYYY-MM-DD' de uma coluna de data (Date do mssql/pg ou string), ou null. */
+function dataISO(valor) {
+  if (!valor) return null;
+  if (valor instanceof Date) return isNaN(valor.getTime()) ? null : valor.toISOString().slice(0, 10);
+  const s = String(valor);
+  return /^\d{4}-\d{2}-\d{2}/.test(s) ? s.slice(0, 10) : null;
+}
+
+/** Hoje no fuso da empresa, em 'YYYY-MM-DD'. */
+function hojeISO() {
+  return new Intl.DateTimeFormat('sv-SE', { timeZone: FUSO_HORARIO }).format(new Date());
+}
+
+function diasEntre(isoA, isoB) {
+  return Math.round((Date.parse(`${isoB}T00:00:00Z`) - Date.parse(`${isoA}T00:00:00Z`)) / DIA_MS);
+}
+
+function formatarDataBR(iso) {
+  if (!iso) return '—';
+  const [a, m, d] = iso.split('-');
+  return `${d}/${m}/${a}`;
+}
+
+const DADOS_VAZIOS = () => ({
+  disponivel: false,
+  setores: [],
+  processos: [],
+  etapas: [],
+  tarefas: [],
+  responsaveis: [],
+  metricas: { totalSetores: 0, totalProcessos: 0, totalTarefas: 0, totalConcluidas: 0, totalPendentes: 0, totalAtrasadas: 0, taxaConclusao: 0, venceHoje: 0, proximos7: 0, urgentesAbertas: 0, semResponsavel: 0 },
+  textoResumo: '',
+});
+
+/**
+ * Lê setores, processos, etapas e tarefas visíveis para o usuário e calcula
+ * as métricas em JavaScript (funciona igual no SQL Server e no PostgreSQL).
+ * Sem usuário autenticado não lê nada: o chat não expõe dados sem login.
+ */
 async function obterDadosCompletosBanco(usuario) {
+  if (!usuario?.id) return DADOS_VAZIOS();
+
   try {
     const pool = await getPool();
-    const isAdmin = usuario?.perfil === 'admin' || usuario?.email === 'admin@vinculum.com';
-    const usuarioId = usuario?.id ? parseInt(usuario.id, 10) : null;
+    const isAdmin = usuario.perfil === 'admin' || usuario.email === 'admin@vinculum.com';
+    const usuarioId = parseInt(usuario.id, 10);
+    const filtroSetor = isAdmin ? '' : 'IN (SELECT us.setor_id FROM UsuarioSetores us WHERE us.usuario_id = @usuario_id)';
 
-    // 1. Setores
-    const reqSetores = pool.request();
-    let setoresQuery = `
-      SELECT s.id, s.nome,
-             (SELECT COUNT(*) FROM Processos p WHERE p.setor_id = s.id) AS total_processos
-      FROM Setores s
-    `;
-    if (usuario && !isAdmin && usuarioId) {
-      setoresQuery += ` WHERE s.id IN (SELECT us.setor_id FROM UsuarioSetores us WHERE us.usuario_id = @usuario_id)`;
-      reqSetores.input('usuario_id', mssql.Int, usuarioId);
-    }
-    setoresQuery += ` ORDER BY s.nome`;
+    const consulta = (texto) => {
+      const req = pool.request();
+      if (!isAdmin) req.input('usuario_id', mssql.Int, usuarioId);
+      return req.query(texto).then(r => r.recordset || []);
+    };
 
-    // 2. Processos e métricas de tarefas
-    const reqProc = pool.request();
-    let procQuery = `
-      SELECT p.id, p.nome, p.descricao, s.nome AS setor_nome,
-             (SELECT COUNT(*) FROM Etapas e WHERE e.processo_id = p.id) AS total_etapas,
-             (SELECT COUNT(*) FROM Tarefas t JOIN Etapas e ON t.etapa_id = e.id WHERE e.processo_id = p.id) AS total_tarefas,
-             (SELECT COUNT(*) FROM Tarefas t JOIN Etapas e ON t.etapa_id = e.id 
-              WHERE e.processo_id = p.id 
-                AND LOWER(e.nome) IN ('finalizado', 'finalizada', 'concluído', 'concluida', 'concluido', 'entregue', 'pronto')) AS tarefas_concluidas,
-             (SELECT COUNT(*) FROM Tarefas t JOIN Etapas e ON t.etapa_id = e.id 
-              WHERE e.processo_id = p.id 
-                AND LOWER(e.nome) NOT IN ('finalizado', 'finalizada', 'concluído', 'concluida', 'concluido', 'entregue', 'pronto')) AS tarefas_pendentes,
-             (SELECT COUNT(*) FROM Tarefas t JOIN Etapas e ON t.etapa_id = e.id 
-              WHERE e.processo_id = p.id 
-                AND LOWER(e.nome) NOT IN ('finalizado', 'finalizada', 'concluído', 'concluida', 'concluido', 'entregue', 'pronto')
-                AND t.prazo IS NOT NULL 
-                AND t.prazo < CAST(GETDATE() AS DATE)) AS tarefas_atrasadas
-      FROM Processos p
-      LEFT JOIN Setores s ON p.setor_id = s.id
-    `;
-    if (usuario && !isAdmin && usuarioId) {
-      procQuery += ` WHERE p.setor_id IN (SELECT us.setor_id FROM UsuarioSetores us WHERE us.usuario_id = @usuario_id)`;
-      reqProc.input('usuario_id', mssql.Int, usuarioId);
-    }
-    procQuery += ` ORDER BY s.nome, p.nome`;
-
-    // 3. Etapas
-    const reqEtapas = pool.request();
-    let etapaQuery = `
-      SELECT e.id, e.nome, e.ordem, e.processo_id, p.nome AS processo_nome,
-             (SELECT COUNT(*) FROM Tarefas t WHERE t.etapa_id = e.id) AS total_tarefas
-      FROM Etapas e
-      JOIN Processos p ON e.processo_id = p.id
-    `;
-    if (usuario && !isAdmin && usuarioId) {
-      etapaQuery += ` WHERE p.setor_id IN (SELECT us.setor_id FROM UsuarioSetores us WHERE us.usuario_id = @usuario_id)`;
-      reqEtapas.input('usuario_id', mssql.Int, usuarioId);
-    }
-    etapaQuery += ` ORDER BY p.nome, e.ordem`;
-
-    // 4. Ranking de Responsáveis (Usuários e suas tarefas pendentes/atrasadas)
-    const reqResponsaveis = pool.request();
-    let responsaveisQuery = `
-      SELECT u.id, u.nome, u.email,
-             COUNT(t.id) AS total_atribuidas,
-             SUM(CASE WHEN LOWER(e.nome) NOT IN ('finalizado', 'finalizada', 'concluído', 'concluida', 'concluido', 'entregue', 'pronto') THEN 1 ELSE 0 END) AS pendentes,
-             SUM(CASE WHEN LOWER(e.nome) NOT IN ('finalizado', 'finalizada', 'concluído', 'concluida', 'concluido', 'entregue', 'pronto') 
-                       AND t.prazo IS NOT NULL AND t.prazo < CAST(GETDATE() AS DATE) THEN 1 ELSE 0 END) AS atrasadas
-      FROM Usuarios u
-      LEFT JOIN Tarefas t ON t.responsavel_id = u.id
-      LEFT JOIN Etapas e ON t.etapa_id = e.id
-    `;
-    if (usuario && !isAdmin && usuarioId) {
-      responsaveisQuery += ` WHERE u.id IN (SELECT us.usuario_id FROM UsuarioSetores us WHERE us.setor_id IN (SELECT setor_id FROM UsuarioSetores WHERE usuario_id = @usuario_id))`;
-      reqResponsaveis.input('usuario_id', mssql.Int, usuarioId);
-    }
-    responsaveisQuery += ` GROUP BY u.id, u.nome, u.email ORDER BY atrasadas DESC, pendentes DESC`;
-
-    // Executa as 4 queries em paralelo
-    const [resSetores, resProcessos, resEtapas, resResponsaveis] = await Promise.all([
-      reqSetores.query(setoresQuery).catch(() => ({ recordset: [] })),
-      reqProc.query(procQuery).catch(() => ({ recordset: [] })),
-      reqEtapas.query(etapaQuery).catch(() => ({ recordset: [] })),
-      reqResponsaveis.query(responsaveisQuery).catch(() => ({ recordset: [] }))
+    const [setores, processosRaw, etapasRaw, tarefasRaw] = await Promise.all([
+      consulta(`SELECT s.id, s.nome FROM Setores s ${filtroSetor ? `WHERE s.id ${filtroSetor}` : ''}`),
+      consulta(`SELECT p.id, p.nome, p.descricao, p.setor_id, s.nome AS setor_nome
+                FROM Processos p LEFT JOIN Setores s ON p.setor_id = s.id
+                ${filtroSetor ? `WHERE p.setor_id ${filtroSetor}` : ''}`),
+      consulta(`SELECT e.id, e.nome, e.ordem, e.processo_id
+                FROM Etapas e JOIN Processos p ON e.processo_id = p.id
+                ${filtroSetor ? `WHERE p.setor_id ${filtroSetor}` : ''}`),
+      consulta(`SELECT t.id, t.titulo, t.prazo, t.urgente, t.criado_em, t.etapa_id, t.responsavel_id,
+                       u.nome AS responsavel_nome
+                FROM Tarefas t
+                JOIN Etapas e ON t.etapa_id = e.id
+                JOIN Processos p ON e.processo_id = p.id
+                LEFT JOIN Usuarios u ON t.responsavel_id = u.id
+                ${filtroSetor ? `WHERE p.setor_id ${filtroSetor}` : ''}`),
     ]);
 
-    const setores = resSetores.recordset || [];
-    const processos = resProcessos.recordset || [];
-    const etapas = resEtapas.recordset || [];
-    const responsaveis = resResponsaveis.recordset || [];
+    const hoje = hojeISO();
+    const etapaPorId = new Map(etapasRaw.map(e => [Number(e.id), e]));
+    const processoPorId = new Map(processosRaw.map(p => [Number(p.id), p]));
 
-    const totalSetores = setores.length;
-    const totalProcessos = processos.length;
-    const totalTarefas = processos.reduce((acc, p) => acc + (Number(p.total_tarefas) || 0), 0);
-    const totalConcluidas = processos.reduce((acc, p) => acc + (Number(p.tarefas_concluidas) || 0), 0);
-    const totalPendentes = processos.reduce((acc, p) => acc + (Number(p.tarefas_pendentes) || 0), 0);
-    const totalAtrasadas = processos.reduce((acc, p) => acc + (Number(p.tarefas_atrasadas) || 0), 0);
-    const taxaConclusao = totalTarefas > 0 ? Math.round((totalConcluidas / totalTarefas) * 100) : 0;
+    // Tarefas enriquecidas
+    const tarefas = tarefasRaw.map(t => {
+      const etapa = etapaPorId.get(Number(t.etapa_id));
+      const processo = etapa ? processoPorId.get(Number(etapa.processo_id)) : null;
+      const prazo = dataISO(t.prazo);
+      const concluida = etapa ? isEtapaFinal(etapa.nome) : false;
+      const dias = prazo ? diasEntre(hoje, prazo) : null; // negativo = atrasada
+      return {
+        id: t.id,
+        titulo: t.titulo,
+        prazo,
+        criado_em: dataISO(t.criado_em),
+        urgente: t.urgente === 1 || t.urgente === true,
+        responsavel_nome: t.responsavel_nome || null,
+        etapa_nome: etapa?.nome || '—',
+        etapa_id: Number(t.etapa_id),
+        processo_id: processo ? Number(processo.id) : null,
+        processo_nome: processo?.nome || '—',
+        setor_nome: processo?.setor_nome || null,
+        concluida,
+        dias,
+        atrasada: !concluida && dias !== null && dias < 0,
+        venceHoje: !concluida && dias === 0,
+        proximos7: !concluida && dias !== null && dias > 0 && dias <= 7,
+      };
+    });
+    const abertas = tarefas.filter(t => !t.concluida);
 
-    let textoResumo = `INDICADORES GERAIS DO SISTEMA:\n`;
-    textoResumo += `• Setores Cadastrados: ${totalSetores} | Processos Ativos: ${totalProcessos} | Total de Tarefas: ${totalTarefas}\n`;
-    textoResumo += `• Concluídas: ${totalConcluidas} (${taxaConclusao}% de taxa de conclusão) | Pendentes: ${totalPendentes} | Atrasadas: ${totalAtrasadas}\n`;
+    // Etapas com contagem (ordenadas)
+    const etapas = etapasRaw
+      .map(e => ({
+        id: Number(e.id),
+        nome: e.nome,
+        ordem: Number(e.ordem) || 0,
+        processo_id: Number(e.processo_id),
+        final: isEtapaFinal(e.nome),
+        total_tarefas: tarefas.filter(t => t.etapa_id === Number(e.id)).length,
+      }))
+      .sort((a, b) => a.processo_id - b.processo_id || a.ordem - b.ordem);
 
-    if (responsaveis.length > 0) {
-      textoResumo += `\nRANKING DE CARGA DE TRABALHO POR RESPONSÁVEL:\n`;
-      responsaveis.forEach(r => {
-        textoResumo += `• ${r.nome}: ${r.pendentes || 0} pendente(s), ${r.atrasadas || 0} atrasada(s)\n`;
-      });
+    // Processos com métricas (mesmos nomes de campo usados pelo motor de regras)
+    const processos = processosRaw
+      .map(p => {
+        const doProc = tarefas.filter(t => t.processo_id === Number(p.id));
+        return {
+          id: Number(p.id),
+          nome: p.nome,
+          descricao: p.descricao,
+          setor_id: p.setor_id,
+          setor_nome: p.setor_nome,
+          total_etapas: etapas.filter(e => e.processo_id === Number(p.id)).length,
+          total_tarefas: doProc.length,
+          tarefas_concluidas: doProc.filter(t => t.concluida).length,
+          tarefas_pendentes: doProc.filter(t => !t.concluida).length,
+          tarefas_atrasadas: doProc.filter(t => t.atrasada).length,
+        };
+      })
+      .sort((a, b) => (a.setor_nome || '').localeCompare(b.setor_nome || '', 'pt-BR') || a.nome.localeCompare(b.nome, 'pt-BR'));
+
+    const setoresComTotal = setores
+      .map(s => ({ id: s.id, nome: s.nome, total_processos: processos.filter(p => String(p.setor_id) === String(s.id)).length }))
+      .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+
+    // Carga por responsável (só tarefas visíveis)
+    const porResp = new Map();
+    for (const t of tarefas) {
+      if (!t.responsavel_nome) continue;
+      const r = porResp.get(t.responsavel_nome) || { nome: t.responsavel_nome, total_atribuidas: 0, pendentes: 0, atrasadas: 0 };
+      r.total_atribuidas++;
+      if (!t.concluida) r.pendentes++;
+      if (t.atrasada) r.atrasadas++;
+      porResp.set(t.responsavel_nome, r);
     }
+    const responsaveis = [...porResp.values()].sort((a, b) => b.atrasadas - a.atrasadas || b.pendentes - a.pendentes);
+
+    const totalConcluidas = tarefas.filter(t => t.concluida).length;
+    const metricas = {
+      totalSetores: setoresComTotal.length,
+      totalProcessos: processos.length,
+      totalTarefas: tarefas.length,
+      totalConcluidas,
+      totalPendentes: abertas.length,
+      totalAtrasadas: abertas.filter(t => t.atrasada).length,
+      taxaConclusao: tarefas.length > 0 ? Math.round((totalConcluidas / tarefas.length) * 100) : 0,
+      venceHoje: abertas.filter(t => t.venceHoje).length,
+      proximos7: abertas.filter(t => t.proximos7).length,
+      urgentesAbertas: abertas.filter(t => t.urgente).length,
+      semResponsavel: abertas.filter(t => !t.responsavel_nome).length,
+    };
 
     return {
-      setores,
+      disponivel: true,
+      hoje,
+      setores: setoresComTotal,
       processos,
       etapas,
+      tarefas,
       responsaveis,
-      metricas: {
-        totalSetores,
-        totalProcessos,
-        totalTarefas,
-        totalConcluidas,
-        totalPendentes,
-        totalAtrasadas,
-        taxaConclusao
-      },
-      textoResumo
+      metricas,
+      textoResumo: `Processos: ${metricas.totalProcessos} | Tarefas: ${metricas.totalTarefas} | Abertas: ${metricas.totalPendentes} | Atrasadas: ${metricas.totalAtrasadas}`,
     };
   } catch (err) {
-    console.error('[chatbot] Erro ao ler dados do banco:', err);
-    return {
-      setores: [],
-      processos: [],
-      etapas: [],
-      responsaveis: [],
-      metricas: { totalSetores: 0, totalProcessos: 0, totalTarefas: 0, totalConcluidas: 0, totalPendentes: 0, totalAtrasadas: 0, taxaConclusao: 0 },
-      textoResumo: 'Banco de dados temporariamente indisponível.'
-    };
+    console.error('[chatbot] Erro ao ler dados do banco:', err.message);
+    return { ...DADOS_VAZIOS(), erroBanco: true };
   }
+}
+
+// ============================================================================
+// 3b. CONTEXTO PARA O MODELO DE LINGUAGEM
+// ============================================================================
+
+const DIAS_SEMANA = ['domingo', 'segunda-feira', 'terça-feira', 'quarta-feira', 'quinta-feira', 'sexta-feira', 'sábado'];
+
+function linhaTarefa(t) {
+  const partes = [`#${t.id} "${t.titulo}"`, `${t.processo_nome} › ${t.etapa_nome}`];
+  partes.push(`resp.: ${t.responsavel_nome || 'sem responsável'}`);
+  if (t.prazo) {
+    let rel = '';
+    if (t.dias < 0) rel = ` (${Math.abs(t.dias)} dia(s) de atraso)`;
+    else if (t.dias === 0) rel = ' (vence hoje)';
+    else rel = ` (em ${t.dias} dia(s))`;
+    partes.push(`prazo ${formatarDataBR(t.prazo)}${rel}`);
+  } else {
+    partes.push('sem prazo');
+  }
+  if (t.urgente) partes.push('URGENTE');
+  return `- ${partes.join(' | ')}`;
+}
+
+/** Texto compacto com os dados reais que o modelo pode usar para responder. */
+function montarContextoDados(dados) {
+  if (!dados.disponivel) {
+    return dados.erroBanco
+      ? 'DADOS DA EMPRESA: indisponíveis no momento (falha ao consultar o banco). Não invente números.'
+      : 'DADOS DA EMPRESA: o usuário não está autenticado, então você NÃO tem acesso a processos, tarefas ou números da empresa. Responda só dúvidas gerais e de uso da plataforma.';
+  }
+
+  const m = dados.metricas;
+  const linhas = [];
+  linhas.push(`RESUMO: ${m.totalSetores} setor(es), ${m.totalProcessos} processo(s), ${m.totalTarefas} tarefa(s) — ${m.totalConcluidas} concluída(s) (${m.taxaConclusao}%), ${m.totalPendentes} em aberto, ${m.totalAtrasadas} atrasada(s), ${m.venceHoje} vencem hoje, ${m.proximos7} vencem nos próximos 7 dias, ${m.urgentesAbertas} urgente(s) em aberto, ${m.semResponsavel} aberta(s) sem responsável.`);
+
+  linhas.push('\nSETORES:');
+  linhas.push(dados.setores.length ? dados.setores.map(s => `- ${s.nome} (${s.total_processos} processo(s))`).join('\n') : '- nenhum');
+
+  linhas.push('\nPROCESSOS (etapas em ordem, com nº de tarefas em cada uma):');
+  if (dados.processos.length === 0) linhas.push('- nenhum');
+  dados.processos.slice(0, 40).forEach(p => {
+    const etapas = dados.etapas.filter(e => e.processo_id === p.id).map(e => `${e.nome} (${e.total_tarefas})`).join(' → ') || 'sem etapas';
+    linhas.push(`- ${p.nome}${p.setor_nome ? ` [setor: ${p.setor_nome}]` : ''}: ${p.total_tarefas} tarefa(s), ${p.tarefas_pendentes} aberta(s), ${p.tarefas_atrasadas} atrasada(s), ${p.tarefas_concluidas} concluída(s). Etapas: ${etapas}${p.descricao ? `. Descrição: ${String(p.descricao).slice(0, 140)}` : ''}`);
+  });
+  if (dados.processos.length > 40) linhas.push(`- (+${dados.processos.length - 40} processos não listados)`);
+
+  linhas.push('\nCARGA POR RESPONSÁVEL (tarefas em aberto / atrasadas):');
+  linhas.push(dados.responsaveis.length ? dados.responsaveis.map(r => `- ${r.nome}: ${r.pendentes} aberta(s), ${r.atrasadas} atrasada(s)`).join('\n') : '- nenhuma tarefa atribuída');
+
+  const abertas = dados.tarefas.filter(t => !t.concluida);
+  const atrasadas = abertas.filter(t => t.atrasada).sort((a, b) => a.dias - b.dias);
+  const proximas = abertas.filter(t => t.venceHoje || t.proximos7).sort((a, b) => a.dias - b.dias);
+  const listadas = new Set([...atrasadas, ...proximas].map(t => t.id));
+  const urgentes = abertas.filter(t => t.urgente && !listadas.has(t.id));
+  urgentes.forEach(t => listadas.add(t.id));
+  const semResp = abertas.filter(t => !t.responsavel_nome && !listadas.has(t.id));
+  semResp.forEach(t => listadas.add(t.id));
+  const demais = abertas
+    .filter(t => !listadas.has(t.id))
+    .sort((a, b) => (b.criado_em || '').localeCompare(a.criado_em || ''));
+
+  const bloco = (titulo, lista, limite) => {
+    linhas.push(`\n${titulo}${lista.length > limite ? ` — mostrando ${limite} de ${lista.length}` : ''}:`);
+    linhas.push(lista.length ? lista.slice(0, limite).map(linhaTarefa).join('\n') : '- nenhuma');
+  };
+  bloco('TAREFAS ATRASADAS (mais antigas primeiro)', atrasadas, 30);
+  bloco('VENCEM HOJE OU NOS PRÓXIMOS 7 DIAS', proximas, 25);
+  bloco('OUTRAS URGENTES EM ABERTO', urgentes, 15);
+  bloco('OUTRAS EM ABERTO SEM RESPONSÁVEL', semResp, 15);
+  bloco('DEMAIS TAREFAS EM ABERTO (mais recentes primeiro)', demais, 25);
+
+  return linhas.join('\n');
+}
+
+const GUIA_PLATAFORMA = `
+COMO A PLATAFORMA FUNCIONA (use para dúvidas de uso; cite os nomes exatos dos botões):
+- Menu lateral: Dashboard, Processos, Tabela Geral e, para administradores, Equipe / Usuários e Gerenciar Setores. No topo do menu há um seletor de setor ("Todos os Setores" ou um setor específico) que filtra o que aparece.
+- Dashboard: cards com Processos ativos, Tarefas em aberto, Atrasadas e Concluídas (%); lista de Tarefas com abas Pendentes, Atrasadas, Vencem em breve e Urgentes, e busca; lista de Processos com barra de progresso. Botões "Tabela" e "Novo processo".
+- Processos: grade de cards (um por processo) com setor, nº de etapas e tarefas. Botão "Novo processo" (nome, setor, ícone, descrição). Um processo novo já vem com as etapas "Em Andamento" e "Finalização". Editar = ícone de lápis no card; excluir = ícone de lixeira (apaga também etapas, tarefas e histórico — não tem volta). Busca, abas de setor e botão "Filtros" (setor, tipo, volume de tarefas, nº de etapas, ordenação).
+- Quadro Kanban do processo (clique no card do processo): uma coluna por etapa. Botões no topo: "Campos" (campos personalizados), "Etapa" (nova etapa), "Tabela" e "Nova tarefa". Arraste os cards entre colunas para mudar de etapa (no celular: toque longo; no teclado: Espaço pega, ← → troca de etapa, Espaço solta). Arraste o cabeçalho de uma coluna para reordenar as etapas; o lápis no cabeçalho edita/exclui a etapa. Há busca e "Filtros" (responsável, prazo, urgência, situação, período de criação e campos do tipo lista).
+- Tarefa: título, descrição, etapa, responsável, prazo, marcação de urgente e campos personalizados. Clicar no card abre a página da tarefa, com edição e histórico (linha do tempo de mudanças). O lápis no card abre a edição rápida.
+- Campos personalizados (botão "Campos" no quadro): tipos Texto Curto, Texto Longo, Número, Valor Monetário (R$), Data, Seleção (Dropdown, com opções separadas por vírgula) e Caixa de Seleção (Sim/Não). Cada campo pode ser "Opcional em todas as etapas", "Obrigatório na Criação" ou "Obrigatório na etapa X" — nesse caso, ao mover a tarefa para a etapa X, o sistema pede o preenchimento.
+- Uma tarefa é considerada concluída quando está numa etapa final (nome começando com "Finaliz…" ou "Conclu…", ou "Entregue"/"Pronto"). Atrasada = prazo anterior a hoje e ainda não concluída.
+- Tabela Geral: todas as tarefas em linhas, com busca, visões rápidas (Todas, Minhas, Em aberto, Atrasadas, Concluídas), filtros por Setor, Processo, Responsável e Prazo, ordenação por coluna, paginação e botão "Exportar" (CSV).
+- Equipe e Acessos (admin): cadastrar, editar e remover colaboradores (nome, e-mail, senha, perfil Administrador ou Colaborador, e setores de acesso). Colaboradores só veem processos dos setores a que têm acesso; administradores veem tudo.
+- Gerenciar Setores (admin, no menu): criar, editar e excluir setores, com nome, descrição e cor.
+- Este assistente (Vinculum IA) fica no botão redondo no canto inferior direito.`;
+
+function montarPromptSistema(dados, usuario) {
+  const hoje = dados.hoje || hojeISO();
+  const diaSemana = DIAS_SEMANA[new Date(`${hoje}T12:00:00Z`).getUTCDay()];
+  const quem = usuario
+    ? `${usuario.nome || 'usuário'} (${usuario.perfil === 'admin' ? 'administrador' : 'colaborador'})`
+    : 'visitante não autenticado';
+
+  return `Você é o **Vinculum IA**, assistente do Vinculum — uma plataforma de gestão visual de processos (quadros Kanban por setor) para pequenas e médias empresas brasileiras.
+
+Hoje é ${diaSemana}, ${formatarDataBR(hoje)}. Você está conversando com ${quem}.
+
+O QUE VOCÊ FAZ
+1. Responde perguntas sobre os DADOS REAIS da empresa (abaixo): o que está atrasado, quem está sobrecarregado, como está um processo, onde há gargalo, o que priorizar.
+2. Explica como usar a plataforma, com os nomes exatos de telas e botões.
+3. Atua como consultor de processos: desenha fluxos (etapas, campos personalizados sugeridos e regras de obrigatoriedade) para qualquer ramo, e dá recomendações práticas de Kanban (limite de WIP, gargalos, responsável único, prazos).
+
+REGRAS
+- Responda sempre em português do Brasil, de forma direta: comece pela resposta, sem preâmbulo e sem repetir a pergunta.
+- Use SOMENTE os dados fornecidos abaixo para números, nomes de pessoas, processos e tarefas. Nunca invente tarefas, pessoas ou valores. Se a informação não estiver nos dados, diga que não tem esse dado e, se possível, onde o usuário encontra (ex.: Tabela Geral).
+- Quando citar tarefas, use o formato "#id Título" e inclua o que importa (processo, responsável, prazo).
+- Leve em conta o histórico da conversa: perguntas de continuação ("e dessas, quais são urgentes?", "e as tarefas de cada etapa?") se referem ao assunto anterior.
+- Para dúvidas de uso, dê passos numerados curtos com os nomes reais dos botões. Não descreva recursos que não existem na plataforma.
+- Ao sugerir um fluxo, entregue: etapas numeradas (4 a 6, nome curto + o que acontece), campos personalizados recomendados com o tipo de campo da plataforma e quais devem ser obrigatórios em qual etapa. Se o usuário pedir as tarefas de cada etapa, liste-as por etapa.
+- Seja conciso: até ~150 palavras em respostas simples; fluxos e análises podem ser maiores, mas sem enrolação.
+- Se a pergunta não tiver nada a ver com gestão, processos, trabalho ou a plataforma, responda em uma frase que você é focado nisso e ofereça ajuda relacionada.
+
+FORMATAÇÃO (o chat só renderiza isto)
+- **negrito**, *itálico*, \`código\`, listas com "- " e listas numeradas "1. ".
+- Parágrafos separados por linha em branco. Um título curto com "### " só se a resposta for longa.
+- NÃO use tabelas, links, imagens nem blocos de código.
+- Se houver uma recomendação final, coloque-a num parágrafo próprio começando com "💡 **Dica:**". No máximo uma dica por resposta, e só quando agregar.
+${GUIA_PLATAFORMA}
+
+DADOS ATUAIS DA EMPRESA (visíveis para este usuário)
+${montarContextoDados(dados)}`;
+}
+
+/** Converte o histórico do frontend ({remetente, texto}) para mensagens do modelo. */
+function montarMensagens(historico, mensagemAtual) {
+  const lista = Array.isArray(historico) ? historico : [];
+  const msgs = lista
+    .map(h => {
+      const autor = h.remetente || h.autor || h.role;
+      const role = ['usuario', 'user'].includes(autor) ? 'user' : 'assistant';
+      const content = String(h.texto ?? h.content ?? '').slice(0, 4000);
+      return { role, content };
+    })
+    // mensagens de erro exibidas no chat não são contexto útil
+    .filter(m => m.content && !m.content.startsWith('⚠️'))
+    .slice(-12);
+
+  const ultima = msgs[msgs.length - 1];
+  if (!ultima || ultima.role !== 'user' || ultima.content.trim() !== mensagemAtual.trim()) {
+    msgs.push({ role: 'user', content: mensagemAtual });
+  }
+  return msgs;
 }
 
 async function obterContextoProcessos(usuario) {
@@ -431,7 +638,7 @@ function gerarFluxoDinamicoSobMedida(temaBruto) {
 4. 🧪 **4. Inspeção de Qualidade & Testes de Funcionamento**: Bateria rigorosa de testes práticos de segurança, desempenho e acabamento visual antes da liberação.
 5. 🏁 **5. Acabamento Final, Documentação & Expedição**: Limpeza técnica, emissão do termo de garantia/laudo de qualidade e entrega final.
 
-💡 **Dica Prática:** Acesse o botão **"Campos da Tarefa"** no topo do fluxo e crie os campos *Código/Lote de Produção (Texto)*, *Responsável Técnico (Usuário)* e *Qualidade Aprovada (Checkbox obrigatório na etapa 5)*.`;
+💡 **Dica Prática:** Acesse o botão **"Campos"** no topo do fluxo e crie os campos *Código/Lote de Produção (Texto)*, *Responsável Técnico (Usuário)* e *Qualidade Aprovada (Checkbox obrigatório na etapa 5)*.`;
   }
 
   if (/\b(manutencao|conserto|reparo|assistencia|instalacao|instalar|revisao)\b/.test(t)) {
@@ -578,7 +785,7 @@ ${processos.map(proc => {
 
 ${nicho.etapas.map((e, idx) => `${idx + 1}. ${e.replace(/^\d+\.\s*/, '')}`).join('\n')}
 
-💡 **Dica Prática:** No topo do Kanban, clique em **"Campos da Tarefa"** e cadastre: *${nicho.campos.slice(0, 3).join('*, *')}*. ${nicho.dica}`;
+💡 **Dica Prática:** No topo do Kanban, clique em **"Campos"** e cadastre: *${nicho.campos.slice(0, 3).join('*, *')}*. ${nicho.dica}`;
     }
 
     const temaExtraido = extrairTemaLivreFluxo(pergunta);
@@ -603,7 +810,7 @@ ${nicho.etapas.map((e, idx) => `${idx + 1}. ${e.replace(/^\d+\.\s*/, '')}`).join
 
 1. 📊 **Acesse a Tela Tabela**: Clique em **Tabela** no menu lateral esquerdo.
 2. 🔍 **Aplique os Filtros**: Refine por processo, etapa ou situação (*Atrasada*, *Pendente*).
-3. 📥 **Baixe o Arquivo**: Clique em **"Exportar CSV"** no canto superior direito.
+3. 📥 **Baixe o Arquivo**: Clique em **"Exportar"** no canto superior direito.
 
 💡 **Dica Prática:** Filtre pelas tarefas *Atrasadas* antes de exportar para gerar um relatório executivo para a diretoria.`;
   }
@@ -612,7 +819,7 @@ ${nicho.etapas.map((e, idx) => `${idx + 1}. ${e.replace(/^\d+\.\s*/, '')}`).join
     return `Para adicionar uma nova coluna no seu quadro Kanban:
 
 1. 📂 **Abra o Processo**: Acesse o fluxo na aba **Processos** ou **Fluxo**.
-2. ➕ **Clique em "Nova Etapa"**: Localize o botão na barra superior do quadro.
+2. ➕ **Clique em "Etapa"**: Localize o botão na barra superior do quadro.
 3. 🏷️ **Salve o Nome**: Digite o nome da fase e confirme em **Salvar Etapa**.
 
 💡 **Dica Prática:** Arraste o cabeçalho da nova coluna horizontalmente para ajustar sua posição na sequência.`;
@@ -633,9 +840,9 @@ ${nicho.etapas.map((e, idx) => `${idx + 1}. ${e.replace(/^\d+\.\s*/, '')}`).join
 
 1. 📂 **Acesse Processos**: Clique na aba **Processos** no menu lateral.
 2. ➕ **Novo Processo**: Clique no botão no canto superior direito.
-3. 📝 **Identificação**: Informe o nome, selecione o setor e salve. O sistema cria automaticamente as etapas *A Fazer*, *Em Andamento* e *Concluído*.
+3. 📝 **Identificação**: Informe o nome, selecione o setor e salve. O sistema cria automaticamente as etapas *Em Andamento* e *Finalização*.
 
-💡 **Dica Prática:** Personalize as etapas e adicione os **"Campos da Tarefa"** logo após criar o fluxo.`;
+💡 **Dica Prática:** Personalize as etapas e adicione os **"Campos"** logo após criar o fluxo.`;
   }
 
   if (/\b(excluir processo|remover processo|apagar processo|deletar processo|cascata)\b/i.test(p)) {
@@ -673,7 +880,7 @@ ${nicho.etapas.map((e, idx) => `${idx + 1}. ${e.replace(/^\d+\.\s*/, '')}`).join
     return `Para configurar campos personalizados em um processo:
 
 1. 🛠️ **Abra o Quadro**: Acesse o fluxo desejado.
-2. ⚙️ **Clique em "Campos da Tarefa"**: No menu superior do quadro.
+2. ⚙️ **Clique em "Campos"**: No menu superior do quadro.
 3. ➕ **Configure**: Defina nome, tipo (*Texto*, *Moeda R$*, *Data*, etc.) e obrigatoriedade por etapa.
 
 💡 **Dica Prática:** Os campos personalizados criados viram colunas dinâmicas automáticas na tela **Tabela**!`;
@@ -757,26 +964,46 @@ async function conversar(req, res) {
       return res.status(400).json({ error: 'A mensagem é obrigatória.' });
     }
 
-    const mensagemLimpa = mensagem.trim();
+    const mensagemLimpa = mensagem.trim().slice(0, 4000);
     const usuarioNome = req.usuario?.nome || 'Usuário';
 
-    // 1. Lê todos os indicadores, setores, processos e responsáveis do banco em paralelo
+    // 1. Dados reais visíveis para o usuário (vazio se não estiver logado)
     const dadosBanco = await obterDadosCompletosBanco(req.usuario);
 
-    // 2. Motor Analítico & Cognitivo Instantâneo (< 20ms)
+    // 2. Modelo de linguagem (Claude ou Gemini), quando houver chave configurada
+    try {
+      const ia = await gerarResposta({
+        system: montarPromptSistema(dadosBanco, req.usuario),
+        mensagens: montarMensagens(historico, mensagemLimpa),
+      });
+      if (ia?.texto) {
+        return res.json({
+          resposta: sanitizarRespostaMarkdown(ia.texto),
+          origem: `llm-${ia.provedor}`,
+          modelo: ia.modelo,
+          modo: 'ia',
+        });
+      }
+    } catch (errIA) {
+      // Falha do provedor (chave inválida, cota, rede…): segue no motor de regras
+      console.error('[chatbot] Falha no modelo de linguagem, usando modo básico:', errIA.message);
+    }
+
+    // 3. Modo básico: motor de regras + respostas montadas com os dados do banco
     const respostaDeterministica = analisarPerguntaCognitiva(mensagemLimpa, historico, dadosBanco, usuarioNome);
     if (respostaDeterministica) {
       return res.json({
         resposta: respostaDeterministica,
-        origem: 'motor-analitico-instantaneo'
+        origem: 'motor-analitico-instantaneo',
+        modo: 'basico',
       });
     }
 
-    // 3. Sintetizador Baseado nos Dados Reais do Banco
     const respostaContextual = gerarRespostaContextualizadaBanco(mensagemLimpa, dadosBanco, usuarioNome);
     return res.json({
       resposta: respostaContextual,
-      origem: 'sintetizador-dados-reais'
+      origem: 'sintetizador-dados-reais',
+      modo: 'basico',
     });
   } catch (err) {
     console.error('[chatbot] Erro no controller:', err);
@@ -801,6 +1028,10 @@ function recuperarContextoRAG(mensagem) {
 
 module.exports = {
   conversar,
+  montarPromptSistema,
+  montarMensagens,
+  obterDadosCompletosBanco,
+  isEtapaFinal,
   analisarPerguntaCognitiva,
   detectarIntencao,
   CONHECIMENTO_SISTEMA,

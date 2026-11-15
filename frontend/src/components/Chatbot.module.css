@@ -560,3 +560,4 @@
 .chatTextarea::placeholder { color: var(--text-faint); }
 .chatTextarea:focus { background: var(--surface-lowest); border-color: var(--primary-border); box-shadow: var(--focus-ring); }
 .messageTime { color: var(--text-faint); }
+.onlineDotBasico { background: var(--status-warning); }

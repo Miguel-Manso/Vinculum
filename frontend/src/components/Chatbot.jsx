@@ -6,21 +6,22 @@ import { confirmDialog } from './feedback/feedback';
 const MENSAGEM_BOAS_VINDAS = {
   id: 'intro',
   remetente: 'ia',
-  texto: `Olá! Sou o **Vinculum IA**, seu consultor de processos e especialista na plataforma.
+  texto: `Olá! Sou o **Vinculum IA**. Converso com base nos dados reais dos seus processos.
 
-- 📋 **Estruturação de Processos**: Desenho de quadros Kanban sob medida para o seu setor.
-- ⚡ **Otimização Operacional**: Eliminação de gargalos, acompanhamento de prazos e controle de WIP.
-- 🛠️ **Recursos da Plataforma**: Orientações práticas sobre fluxos, campos personalizados e relatórios.
+- 📊 **Seus dados**: o que está atrasado, quem está sobrecarregado, onde há gargalo e o que priorizar.
+- 📋 **Fluxos sob medida**: etapas e campos personalizados para qualquer ramo ou setor.
+- 🛠️ **Uso da plataforma**: passo a passo com os botões certos.
 
-💡 **Dica Prática:** Clique em uma das sugestões abaixo ou digite o ramo da sua empresa para desenharmos seu fluxo ideal!`,
+💡 **Dica:** Pergunte do seu jeito, por exemplo *"o que vence esta semana?"* ou *"monte um fluxo para minha oficina"*.`,
   horario: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
 };
 
 const PROMPTS_SUGERIDOS = [
-  'Quais processos temos?',
-  'Como criar uma nova tarefa?',
+  'O que está atrasado e o que devo priorizar?',
+  'Quem está mais sobrecarregado?',
+  'Onde estão os gargalos dos processos?',
+  'Monte um fluxo para uma oficina mecânica',
   'Como exportar tarefas em CSV?',
-  'Como mover tarefas no Kanban?',
 ];
 
 // Formatador inline para destacar termos em negrito, itálico ou tags de código
@@ -180,6 +181,8 @@ export default function Chatbot() {
   });
   const [inputTexto, setInputTexto] = useState('');
   const [carregando, setCarregando] = useState(false);
+  // 'ia' = modelo de linguagem; 'basico' = motor de regras (sem chave de IA no servidor)
+  const [modo, setModo] = useState(null);
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
@@ -215,12 +218,13 @@ export default function Chatbot() {
     try {
       const res = await api.post('/chatbot', {
         mensagem: texto,
-        historico: novoHistorico.slice(-6).map(m => ({
+        historico: novoHistorico.slice(-12).map(m => ({
           remetente: m.remetente,
           texto: m.texto,
         })),
       });
 
+      if (res.data?.modo) setModo(res.data.modo);
       const respostaIA = res.data?.resposta || 'Desculpe, não consegui obter uma resposta no momento.';
       setMensagens(prev => [
         ...prev,
@@ -233,7 +237,10 @@ export default function Chatbot() {
       ]);
     } catch (err) {
       console.error('Erro ao enviar mensagem para o chatbot:', err);
-      const msgErro = err.response?.data?.error || 'Erro ao comunicar com o assistente. Verifique se o servidor está ativo.';
+      const status = err.response?.status;
+      const msgErro = status === 401 || status === 403
+        ? 'Sua sessão expirou. Saia e entre novamente para continuar usando o assistente.'
+        : err.response?.data?.error || 'Erro ao comunicar com o assistente. Verifique se o servidor está ativo.';
       setMensagens(prev => [
         ...prev,
         {
@@ -300,8 +307,12 @@ export default function Chatbot() {
               </div>
               <div className={styles.chatHeaderText}>
                 <span className={styles.chatTitle}>Vinculum IA</span>
-                <span className={styles.chatSubtitle}>
-                  <span className={styles.onlineDot} /> Online • Consultor Inteligente
+                <span
+                  className={styles.chatSubtitle}
+                  title={modo === 'basico' ? 'Sem chave de IA configurada no servidor: respostas por regras fixas.' : undefined}
+                >
+                  <span className={`${styles.onlineDot} ${modo === 'basico' ? styles.onlineDotBasico : ''}`} />
+                  {modo === 'basico' ? 'Online • Modo básico' : 'Online • Consultor Inteligente'}
                 </span>
               </div>
             </div>
