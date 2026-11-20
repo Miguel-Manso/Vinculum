@@ -524,10 +524,11 @@ O QUE VOCÊ FAZ
 REGRAS
 - Responda sempre em português do Brasil, de forma direta: comece pela resposta, sem preâmbulo e sem repetir a pergunta.
 - Use SOMENTE os dados fornecidos abaixo para números, nomes de pessoas, processos e tarefas. Nunca invente tarefas, pessoas ou valores. Se a informação não estiver nos dados, diga que não tem esse dado e, se possível, onde o usuário encontra (ex.: Tabela Geral).
-- Quando citar tarefas, use o formato "#id Título" e inclua o que importa (processo, responsável, prazo).
+- Quando citar tarefas, use o formato "#id Título" e inclua o que importa (processo, responsável, prazo) escrito de forma natural, por exemplo: "**#5 Divergência de quantidade lote 88** — Carla Dias, 6 dias de atraso". Nunca copie as linhas dos dados como estão (com "|", "resp.:", "›" ou datas por extenso desnecessárias).
 - Leve em conta o histórico da conversa: perguntas de continuação ("e dessas, quais são urgentes?", "e as tarefas de cada etapa?") se referem ao assunto anterior.
 - Para dúvidas de uso, dê passos numerados curtos com os nomes reais dos botões. Não descreva recursos que não existem na plataforma.
 - Ao sugerir um fluxo, entregue: etapas numeradas (4 a 6, nome curto + o que acontece), campos personalizados recomendados com o tipo de campo da plataforma e quais devem ser obrigatórios em qual etapa. Se o usuário pedir as tarefas de cada etapa, liste-as por etapa.
+- Em exemplos e sugestões, NUNCA invente nomes de pessoas, clientes ou empresas (eles pareceriam colaboradores reais). Use descrições genéricas ("o dentista responsável", "o cliente") ou nomes que já estão nos dados.
 - Seja conciso: até ~150 palavras em respostas simples; fluxos e análises podem ser maiores, mas sem enrolação.
 - Se a pergunta não tiver nada a ver com gestão, processos, trabalho ou a plataforma, responda em uma frase que você é focado nisso e ofereça ajuda relacionada.
 
@@ -971,6 +972,7 @@ async function conversar(req, res) {
     const dadosBanco = await obterDadosCompletosBanco(req.usuario);
 
     // 2. Modelo de linguagem (Claude ou Gemini), quando houver chave configurada
+    let iaFalhou = false;
     try {
       const ia = await gerarResposta({
         system: montarPromptSistema(dadosBanco, req.usuario),
@@ -985,25 +987,31 @@ async function conversar(req, res) {
         });
       }
     } catch (errIA) {
-      // Falha do provedor (chave inválida, cota, rede…): segue no motor de regras
+      // Falha do provedor (sobrecarga, cota, rede…): segue no motor de regras
+      iaFalhou = true;
       console.error('[chatbot] Falha no modelo de linguagem, usando modo básico:', errIA.message);
     }
 
-    // 3. Modo básico: motor de regras + respostas montadas com os dados do banco
+    // 3. Modo básico: motor de regras + respostas montadas com os dados do banco.
+    // Se a IA estava configurada mas não respondeu, avisa — senão o usuário
+    // acha que o assistente "não entendeu" a pergunta.
+    const AVISO_IA_INDISPONIVEL = '⏳ *O assistente inteligente está com muita demanda agora, então esta é uma resposta simplificada. Tente perguntar de novo em alguns instantes.*\n\n';
+    const prefixo = iaFalhou ? AVISO_IA_INDISPONIVEL : '';
+
     const respostaDeterministica = analisarPerguntaCognitiva(mensagemLimpa, historico, dadosBanco, usuarioNome);
     if (respostaDeterministica) {
       return res.json({
-        resposta: respostaDeterministica,
+        resposta: prefixo + respostaDeterministica,
         origem: 'motor-analitico-instantaneo',
-        modo: 'basico',
+        modo: iaFalhou ? 'ia-indisponivel' : 'basico',
       });
     }
 
     const respostaContextual = gerarRespostaContextualizadaBanco(mensagemLimpa, dadosBanco, usuarioNome);
     return res.json({
-      resposta: respostaContextual,
+      resposta: prefixo + respostaContextual,
       origem: 'sintetizador-dados-reais',
-      modo: 'basico',
+      modo: iaFalhou ? 'ia-indisponivel' : 'basico',
     });
   } catch (err) {
     console.error('[chatbot] Erro no controller:', err);

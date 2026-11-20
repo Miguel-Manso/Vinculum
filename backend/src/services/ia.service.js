@@ -16,9 +16,7 @@ const MAX_TOKENS_RESPOSTA = 1500;
 
 const MODELO_PADRAO = {
   anthropic: 'claude-haiku-5-5',
-  // O plano gratuito do Gemini só libera modelos "Flash". O apelido "-latest"
-  // sempre aponta para o Flash atual; os seguintes são reserva caso ele não exista.
-  gemini: ['gemini-flash-latest', 'gemini-2.5-flash', 'gemini-2.0-flash'],
+  // Gemini: o modelo é escolhido automaticamente (ver chamarGemini)
 };
 
 /** Chave preenchida de verdade (não o texto de exemplo do .env.example). */
@@ -94,23 +92,110 @@ async function chamarClaude({ system, mensagens }) {
   return { texto, provedor: 'anthropic', modelo };
 }
 
-async function chamarGemini({ system, mensagens }) {
-  const modelos = process.env.GEMINI_MODEL ? [process.env.GEMINI_MODEL] : MODELO_PADRAO.gemini;
-  let ultimoErro;
-  for (const modelo of modelos) {
-    try {
-      return await chamarGeminiModelo({ system, mensagens, modelo });
-    } catch (err) {
-      ultimoErro = err;
-      // só tenta o próximo modelo se este não existir; cota/chave inválida não adianta trocar
-      if (err.status !== 404) throw err;
-    }
-  }
-  throw ultimoErro;
+// ----------------------------------------------------------------------------
+// Gemini: escolha automática de modelo
+//
+// O Google troca e desliga modelos com frequência (ex.: gemini-2.5-flash não
+// existe mais para chaves novas) e, no plano gratuito, modelos ficam
+// sobrecarregados (503) ou sem cota (429) de minuto a minuto. Por isso:
+//  1. a lista de modelos "Flash" disponíveis para a chave é descoberta na
+//     API (cache de 6 h), do mais novo para o mais antigo;
+//  2. se um modelo falha por sobrecarga, cota, demora ou inexistência, tenta o
+//     próximo e deixa aquele "de castigo" por um tempo;
+//  3. o último modelo que funcionou é tentado primeiro.
+// GEMINI_MODEL no .env força um modelo (vira o primeiro da fila).
+// ----------------------------------------------------------------------------
+const GEMINI_BASE = 'https://generativelanguage.googleapis.com/v1beta';
+const CACHE_LISTA_MS = 6 * 60 * 60 * 1000;
+const PRAZO_TOTAL_MS = 45000;   // tempo máximo somando todas as tentativas
+const PRAZO_TENTATIVA_MS = 20000;
+const MAX_TENTATIVAS = 4;
+
+const estadoGemini = {
+  lista: null,          // modelos descobertos
+  listaEm: 0,
+  ultimoOk: null,       // último modelo que respondeu
+  castigo: new Map(),   // modelo → timestamp até quando evitar
+};
+
+/** Versão numérica do nome (gemini-3.6-flash → 3.6); aliases "-latest" ficam no topo. */
+// Ordem resultante: flash-latest → Flash estáveis (mais novo primeiro) → Flash preview
+//                  → flash-lite-latest → Flash Lite estáveis.
+function pesoModelo(nome) {
+  if (nome === 'gemini-flash-latest') return 10000;
+  if (nome === 'gemini-flash-lite-latest') return 100;
+  const v = parseFloat((nome.match(/gemini-(\d+(?:\.\d+)?)/) || [])[1]) || 0;
+  let peso = v * 100;
+  if (/lite/.test(nome)) peso -= 300;     // lite: mais rápido, porém mais fraco → reserva
+  if (/preview|exp/.test(nome)) peso -= 150; // preview: pode sumir a qualquer momento
+  return peso;
 }
 
-async function chamarGeminiModelo({ system, mensagens, modelo }) {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(modelo)}:generateContent`;
+async function listarModelosGemini() {
+  const agora = Date.now();
+  if (estadoGemini.lista && agora - estadoGemini.listaEm < CACHE_LISTA_MS) return estadoGemini.lista;
+  try {
+    const resp = await fetch(`${GEMINI_BASE}/models?pageSize=200`, {
+      headers: { 'x-goog-api-key': process.env.GEMINI_API_KEY.trim() },
+      signal: AbortSignal.timeout(10000),
+    });
+    const data = await resp.json().catch(() => ({}));
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const lista = (data.models || [])
+      .filter(m => (m.supportedGenerationMethods || []).includes('generateContent'))
+      .map(m => String(m.name || '').replace(/^models\//, ''))
+      .filter(n => /^gemini-/.test(n) && /flash/.test(n) && !/image|tts|audio|live|omni|embedding|vision|thinking-exp|customtools/.test(n))
+      .sort((a, b) => pesoModelo(b) - pesoModelo(a));
+    if (lista.length) {
+      estadoGemini.lista = lista;
+      estadoGemini.listaEm = agora;
+      return lista;
+    }
+  } catch (err) {
+    console.error('[ia] Não foi possível listar os modelos do Gemini:', err.message);
+  }
+  // sem lista: os apelidos estáveis do Google
+  return ['gemini-flash-latest', 'gemini-flash-lite-latest'];
+}
+
+function emCastigo(modelo) {
+  const ate = estadoGemini.castigo.get(modelo);
+  return ate && ate > Date.now();
+}
+
+async function chamarGemini({ system, mensagens }) {
+  const descobertos = await listarModelosGemini();
+  const fila = [...new Set([process.env.GEMINI_MODEL, estadoGemini.ultimoOk, ...descobertos].filter(Boolean))];
+  const disponiveis = fila.filter(m => !emCastigo(m));
+  const ordem = (disponiveis.length ? disponiveis : fila).slice(0, MAX_TENTATIVAS);
+
+  const inicio = Date.now();
+  let ultimoErro;
+  for (const modelo of ordem) {
+    const restante = PRAZO_TOTAL_MS - (Date.now() - inicio);
+    if (restante < 3000) break;
+    try {
+      const r = await chamarGeminiModelo({ system, mensagens, modelo, timeout: Math.min(PRAZO_TENTATIVA_MS, restante) });
+      estadoGemini.ultimoOk = modelo;
+      estadoGemini.castigo.delete(modelo);
+      return r;
+    } catch (err) {
+      ultimoErro = err;
+      const s = err.status;
+      // chave inválida/sem permissão: trocar de modelo não resolve
+      if (s === 401 || s === 403 || (s === 400 && /api key/i.test(err.message))) throw err;
+      // 404: modelo não existe mais → longe por 6 h; sobrecarga/cota/demora → 1 a 5 min
+      const pausa = s === 404 ? CACHE_LISTA_MS : s === 429 ? 5 * 60000 : 60000;
+      estadoGemini.castigo.set(modelo, Date.now() + pausa);
+      if (estadoGemini.ultimoOk === modelo) estadoGemini.ultimoOk = null;
+      console.error(`[ia] ${modelo} indisponível (${s || err.name || 'erro'}); tentando outro modelo.`);
+    }
+  }
+  throw ultimoErro || new Error('Nenhum modelo do Gemini disponível no momento');
+}
+
+async function chamarGeminiModelo({ system, mensagens, modelo, timeout = TIMEOUT_MS }) {
+  const url = `${GEMINI_BASE}/models/${encodeURIComponent(modelo)}:generateContent`;
   const resp = await fetch(url, {
     method: 'POST',
     headers: {
@@ -126,7 +211,7 @@ async function chamarGeminiModelo({ system, mensagens, modelo }) {
       // folga extra: nos modelos 2.5 o "raciocínio" interno também consome tokens
       generationConfig: { temperature: 0.4, maxOutputTokens: MAX_TOKENS_RESPOSTA * 3 },
     }),
-    signal: AbortSignal.timeout(TIMEOUT_MS),
+    signal: AbortSignal.timeout(timeout),
   });
 
   const data = await resp.json().catch(() => ({}));
@@ -165,4 +250,4 @@ async function gerarResposta({ system, mensagens }) {
     : chamarGemini({ system, mensagens: msgs });
 }
 
-module.exports = { gerarResposta, provedorAtivo, normalizarMensagens, chaveValida };
+module.exports = { gerarResposta, provedorAtivo, normalizarMensagens, chaveValida, _estadoGemini: estadoGemini };

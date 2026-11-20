@@ -309,10 +309,16 @@ export default function Chatbot() {
                 <span className={styles.chatTitle}>Vinculum IA</span>
                 <span
                   className={styles.chatSubtitle}
-                  title={modo === 'basico' ? 'Sem chave de IA configurada no servidor: respostas por regras fixas.' : undefined}
+                  title={
+                    modo === 'basico' ? 'Sem chave de IA configurada no servidor: respostas por regras fixas.'
+                    : modo === 'ia-indisponivel' ? 'A IA está sobrecarregada no momento; a última resposta foi simplificada.'
+                    : undefined
+                  }
                 >
-                  <span className={`${styles.onlineDot} ${modo === 'basico' ? styles.onlineDotBasico : ''}`} />
-                  {modo === 'basico' ? 'Online • Modo básico' : 'Online • Consultor Inteligente'}
+                  <span className={`${styles.onlineDot} ${modo === 'basico' || modo === 'ia-indisponivel' ? styles.onlineDotBasico : ''}`} />
+                  {modo === 'basico' ? 'Online • Modo básico'
+                    : modo === 'ia-indisponivel' ? 'Online • Alta demanda'
+                    : 'Online • Consultor Inteligente'}
                 </span>
               </div>
             </div>
