@@ -99,7 +99,19 @@ O Vinculum é um **sistema fechado**: não existe cadastro público. Quem cria a
 
 > **Uma empresa por instalação.** Hoje cada instalação (site + banco de dados) atende uma empresa. Para várias empresas no mesmo endereço, seria preciso separar os dados por empresa (multiempresa/SaaS).
 
-> **Avaliadores e convidados:** o acesso de demonstração (empresa fictícia com dados de exemplo) é fornecido pelo autor.
+### O site publicado é restrito à banca avaliadora
+
+O endereço **[vinculumflow.com.br](https://vinculumflow.com.br)** é uma **instalação de demonstração deste TCC**, com uma empresa fictícia, e **o acesso a ela está disponível somente para a banca avaliadora**. Os motivos:
+
+- **É uma vitrine acadêmica, não um serviço aberto** — existe para a avaliação do trabalho.
+- **Uma empresa por instalação** — como os dados não são separados por empresa, abrir o acesso faria todos os visitantes compartilharem (e alterarem) os mesmos dados.
+- **Recursos gratuitos e limitados** — hospedagem, banco de dados e a cota do assistente com I.A. rodam em planos gratuitos, dimensionados para a avaliação.
+
+As credenciais da banca são entregues no Manual do Usuário e **não são publicadas aqui**.
+
+### Quer usar o Vinculum?
+
+Monte a **sua própria instalação**: baixe o projeto, crie o seu banco de dados e as tabelas (esquema), configure as variáveis e rode o sistema — no seu computador ou na sua hospedagem. O passo a passo completo está em **[Rodando localmente](#-rodando-localmente)** e **[Publicação](#-publicação)**. Na sua instalação, você define as senhas e é o administrador da sua empresa.
 
 <br>
 
@@ -166,16 +178,16 @@ node src/scripts/setup_neon.js            # cria as tabelas (PostgreSQL)
 ```
 ```powershell
 # PowerShell — escolha a senha das contas de demonstração
-$env:SENHA_DEMO="umaSenhaBoa2026"; node src/scripts/popular_banco.js
+$env:SENHA_DEMO="<escolha uma senha forte>"; node src/scripts/popular_banco.js
 ```
 ```bash
 # Linux / macOS
-SENHA_DEMO="umaSenhaBoa2026" node src/scripts/popular_banco.js
+SENHA_DEMO="<escolha uma senha forte>" node src/scripts/popular_banco.js
 cd ..
 ```
-O script cria setores, processos, tarefas e as contas `banca@vinculum.com` (administrador) e colaboradores como `rodrigo.ops@vinculum.com`, todas com a senha `SENHA_DEMO`. Ele não apaga nada e pode ser executado de novo.
+O script cria setores, processos e tarefas de exemplo, além de uma conta de **administrador** e contas de **colaboradores**, todas com a senha que você definiu em `SENHA_DEMO`. Ao terminar, ele **mostra no terminal os e-mails criados** para você entrar. Ele não apaga nada e pode ser executado de novo.
 
-> ⚠️ O `banco_postgres.sql` cria `admin@vinculum.com` com uma senha padrão pública. O `popular_banco.js` troca automaticamente qualquer senha pública (`123` / `123456`) pela `SENHA_DEMO` — rode-o antes de publicar.
+> ⚠️ O `banco_postgres.sql` cria um administrador inicial com uma senha padrão que está no código. O `popular_banco.js` troca automaticamente qualquer senha padrão pela sua `SENHA_DEMO` — rode-o antes de publicar.
 
 **4. Iniciar**
 ```bash

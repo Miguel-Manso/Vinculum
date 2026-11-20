@@ -3,7 +3,7 @@
 // e usuários de teste). Não apaga nada: só cria o que falta e atualiza.
 //
 // Como rodar (a senha das contas de teste vem de SENHA_DEMO):
-//   PowerShell:  $env:SENHA_DEMO="umaSenhaBoa2026"; node backend/src/scripts/popular_banco.js
+//   PowerShell:  $env:SENHA_DEMO="<escolha uma senha forte>"; node backend/src/scripts/popular_banco.js
 //   Para o banco publicado (Neon), defina também DATABASE_URL com a URL dele.
 //
 // Segurança: as contas de teste usavam "123" e o banco_postgres.sql cria o
@@ -20,10 +20,11 @@ const SENHAS_PUBLICAS = ['123', '123456'];
 
 function lerSenhaDemo() {
   const senha = (process.env.SENHA_DEMO || '').trim();
-  if (senha.length < 8 || SENHAS_PUBLICAS.includes(senha) || /^(12345678|senha123|password)$/i.test(senha)) {
+  const ehExemplo = /[<>]|escolha uma senha|umaSenhaBoa/i.test(senha); // copiou o exemplo ao pé da letra
+  if (senha.length < 8 || ehExemplo || SENHAS_PUBLICAS.includes(senha) || /^(12345678|senha123|password)$/i.test(senha)) {
     throw new Error(
       'Defina SENHA_DEMO com uma senha de pelo menos 8 caracteres antes de rodar.\n' +
-      '   Ex. (PowerShell):  $env:SENHA_DEMO="Vinculum#Banca2026"; node backend/src/scripts/popular_banco.js'
+      '   Ex. (PowerShell):  $env:SENHA_DEMO="<escolha uma senha forte>"; node src/scripts/popular_banco.js'
     );
   }
   return senha;
@@ -575,6 +576,12 @@ async function popularBanco() {
     }
 
     console.log('🎉 Banco de dados populado com sucesso com dados realistas para demonstração!');
+
+    // Mostra as contas para quem acabou de instalar (a senha é a SENHA_DEMO — nunca é exibida)
+    console.log('\n👤 Contas para entrar nesta instalação (senha = a que você definiu em SENHA_DEMO):');
+    for (const u of listaUsuarios) {
+      console.log(`   ${u.perfil === 'admin' ? 'Administrador' : 'Colaborador  '}  ${u.email}`);
+    }
     return true;
   } catch (err) {
     console.error('❌ Erro ao popular banco de dados:', err);
