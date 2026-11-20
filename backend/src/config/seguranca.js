@@ -7,8 +7,8 @@
 //               produção, o servidor NÃO liga sem uma chave forte.
 //               Gere uma com:  node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
 //
-// CORS_ORIGINS → endereços (separados por vírgula) que podem chamar a API,
-//               além dos padrões abaixo. Ex.: https://vinculum.com.br,https://www.vinculum.com.br
+// CORS_ORIGINS → endereços extras (separados por vírgula) que podem chamar a
+//               API, além dos padrões abaixo (vinculumflow.com.br, Vercel e localhost).
 // ============================================================================
 
 // Textos que já apareceram no código/exemplos públicos — nunca servem como chave
@@ -68,6 +68,8 @@ function obterJwtSecret() {
 // CORS
 // ---------------------------------------------------------------------------
 const ORIGENS_PADRAO = [
+  'https://vinculumflow.com.br',      // domínio oficial
+  'https://www.vinculumflow.com.br',
   'https://vinculum-one.vercel.app',
   'http://localhost:5173',  // vite dev
   'http://localhost:4173',  // vite preview

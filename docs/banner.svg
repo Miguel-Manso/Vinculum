@@ -1,0 +1,121 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="340" viewBox="0 0 1280 340" role="img" aria-label="Vinculum — gestão visual de processos">
+  <title>Vinculum — gestão visual de processos</title>
+  <defs>
+    <!-- Cartão com cantos arredondados -->
+    <clipPath id="cartao"><rect width="1280" height="340" rx="22"/></clipPath>
+
+    <!-- Faixa do site: grafite + gradiente marinho → ciano -->
+    <linearGradient id="hero" x1="1" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0096b9" stop-opacity="0.55"/>
+      <stop offset="0.75" stop-color="#00123b" stop-opacity="0.82"/>
+    </linearGradient>
+    <radialGradient id="brilho" cx="0.2" cy="0.35" r="0.6">
+      <stop offset="0" stop-color="#45c4d6" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#45c4d6" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Anéis do logo (mesma geometria do Logo.jsx: 509×361) -->
+    <linearGradient id="anelEsq" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#8ff0e6"/>
+      <stop offset="0.45" stop-color="#50c5bd"/>
+      <stop offset="1" stop-color="#1f8f9e"/>
+    </linearGradient>
+    <linearGradient id="anelDir" x1="1" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#7fe3f0"/>
+      <stop offset="0.45" stop-color="#45c4d6"/>
+      <stop offset="1" stop-color="#1b6f99"/>
+    </linearGradient>
+    <mask id="mascEsq" maskUnits="userSpaceOnUse" x="0" y="0" width="509" height="361">
+      <rect width="509" height="361" fill="#fff"/>
+      <circle cx="331" cy="180" r="138" fill="none" stroke="#000" stroke-width="70"/>
+      <rect width="509" height="180" fill="#fff"/>
+    </mask>
+    <mask id="mascDir" maskUnits="userSpaceOnUse" x="0" y="0" width="509" height="361">
+      <rect width="509" height="361" fill="#fff"/>
+      <circle cx="178" cy="180" r="138" fill="none" stroke="#000" stroke-width="70"/>
+      <rect y="180" width="509" height="181" fill="#fff"/>
+    </mask>
+    <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="9" result="b"/>
+      <feColorMatrix in="b" type="matrix" values="0 0 0 0 0.27  0 0 0 0 0.77  0 0 0 0 0.84  0 0 0 0.55 0"/>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+
+    <!-- Estrelas -->
+    <pattern id="estrelas" width="173" height="97" patternUnits="userSpaceOnUse">
+      <circle cx="21" cy="18" r="1.1" fill="#fff" opacity="0.75"/>
+      <circle cx="119" cy="61" r="0.9" fill="#bfeff6" opacity="0.6"/>
+      <circle cx="74" cy="83" r="0.8" fill="#fff" opacity="0.45"/>
+    </pattern>
+    <pattern id="estrelas2" width="251" height="131" patternUnits="userSpaceOnUse">
+      <circle cx="187" cy="27" r="1.3" fill="#fff" opacity="0.8"/>
+      <circle cx="53" cy="104" r="1" fill="#bfeff6" opacity="0.55"/>
+    </pattern>
+    <linearGradient id="someEmbaixo" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0.35" stop-color="#fff"/>
+      <stop offset="0.85" stop-color="#fff" stop-opacity="0"/>
+    </linearGradient>
+    <mask id="mascEstrelas"><rect width="1280" height="340" fill="url(#someEmbaixo)"/></mask>
+
+    <style>
+      .anel-esq { transform-box: fill-box; transform-origin: center; animation: gira 24s linear infinite; }
+      .anel-dir { transform-box: fill-box; transform-origin: center; animation: gira 24s linear infinite reverse; }
+      .pisca    { animation: pisca 5s ease-in-out infinite alternate; }
+      .pisca2   { animation: pisca 7s ease-in-out infinite alternate-reverse; }
+      .onda1    { animation: onda 22s linear infinite; }
+      .onda2    { animation: onda 34s linear infinite reverse; }
+      @keyframes gira  { to { transform: rotate(360deg); } }
+      @keyframes pisca { from { opacity: 0.35; } to { opacity: 1; } }
+      @keyframes onda  { to { transform: translateX(-1280px); } }
+      @media (prefers-reduced-motion: reduce) {
+        .anel-esq, .anel-dir, .pisca, .pisca2, .onda1, .onda2 { animation: none; }
+      }
+    </style>
+  </defs>
+
+  <g clip-path="url(#cartao)">
+    <rect width="1280" height="340" fill="#0e0e10"/>
+    <rect width="1280" height="340" fill="url(#hero)"/>
+    <rect width="1280" height="340" fill="url(#brilho)"/>
+
+    <g mask="url(#mascEstrelas)">
+      <rect class="pisca" width="1280" height="340" fill="url(#estrelas)"/>
+      <rect class="pisca2" width="1280" height="340" fill="url(#estrelas2)"/>
+    </g>
+
+    <!-- Estrelas cadentes -->
+    <g opacity="0.7" stroke-linecap="round">
+      <line x1="1105" y1="34" x2="1093" y2="92" stroke="#bfeff6" stroke-width="1.4" opacity="0.6"/>
+      <circle cx="1093" cy="92" r="1.8" fill="#e8fbff"/>
+      <line x1="905" y1="18" x2="897" y2="56" stroke="#bfeff6" stroke-width="1.1" opacity="0.5"/>
+      <circle cx="897" cy="56" r="1.4" fill="#e8fbff"/>
+    </g>
+
+    <!-- Logo -->
+    <g transform="translate(88 78) scale(0.43)" filter="url(#glow)">
+      <g mask="url(#mascEsq)">
+        <g class="anel-esq"><circle cx="178" cy="180" r="138" fill="none" stroke="url(#anelEsq)" stroke-width="56"/></g>
+      </g>
+      <g mask="url(#mascDir)">
+        <g class="anel-dir"><circle cx="331" cy="180" r="138" fill="none" stroke="url(#anelDir)" stroke-width="56"/></g>
+      </g>
+    </g>
+
+    <!-- Textos -->
+    <g font-family="'Plus Jakarta Sans','Segoe UI','Helvetica Neue',Arial,sans-serif">
+      <text x="338" y="148" font-size="72" font-weight="800" fill="#ffffff" letter-spacing="-2">Vinculum<tspan fill="#45c4d6">.</tspan></text>
+      <text x="341" y="190" font-size="25" font-weight="500" fill="#d9f3f7" fill-opacity="0.92">Gestão visual de processos para pequenas e médias empresas</text>
+      <rect x="341" y="214" width="236" height="36" rx="18" fill="#45c4d6" fill-opacity="0.12" stroke="#45c4d6" stroke-opacity="0.55" stroke-width="1.5"/>
+      <text x="459" y="238" font-size="17" font-weight="700" fill="#8aebff" text-anchor="middle">vinculumflow.com.br</text>
+      <text x="597" y="238" font-size="16" font-weight="500" fill="#cfe9ee" fill-opacity="0.75">Kanban por setor · Filtros · Assistente com I.A.</text>
+    </g>
+
+    <!-- Ondas (2 camadas, repetem a cada 1280 px) -->
+    <g class="onda1">
+      <path fill="#0e0e10" fill-opacity="0.5" d="M0 300 C160 330 480 270 640 300 C800 330 1120 270 1280 300 C1440 330 1760 270 1920 300 C2080 330 2400 270 2560 300 V340 H0 Z"/>
+    </g>
+    <g class="onda2">
+      <path fill="#0e0e10" d="M0 314 C213 336 427 296 640 314 C853 336 1067 296 1280 314 C1493 336 1707 296 1920 314 C2133 336 2347 296 2560 314 V340 H0 Z"/>
+    </g>
+  </g>
+</svg>

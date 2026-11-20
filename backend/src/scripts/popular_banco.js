@@ -6,18 +6,21 @@
 //   PowerShell:  $env:SENHA_DEMO="umaSenhaBoa2026"; node backend/src/scripts/popular_banco.js
 //   Para o banco publicado (Neon), defina também DATABASE_URL com a URL dele.
 //
-// Segurança: as contas de teste usavam a senha "123", que está pública no
-// GitHub. Se alguma conta da lista ainda tiver "123", ela é trocada por
-// SENHA_DEMO. Senhas que já foram alteradas não são tocadas.
+// Segurança: as contas de teste usavam "123" e o banco_postgres.sql cria o
+// admin com "123456" — as duas estão públicas no GitHub. Contas da lista que
+// ainda usem alguma delas passam a usar SENHA_DEMO. Senhas já alteradas não
+// são tocadas.
 // ============================================================================
 const bcrypt = require('bcryptjs');
 const { getPool, sql } = require('../config/db');
 
-const SENHA_ANTIGA_PUBLICA = '123';
+// Senhas que estão públicas no GitHub: "123" (versão antiga deste script) e
+// "123456" (admin criado pelo banco_postgres.sql). Contas com elas são trocadas.
+const SENHAS_PUBLICAS = ['123', '123456'];
 
 function lerSenhaDemo() {
   const senha = (process.env.SENHA_DEMO || '').trim();
-  if (senha.length < 8 || senha === SENHA_ANTIGA_PUBLICA || /^(12345678|senha123|password)$/i.test(senha)) {
+  if (senha.length < 8 || SENHAS_PUBLICAS.includes(senha) || /^(12345678|senha123|password)$/i.test(senha)) {
     throw new Error(
       'Defina SENHA_DEMO com uma senha de pelo menos 8 caracteres antes de rodar.\n' +
       '   Ex. (PowerShell):  $env:SENHA_DEMO="Vinculum#Banca2026"; node backend/src/scripts/popular_banco.js'
@@ -63,8 +66,12 @@ async function popularBanco() {
           .input('id', sql.Int, id)
           .input('perfil', sql.NVarChar, u.perfil)
           .query('UPDATE Usuarios SET perfil = @perfil WHERE id = @id');
-        // Troca a senha pública antiga ("123"), se ainda estiver em uso
-        if (senha_hash && await bcrypt.compare(SENHA_ANTIGA_PUBLICA, senha_hash)) {
+        // Troca senhas públicas ("123", "123456"), se ainda estiverem em uso
+        let usaSenhaPublica = false;
+        for (const publica of SENHAS_PUBLICAS) {
+          if (senha_hash && await bcrypt.compare(publica, senha_hash)) { usaSenhaPublica = true; break; }
+        }
+        if (usaSenhaPublica) {
           await pool.request()
             .input('id', sql.Int, id)
             .input('senha_hash', sql.NVarChar, senhaHashPadrao)
@@ -83,7 +90,7 @@ async function popularBanco() {
     }
     console.log('✅ Usuários verificados/criados:', Object.keys(usuariosMap).length);
     if (senhasTrocadas > 0) {
-      console.log(`🔒 ${senhasTrocadas} conta(s) ainda usavam a senha pública "123" e agora usam a SENHA_DEMO.`);
+      console.log(`🔒 ${senhasTrocadas} conta(s) ainda usavam uma senha pública ("123"/"123456") e agora usam a SENHA_DEMO.`);
     }
 
     // 3. Criar ou Atualizar Setores

@@ -1,158 +1,273 @@
-# Mediator
+<div align="center">
 
-Sistema web de gestão de **Ordens de Serviço (OS)** para assistência técnica, desenvolvido para a Rocha Magazine (Viradouro/SP).
+<a href="https://vinculumflow.com.br">
+  <img src="docs/banner.svg" alt="Vinculum — gestão visual de processos para pequenas e médias empresas" width="100%">
+</a>
 
-Com ele a loja cadastra clientes e equipamentos, abre a OS no balcão com triagem, acompanha o reparo num quadro Kanban em tempo real, controla peças e estoque e gera relatórios e trilha de auditoria.
+<br>
 
-> Projeto de Estágio Supervisionado II — Miguel Filipe Manso Pereira e Pablo Lemes da Silva.
+[![Acessar](https://img.shields.io/badge/Acessar-vinculumflow.com.br-45c4d6?style=for-the-badge&labelColor=161618)](https://vinculumflow.com.br)
+&nbsp;
+[![Status](https://img.shields.io/badge/status-em%20produção-14b8a6?style=for-the-badge&labelColor=161618)](https://vinculumflow.com.br)
+&nbsp;
+[![TCC](https://img.shields.io/badge/Trabalho%20de%20Conclusão%20de%20Curso-2026-1e4f6e?style=for-the-badge&labelColor=161618)](#-autoria)
 
----
+![React](https://img.shields.io/badge/React_18-161618?style=flat-square&logo=react&logoColor=45c4d6)
+![Vite](https://img.shields.io/badge/Vite_5-161618?style=flat-square&logo=vite&logoColor=45c4d6)
+![Node.js](https://img.shields.io/badge/Node.js-161618?style=flat-square&logo=nodedotjs&logoColor=45c4d6)
+![Express](https://img.shields.io/badge/Express-161618?style=flat-square&logo=express&logoColor=45c4d6)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL_(Neon)-161618?style=flat-square&logo=postgresql&logoColor=45c4d6)
+![Gemini](https://img.shields.io/badge/Google_Gemini-161618?style=flat-square&logo=googlegemini&logoColor=45c4d6)
 
-## Funcionalidades
+**[Sobre](#-sobre)** · **[Telas](#-telas)** · **[Funcionalidades](#-funcionalidades)** · **[Acesso](#-como-funciona-o-acesso)** · **[Assistente I.A.](#-vinculum-ia)** · **[Rodar localmente](#-rodando-localmente)** · **[Publicação](#-publicação)**
 
-- **Quadro Kanban de OS**: arrastar e soltar entre etapas, atualização em tempo real para todos os usuários (Socket.IO) e colunas/etapas personalizáveis (criar, editar, reordenar, inativar com remanejamento de OS).
-- **Lista tabular** com busca, filtros rápidos e painel de filtros avançados (cliente, técnico, atendente, tipo de serviço, status e período).
-- **Abertura de OS com triagem** por tipo de reparo (Smartphone/Tablet, Notebook, Desktop, Impressora, Geral), relato do cliente e observações internas. Numeração automática no formato `OS-AAAAMM-NNNN`.
-- **Detalhes da OS**: atribuição de técnico, laudo técnico oficial, apontamentos de bancada e linha do tempo com todas as mudanças de status.
-- **Peças e estoque**: orçamento de peças na OS, baixa no estoque e trava que impede concluir/entregar a OS com peças pendentes de baixa.
-- **Conclusão e entrega**: resumo da OS copiado para a área de transferência e aviso ao cliente pelo WhatsApp com mensagem pronta.
-- **Bloqueio de edição simultânea**: só um usuário por vez pode abrir a mesma OS.
-- **Cadastros**: clientes (com máscara de CPF, telefone e CEP), equipamentos (categorias, marcas e modelos), peças/produtos com alerta de estoque baixo e usuários.
-- **Relatórios** agrupados por cliente, técnico ou status, com indicadores e layout de impressão.
-- **Auditoria** de todas as operações em OS, com filtros e visualização dos dados enviados.
-- **Controle de acesso por perfil**: Administrador, Atendente e Técnico.
+</div>
 
-## Perfis de acesso
+<br>
 
-| Perfil | Pode fazer |
-| --- | --- |
-| **Administrador** | Tudo, inclusive gerenciar usuários e consultar a auditoria. Move a OS para qualquer etapa. |
-| **Atendente** | Abre, aprova, entrega e cancela OS; gerencia colunas e cadastros. Etapas: Aberto, Aprovado, Entregue e Cancelado. |
-| **Técnico** | Assume OS, faz laudo e apontamentos, lança peças e dá baixa no estoque. Etapas: Em Análise, Aguardando Aprovação, Em Reparo, Aguardando Peças e Testes Finais. |
+## ◆ Sobre
 
-## Tecnologias
+O **Vinculum** é uma plataforma de **gestão visual de processos** para pequenas e médias empresas.
+Ele troca planilhas soltas e combinados de WhatsApp por **quadros Kanban organizados por setor**: cada processo da empresa (recebimento de mercadorias, vendas, contas a pagar, recrutamento…) vira um quadro com etapas, e cada demanda vira uma tarefa com **responsável, prazo e campos próprios do negócio**.
 
-**Frontend**
-- React 18 + Vite 5
-- Tailwind CSS 3
-- React Router, Axios, Socket.IO Client
-- Framer Motion, Lucide React
+O gestor enxerga a operação inteira num painel — o que está atrasado, quem está sobrecarregado, onde o trabalho trava — e um **assistente com inteligência artificial** responde perguntas sobre esses dados em linguagem natural.
 
-**Backend**
-- Node.js + Express
-- Microsoft SQL Server (`mssql`)
-- Autenticação JWT (`jsonwebtoken`) e senhas com `bcryptjs`
-- Socket.IO para eventos em tempo real
+> **Para quem é:** equipes operacionais e gestores de PMEs, sem conhecimento técnico.
+> **Endereço oficial:** **[vinculumflow.com.br](https://vinculumflow.com.br)**
 
-## Estrutura do projeto
+<br>
+
+## ◆ Telas
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/dashboard.png" alt="Dashboard"><br><sub><b>Dashboard</b> — indicadores, tarefas por prazo e andamento dos processos</sub></td>
+    <td width="50%"><img src="docs/screenshots/kanban.png" alt="Quadro Kanban"><br><sub><b>Quadro Kanban</b> — etapas do processo, arrastar e soltar, campos personalizados</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/assistente-ia.png" alt="Assistente com I.A."><br><sub><b>Vinculum IA</b> — perguntas em linguagem natural sobre os dados reais</sub></td>
+    <td width="50%"><img src="docs/screenshots/processos-filtros.png" alt="Processos com filtros"><br><sub><b>Processos</b> — busca, abas por setor e filtros avançados</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/tabela.png" alt="Tabela geral"><br><sub><b>Tabela Geral</b> — todas as tarefas, filtros e exportação CSV</sub></td>
+    <td width="50%"><img src="docs/screenshots/login.png" alt="Login"><br><sub><b>Login</b> — acesso fechado, contas criadas pela empresa</sub></td>
+  </tr>
+</table>
+
+<sub>As telas usam uma empresa fictícia de demonstração.</sub>
+
+<br>
+
+## ◆ Funcionalidades
+
+**Processos e Kanban**
+- Processos organizados por **setor** (Comercial, Logística, Financeiro…), cada um com seu quadro Kanban.
+- Etapas livres: criar, renomear, reordenar arrastando o cabeçalho e excluir.
+- Tarefas com responsável, prazo, marcação de urgente e descrição; **arrastar e soltar** entre etapas (mouse, toque longo no celular ou teclado).
+- **Campos personalizados** por processo — texto, número, valor em R$, data, lista de opções e sim/não — que podem ser **obrigatórios na criação ou ao entrar numa etapa** específica.
+- Histórico de cada tarefa: quem moveu, editou e quando.
+
+**Acompanhamento**
+- **Dashboard** com processos ativos, tarefas em aberto, atrasadas e taxa de conclusão; abas Pendentes, Atrasadas, Vencem em breve e Urgentes.
+- **Tabela Geral** com busca, visões rápidas, filtros por setor/processo/responsável/prazo, ordenação e **exportação CSV**.
+- **Filtros avançados** em Processos, no Kanban (responsável, prazo, urgência, situação, período e campos do processo) e na Equipe.
+
+**Equipe e acesso**
+- Perfis **Administrador** e **Colaborador**; cada colaborador vê apenas os setores a que tem acesso.
+- Gestão de equipe e de setores (nome, descrição e cor) feita pelo administrador.
+
+**Vinculum IA**
+- Assistente que conhece os dados da empresa e a própria plataforma (detalhes [abaixo](#-vinculum-ia)).
+
+<br>
+
+## ◆ Como funciona o acesso
+
+O Vinculum é um **sistema fechado**: não existe cadastro público. Quem cria as contas é o administrador da empresa.
 
 ```
-Mediator/
-├── backend/            # API REST + Socket.IO
-│   └── src/
-│       ├── config/       # conexão e inicialização do banco
-│       ├── controllers/
-│       ├── middlewares/  # autenticação, perfis e auditoria
-│       ├── models/
-│       ├── routes/
-│       ├── scripts/      # seed de usuários
-│       ├── services/     # socket (tempo real e bloqueio de OS)
-│       ├── app.js
-│       └── server.js
-├── frontend/           # aplicação React (Vite)
-│   └── src/
-│       ├── components/
-│       ├── contexts/
-│       ├── layouts/
-│       ├── pages/
-│       └── services/     # cliente da API e do socket
-├── database/
-│   └── init_sqlserver.sql   # criação do banco, tabelas e etapas padrão
-└── popular_banco/
-    └── pop_banc.txt         # dados de teste (opcional)
+ 1. A empresa recebe a conta de administrador (gestor)
+        │
+ 2. O gestor cria os setores  ─────────►  Logística · Comercial · Financeiro …
+        │
+ 3. O gestor cadastra a equipe  ───────►  Equipe e Acessos → Novo Colaborador
+        │                                  (perfil + setores de cada pessoa)
+ 4. O gestor monta os processos  ──────►  etapas do Kanban + campos personalizados
+        │
+ 5. Cada colaborador entra e vê só os processos dos seus setores
 ```
 
-## Como rodar localmente
+> **Uma empresa por instalação.** Hoje cada instalação (site + banco de dados) atende uma empresa. Para várias empresas no mesmo endereço, seria preciso separar os dados por empresa (multiempresa/SaaS).
 
-### Pré-requisitos
+> **Avaliadores e convidados:** o acesso de demonstração (empresa fictícia com dados de exemplo) é fornecido pelo autor.
 
-- [Node.js](https://nodejs.org/) 18.11 ou superior (o `npm run dev` usa `node --watch`)
-- Microsoft SQL Server (Express serve) com autenticação SQL habilitada e TCP/IP ativo na porta 1433
+<br>
 
-### 1. Banco de dados
+## ◆ Vinculum IA
 
-No SQL Server Management Studio (ou `sqlcmd`), execute:
+O botão redondo no canto inferior direito abre o assistente. Ele responde com base nos **dados reais** que o usuário logado pode ver:
 
-1. `database/init_sqlserver.sql`: cria o banco `mediator_db`, as tabelas e as etapas padrão do Kanban.
-2. *(Opcional)* `popular_banco/pop_banc.txt`: insere clientes, produtos, equipamentos e OS de exemplo.
+| Pergunte coisas como | O que ele faz |
+|---|---|
+| *"O que está atrasado e o que devo priorizar hoje?"* | Lista as tarefas vencidas e sugere a ordem de ataque |
+| *"Quem está mais sobrecarregado?"* | Compara a carga de trabalho da equipe |
+| *"Onde estão os gargalos?"* | Aponta etapas acumuladas e tarefas sem responsável |
+| *"Monte um fluxo para uma clínica odontológica"* | Sugere etapas, campos personalizados e regras de obrigatoriedade |
+| *"Como exporto as tarefas para o Excel?"* | Explica o passo a passo com os nomes certos dos botões |
 
-### 2. Backend
+**Como funciona por dentro**
+- Usa o **Google Gemini** (plano gratuito) — ou o **Claude**, se configurado. A chave fica **só no servidor**; o usuário não vê nem configura nada.
+- A cada pergunta, o servidor envia ao modelo um resumo dos setores, processos, etapas, responsáveis e tarefas atrasadas/próximas **visíveis para aquele usuário**, mais o histórico da conversa.
+- Escolhe automaticamente um modelo disponível e troca de modelo se um estiver sobrecarregado.
+- **Proteções:** exige login, limita perguntas por pessoa (10/min e 150/dia) e, se a I.A. estiver indisponível, responde em modo simplificado avisando o usuário.
+- Instruído a **não inventar dados**: se a informação não existe, diz onde encontrá-la.
 
+<br>
+
+## ◆ Tecnologias
+
+| Camada | Tecnologias |
+|---|---|
+| **Frontend** | React 18 · Vite 5 · React Router · Framer Motion · CSS Modules · Axios |
+| **Backend** | Node.js · Express · JWT (`jsonwebtoken`) · `bcryptjs` |
+| **Banco de dados** | PostgreSQL (Neon) — ou SQL Server, sem mudar o código |
+| **Inteligência artificial** | Google Gemini (padrão) · Anthropic Claude (opcional) |
+| **Hospedagem** | Vercel (frontend) · Render (backend) · Neon (banco) · Registro.br (domínio) |
+
+```mermaid
+%%{init: {'theme':'base','themeVariables':{'primaryColor':'#161618','primaryTextColor':'#ededef','primaryBorderColor':'#45c4d6','lineColor':'#45c4d6','secondaryColor':'#0b2347','tertiaryColor':'#121214','fontFamily':'Inter, Segoe UI, sans-serif'}}}%%
+flowchart LR
+    U(["👤 Usuário<br/>navegador"]) -->|vinculumflow.com.br| F["Frontend<br/>React + Vite<br/><i>Vercel</i>"]
+    F -->|API REST + JWT| B["Backend<br/>Node + Express<br/><i>Render</i>"]
+    B -->|SQL| D[("PostgreSQL<br/><i>Neon</i>")]
+    B -->|contexto + pergunta| G["Google Gemini<br/><i>assistente</i>"]
+```
+
+<br>
+
+## ◆ Rodando localmente
+
+**Pré-requisitos:** Node.js 18+ e um banco PostgreSQL (o plano gratuito do [Neon](https://neon.tech) serve) ou SQL Server.
+
+**1. Clonar e instalar**
+```bash
+git clone https://github.com/Miguel-Manso/Vinculum.git
+cd Vinculum
+npm install --prefix backend
+npm install --prefix frontend
+```
+
+**2. Configurar o backend** — copie `backend/.env.example` para `backend/.env` e preencha ao menos `DATABASE_URL` e `JWT_SECRET` (veja [variáveis](#variáveis-de-ambiente)).
+
+**3. Criar as tabelas e a empresa de demonstração** (dentro da pasta `backend`, para os scripts lerem o `backend/.env`)
 ```bash
 cd backend
-npm install
+node src/scripts/setup_neon.js            # cria as tabelas (PostgreSQL)
 ```
-
-Copie o arquivo `.env exemplo` para `.env` e ajuste os dados de acesso ao banco:
-
-```env
-PORT=3333
-NODE_ENV=development
-
-DB_USER=sa
-DB_PASSWORD=sua_senha
-DB_SERVER=localhost\SQLEXPRESS
-DB_DATABASE=mediator_db
-DB_PORT=1433
-
-JWT_SECRET=troque_por_uma_chave_secreta
-JWT_EXPIRES_IN=8h
+```powershell
+# PowerShell — escolha a senha das contas de demonstração
+$env:SENHA_DEMO="umaSenhaBoa2026"; node src/scripts/popular_banco.js
 ```
-
-Inicie a API:
-
 ```bash
-npm run dev
+# Linux / macOS
+SENHA_DEMO="umaSenhaBoa2026" node src/scripts/popular_banco.js
+cd ..
 ```
+O script cria setores, processos, tarefas e as contas `banca@vinculum.com` (administrador) e colaboradores como `rodrigo.ops@vinculum.com`, todas com a senha `SENHA_DEMO`. Ele não apaga nada e pode ser executado de novo.
 
-A API sobe em `http://localhost:3333/api`. Ao iniciar, o backend confere as tabelas e cria as contas de teste.
+> ⚠️ O `banco_postgres.sql` cria `admin@vinculum.com` com uma senha padrão pública. O `popular_banco.js` troca automaticamente qualquer senha pública (`123` / `123456`) pela `SENHA_DEMO` — rode-o antes de publicar.
 
-### 3. Frontend
-
-Em outro terminal:
-
+**4. Iniciar**
 ```bash
-cd frontend
-npm install
-npm run dev
+npm run dev --prefix backend     # API em http://localhost:3000
+npm run dev --prefix frontend    # site em http://localhost:5173
 ```
 
-Acesse `http://localhost:5173`.
+### Variáveis de ambiente
 
-## Contas de teste
+<details>
+<summary><b>Backend</b> (<code>backend/.env</code> · no Render: <i>Environment</i>)</summary>
 
-| Perfil | E-mail | Senha |
-| --- | --- | --- |
-| Administrador | admin@mediator.com | admin123 |
-| Atendente | ana@mediator.com | 123456 |
-| Técnico | carlos@mediator.com | 123456 |
+| Variável | Obrigatória | Descrição |
+|---|---|---|
+| `DATABASE_URL` | sim* | URL do PostgreSQL (Neon). *Ou use `DB_SERVER`, `DB_PORT`, `DB_DATABASE`, `DB_USER`, `DB_PASSWORD` para SQL Server |
+| `JWT_SECRET` | sim | Chave dos logins. Em produção: **≥ 32 caracteres, aleatória e privada** — o servidor não inicia com chave fraca |
+| `JWT_EXPIRES_IN` | não | Duração do login (padrão `8h`) |
+| `PORT` | não | Porta da API (padrão `3000`) |
+| `GEMINI_API_KEY` | não | Chave do Gemini ([AI Studio](https://aistudio.google.com)). Sem ela, o chat usa o modo básico |
+| `GEMINI_MODEL` | não | Força um modelo (padrão: escolha automática) |
+| `ANTHROPIC_API_KEY` / `ANTHROPIC_MODEL` | não | Usa o Claude no lugar do Gemini |
+| `IA_PROVEDOR` | não | `gemini` ou `anthropic`, se as duas chaves existirem |
+| `CHAT_LIMITE_MINUTO` / `CHAT_LIMITE_DIA` | não | Limite de perguntas por usuário (padrão `10` / `150`) |
+| `CORS_ORIGINS` | não | Sites extras que podem chamar a API (o domínio oficial, a Vercel e localhost já são liberados) |
+| `APP_TZ` | não | Fuso horário (padrão `America/Sao_Paulo`) |
 
-> ⚠️ Essas contas são recriadas com as senhas padrão sempre que o backend inicia. Antes de usar em produção, desative essa rotina e troque o `JWT_SECRET`.
+Gerar um `JWT_SECRET`: `node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"`
+</details>
 
-## Scripts
+<details>
+<summary><b>Frontend</b> (<code>frontend/.env</code> · na Vercel: <i>Environment Variables</i>)</summary>
 
-| Pasta | Comando | O que faz |
-| --- | --- | --- |
-| backend | `npm run dev` | Inicia a API com recarga automática |
-| backend | `npm start` | Inicia a API |
-| backend | `npm run seed` | Recria os usuários de teste |
-| frontend | `npm run dev` | Inicia o frontend em modo de desenvolvimento |
-| frontend | `npm run build` | Gera a versão de produção em `dist/` |
-| frontend | `npm run preview` | Serve a versão de produção localmente |
+| Variável | Descrição |
+|---|---|
+| `VITE_API_URL` | Endereço da API, ex.: `http://localhost:3000/api` (local) ou a URL do Render (produção) |
+</details>
 
-## Autores
+<br>
 
-- **Miguel Filipe Manso Pereira**
-- **Pablo Lemes da Silva**
+## ◆ Publicação
 
-Estágio Supervisionado II
+| Parte | Serviço | Observações |
+|---|---|---|
+| Frontend | **Vercel** | Publica sozinho a cada push na `master`. `VITE_API_URL` aponta para o backend |
+| Backend | **Render** (plano gratuito) | Publica sozinho a cada push. Variáveis em *Environment* |
+| Banco | **Neon** (PostgreSQL gratuito) | Tabelas criadas com `setup_neon.js` |
+| Domínio | **Registro.br** | `vinculumflow.com.br` apontado para a Vercel |
+| Backend acordado | **GitHub Actions** | [`manter-backend-acordado.yml`](.github/workflows/manter-backend-acordado.yml) chama `/api/health` a cada 10 min, para o plano gratuito do Render não "dormir" |
+
+<br>
+
+## ◆ Segurança
+
+- **Login com JWT**; senhas guardadas com `bcrypt`. Em produção o servidor exige um `JWT_SECRET` forte.
+- **Sem cadastro público** — contas são criadas pelo administrador.
+- **Acesso por setor**: colaboradores só veem processos, tarefas e colegas dos seus setores.
+- **CORS restrito** ao site oficial.
+- **Chaves e senhas só em variáveis de ambiente** — o `.env` não vai para o GitHub.
+- **Assistente** com login obrigatório e limite de uso por pessoa.
+
+<br>
+
+## ◆ Estrutura do projeto
+
+```
+Vinculum/
+├── frontend/                 # React + Vite
+│   └── src/
+│       ├── pages/            # Dashboard, Processos, Fluxo (Kanban), Tarefa, Tabela, Usuários, Login
+│       ├── components/       # Sidebar, KanbanBoard, FilterPanel, Chatbot, Modal, Logo…
+│       ├── context/          # login, setor ativo e sidebar
+│       └── styles/           # primitivas visuais compartilhadas (ui.module.css)
+├── backend/                  # Node + Express
+│   └── src/
+│       ├── routes/           # auth, processos, etapas, tarefas, campos, usuários, setores, chatbot…
+│       ├── controllers/      # regras de negócio (inclui o Vinculum IA)
+│       ├── services/         # integração com o modelo de linguagem (Gemini / Claude)
+│       ├── config/           # banco de dados e segurança
+│       └── scripts/          # setup_neon.js, popular_banco.js
+├── banco_postgres.sql        # estrutura do banco (PostgreSQL)
+├── banco.sql                 # estrutura do banco (SQL Server)
+├── DESIGN.md                 # sistema visual (cores, tipografia, componentes)
+└── docs/                     # banner e capturas de tela deste README
+```
+
+<br>
+
+## ◆ Autoria
+
+Desenvolvido por **[Miguel Manso](https://github.com/Miguel-Manso)** como Trabalho de Conclusão de Curso.
+
+<div align="center">
+<br>
+<a href="https://vinculumflow.com.br"><img src="https://img.shields.io/badge/vinculumflow.com.br-acessar%20o%20sistema-45c4d6?style=for-the-badge&labelColor=0e0e10" alt="Acessar o Vinculum"></a>
+</div>

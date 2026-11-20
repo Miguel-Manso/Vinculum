@@ -67,9 +67,22 @@ function estruturarBlocosVisuais(textoBruto) {
     // Junta itens numerados consecutivos que a IA tenha separado com linha em branco
     .replace(/(\n\d+[\.\)]\s[^\n]+)\n\s*\n(?=\d+[\.\)]\s)/g, '$1\n')
     // Junta bullets consecutivos que a IA tenha separado com linha em branco
-    .replace(/(\n[•\-\*]\s[^\n]+)\n\s*\n(?=[•\-\*]\s)/g, '$1\n');
+    .replace(/(\n[•\-\*]\s[^\n]+)\n\s*\n(?=[•\-\*]\s)/g, '$1\n')
+    // Títulos ("### ...") sempre em um bloco próprio — senão a lista logo abaixo
+    // era renderizada dentro do título e o texto quebrava palavra por palavra
+    .replace(/^(#{1,6}\s.*)$/gm, '\n$1\n');
 
-  return normalizado.split(/\n\s*\n/).map(b => b.trim()).filter(Boolean);
+  // Separa uma lista numerada do parágrafo que vem colado antes dela
+  const linhas = normalizado.split('\n');
+  const separadas = [];
+  linhas.forEach((linha, i) => {
+    const anterior = linhas[i - 1] ?? '';
+    const ehNumerada = l => /^\s*\d+[\.\)]\s/.test(l);
+    if (ehNumerada(linha) && anterior.trim() && !ehNumerada(anterior)) separadas.push('');
+    separadas.push(linha);
+  });
+
+  return separadas.join('\n').split(/\n\s*\n/).map(b => b.trim()).filter(Boolean);
 }
 
 // Renderizador visual elegante das respostas da IA
