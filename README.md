@@ -265,7 +265,20 @@ Vinculum/
 
 ## ◆ Autoria
 
-Desenvolvido por **[Miguel Manso](https://github.com/Miguel-Manso)** como Trabalho de Conclusão de Curso.
+Trabalho de Conclusão de Curso desenvolvido por:
+
+<table>
+  <tr>
+    <td align="center" width="180">
+      <a href="https://github.com/Miguel-Manso"><img src="https://github.com/Miguel-Manso.png?size=120" width="88" alt="Miguel Manso" style="border-radius:50%"><br><b>Miguel Manso</b></a><br>
+      <sub><a href="https://github.com/Miguel-Manso">@Miguel-Manso</a></sub>
+    </td>
+    <td align="center" width="180">
+      <a href="https://github.com/PabloLdS"><img src="https://github.com/PabloLdS.png?size=120" width="88" alt="Pablo Lemes da Silva" style="border-radius:50%"><br><b>Pablo Lemes da Silva</b></a><br>
+      <sub><a href="https://github.com/PabloLdS">@PabloLdS</a></sub>
+    </td>
+  </tr>
+</table>
 
 <div align="center">
 <br>
