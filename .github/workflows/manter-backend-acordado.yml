@@ -1,0 +1,28 @@
+# Mantém o backend gratuito do Render "acordado".
+#
+# No plano grátis, o Render desliga o backend após ~15 min sem acessos e o
+# próximo visitante espera ~1 min para ele ligar de novo. Este agendamento
+# chama a rota /api/health a cada 10 minutos para isso não acontecer.
+#
+# - Gratuito em repositórios públicos.
+# - O GitHub pode atrasar alguns minutos as execuções agendadas e pausa
+#   agendamentos de repositórios sem commits há 60 dias (basta reativar na
+#   aba Actions).
+# - Para usar outro endereço, crie a variável BACKEND_URL em
+#   Settings → Secrets and variables → Actions → Variables.
+name: Manter backend acordado
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - name: Chamar /api/health
+        env:
+          BACKEND_URL: ${{ vars.BACKEND_URL || 'https://vinculum-dnjs.onrender.com' }}
+        run: curl --fail --silent --show-error --max-time 120 --retry 2 --retry-delay 10 "$BACKEND_URL/api/health"

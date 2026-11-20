@@ -1,6 +1,11 @@
 const bcrypt = require('bcryptjs');
 const jwt    = require('jsonwebtoken');
 const { getPool, sql } = require('../config/db');
+const { obterJwtSecret } = require('../config/seguranca');
+
+// Cadastro público DESATIVADO: o Vinculum é fechado — contas são criadas por um
+// administrador logado (POST /api/usuarios, tela "Equipe e Acessos").
+// A função fica aqui só como referência; não está ligada a nenhuma rota.
 async function cadastrar(req, res) {
   try {
     const { nome, email, senha } = req.body;
@@ -50,7 +55,7 @@ async function login(req, res) {
 
     const token = jwt.sign(
       { id: usuario.id, nome: usuario.nome, email: usuario.email, perfil },
-      process.env.JWT_SECRET || 'vinculum_default_secret_key',
+      obterJwtSecret(),
       { expiresIn: process.env.JWT_EXPIRES_IN || '8h' }
     );
     res.json({

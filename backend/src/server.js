@@ -4,8 +4,13 @@ const path    = require('path');
 require('dotenv').config();
 require('dotenv').config({ path: path.resolve(__dirname, '../../.env.local') });
 
+const { validarSegredoNaInicializacao, opcoesCors } = require('./config/seguranca');
+
+// Em produção, não liga sem um JWT_SECRET forte (ver config/seguranca.js)
+validarSegredoNaInicializacao();
+
 const app = express();
-app.use(cors());
+app.use(cors(opcoesCors()));   // só o site do Vinculum pode chamar a API
 app.use(express.json());
 
 app.use('/api/auth',      require('./routes/auth.routes'));

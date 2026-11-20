@@ -1,6 +1,24 @@
 const bcrypt = require('bcryptjs');
 const { getPool, sql } = require('../config/db');
 
+/**
+ * Administrador vê a equipe inteira. Colaborador vê só quem trabalha com ele:
+ * colegas que compartilham pelo menos um setor, os administradores e ele mesmo.
+ * (É o que o Kanban precisa para escolher o responsável de uma tarefa.)
+ */
+function filtrarVisiveis(usuarios, logado) {
+  const isAdmin = logado?.perfil === 'admin' || logado?.email === 'admin@vinculum.com';
+  if (isAdmin) return usuarios;
+
+  const eu = usuarios.find(u => String(u.id) === String(logado?.id));
+  const meusSetores = new Set((eu?.setores || []).map(s => String(s.id)));
+  return usuarios.filter(u =>
+    String(u.id) === String(logado?.id) ||
+    u.perfil === 'admin' ||
+    (u.setores || []).some(s => meusSetores.has(String(s.id)))
+  );
+}
+
 async function listar(req, res) {
   try {
     const pool = await getPool();
@@ -44,10 +62,10 @@ async function listar(req, res) {
         setores: setoresPorUsuario[u.id] || []
       }));
 
-      return res.json(usuariosComSetores);
+      return res.json(filtrarVisiveis(usuariosComSetores, req.usuario));
     } catch (relErr) {
       console.error('Aviso ao carregar setores dos usuários:', relErr.message);
-      return res.json(usuarios.map(u => ({ ...u, setores: [] })));
+      return res.json(filtrarVisiveis(usuarios.map(u => ({ ...u, setores: [] })), req.usuario));
     }
   } catch (err) {
     res.status(500).json({ error: err.message });

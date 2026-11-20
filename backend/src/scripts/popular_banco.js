@@ -1,16 +1,43 @@
+// ============================================================================
+// Popula o banco com uma empresa de demonstração (setores, processos, tarefas
+// e usuários de teste). Não apaga nada: só cria o que falta e atualiza.
+//
+// Como rodar (a senha das contas de teste vem de SENHA_DEMO):
+//   PowerShell:  $env:SENHA_DEMO="umaSenhaBoa2026"; node backend/src/scripts/popular_banco.js
+//   Para o banco publicado (Neon), defina também DATABASE_URL com a URL dele.
+//
+// Segurança: as contas de teste usavam a senha "123", que está pública no
+// GitHub. Se alguma conta da lista ainda tiver "123", ela é trocada por
+// SENHA_DEMO. Senhas que já foram alteradas não são tocadas.
+// ============================================================================
 const bcrypt = require('bcryptjs');
 const { getPool, sql } = require('../config/db');
 
+const SENHA_ANTIGA_PUBLICA = '123';
+
+function lerSenhaDemo() {
+  const senha = (process.env.SENHA_DEMO || '').trim();
+  if (senha.length < 8 || senha === SENHA_ANTIGA_PUBLICA || /^(12345678|senha123|password)$/i.test(senha)) {
+    throw new Error(
+      'Defina SENHA_DEMO com uma senha de pelo menos 8 caracteres antes de rodar.\n' +
+      '   Ex. (PowerShell):  $env:SENHA_DEMO="Vinculum#Banca2026"; node backend/src/scripts/popular_banco.js'
+    );
+  }
+  return senha;
+}
+
 async function popularBanco() {
   console.log('🚀 Iniciando script de população de dados ricos para demonstração...');
+  const senhaDemo = lerSenhaDemo();
   const pool = await getPool();
 
   try {
-    // 1. Senha padrão para todos os usuários de teste: '123'
-    const senhaHashPadrao = await bcrypt.hash('123', 10);
+    // 1. Senha das contas de teste (vem de SENHA_DEMO)
+    const senhaHashPadrao = await bcrypt.hash(senhaDemo, 10);
 
     // 2. Criar ou Atualizar Usuários de diferentes áreas
     const listaUsuarios = [
+      { nome: 'Banca Avaliadora', email: 'banca@vinculum.com', perfil: 'admin' },
       { nome: 'Admin Geral', email: 'admin@vinculum.com', perfil: 'admin' },
       { nome: 'Miguel Manso', email: 'miguelfilipemanso13@gmail.com', perfil: 'admin' },
       { nome: 'Beatriz Lima', email: 'beatriz.rh@vinculum.com', perfil: 'usuario' },
@@ -21,20 +48,29 @@ async function popularBanco() {
     ];
 
     const usuariosMap = {}; // email -> id
+    let senhasTrocadas = 0;
 
     for (const u of listaUsuarios) {
       const existe = await pool.request()
         .input('email', sql.NVarChar, u.email)
-        .query('SELECT id, perfil FROM Usuarios WHERE email = @email');
+        .query('SELECT id, perfil, senha_hash FROM Usuarios WHERE email = @email');
 
       if (existe.recordset.length > 0) {
-        const id = existe.recordset[0].id;
+        const { id, senha_hash } = existe.recordset[0];
         usuariosMap[u.email] = id;
         // Garante que o perfil esteja atualizado
         await pool.request()
           .input('id', sql.Int, id)
           .input('perfil', sql.NVarChar, u.perfil)
           .query('UPDATE Usuarios SET perfil = @perfil WHERE id = @id');
+        // Troca a senha pública antiga ("123"), se ainda estiver em uso
+        if (senha_hash && await bcrypt.compare(SENHA_ANTIGA_PUBLICA, senha_hash)) {
+          await pool.request()
+            .input('id', sql.Int, id)
+            .input('senha_hash', sql.NVarChar, senhaHashPadrao)
+            .query('UPDATE Usuarios SET senha_hash = @senha_hash WHERE id = @id');
+          senhasTrocadas++;
+        }
       } else {
         const ins = await pool.request()
           .input('nome', sql.NVarChar, u.nome)
@@ -46,6 +82,9 @@ async function popularBanco() {
       }
     }
     console.log('✅ Usuários verificados/criados:', Object.keys(usuariosMap).length);
+    if (senhasTrocadas > 0) {
+      console.log(`🔒 ${senhasTrocadas} conta(s) ainda usavam a senha pública "123" e agora usam a SENHA_DEMO.`);
+    }
 
     // 3. Criar ou Atualizar Setores
     const listaSetores = [
@@ -88,6 +127,7 @@ async function popularBanco() {
     // 4. Vincular Usuários aos Setores (UsuarioSetores)
     const vinculos = [
       // Admins têm acesso a todos os setores
+      { email: 'banca@vinculum.com', setores: Object.keys(setoresMap) },
       { email: 'admin@vinculum.com', setores: Object.keys(setoresMap) },
       { email: 'miguelfilipemanso13@gmail.com', setores: Object.keys(setoresMap) },
       // Usuários departamentais
